@@ -17,7 +17,7 @@ The process is designed to be robust, stateful, and produce high-quality, format
     b.  **File Updates**:
         i.  Append the new, **raw** content (id, front, back, source_file, tags) to the `setup/flashcards_master.csv` file. 
         ii. **Data Integrity**: Ensure all CSV fields are double-quoted. Escape literal double quotes by doubling them (`""`).
-        iii. Append the new, **HTML-formatted** content to the corresponding Anki export file (e.g., `anki_exports/week_1.csv`).
+        iii. Append the new, **HTML-formatted** content to the corresponding Anki export file (e.g., `anki_exports/week_1_logistic_regression.csv`).
 
 ## 2. Handling Imperfect Text Extractions
 
@@ -34,7 +34,7 @@ The source `.txt` files may contain garbled text from the PDF extraction process
 -   **`setup/instructions.md`**: This file.
 -   **`setup/flashcard_style_guide.md`**: Defines the specific formatting rules (HTML structure, styling) for the Anki cards.
 -   **`setup/flashcards_master.csv`**: The central database of all card *content* for de-duplication. Simple, raw text format.
--   **`anki_exports/`**: A directory containing the final, per-chapter/week `.csv` files with rich HTML formatting, ready for Anki import.
+-   **`anki_exports/`**: A directory containing the final, per-chapter/topic `.csv` files with rich HTML formatting, ready for Anki import.
 
 ## 4. Card Formatting and Styling
 
