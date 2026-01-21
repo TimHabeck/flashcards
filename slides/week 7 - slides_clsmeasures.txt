@@ -1,0 +1,1480 @@
+Loss/performance and ranking measures in
+Classification
+Alexander Binder
+August 18, 2025
+
+Outline
+
+1 Loss/Performance Measures for Classification
+2 Ranking measures
+
+|2
+
+Measures for Classification
+
+Loss: lower is better, performance measure: higher is better
+⊙ accuracy
+⊙ TPR/TNR/FPR/FNR
+⊙ precision, recall and information retrieval
+⊙ class-weighted weighted accuracy
+⊙ ranking quality measures
+· ROC curves
+· AUC =AUROC=Area under the ROC curve
+
+|3
+
+...
+
+|4
+
+Learning goals
+at the end of this lecture you should be able to:
+⊙ be able to explain how to compute TPR/TNR/FPR/FNR
+⊙ be able to explain how to compute precision and recall
+⊙ be able to explain in what cases precision matters more and
+where recall matters more
+⊙ be able to explain the differences between accuracy vs
+class-weighted weighted accuracy
+⊙ be able to explain AUROC and AUPRC curves
+
+Measures for Classification
+
+Classifiers:
+2 use cases to have in mind when classifying
+⊙ Return ranked top-k most relevant samples (”Search Engine style”)
+⊙ Return hard decisions, one for each test sample. (”predict for each
+patient: cancer or not?”)
+
+|5
+
+Measures for Classification: Accuracy
+
+Acc counts how often the prediction f (xi ) is equal to the label yi on
+average
+n
+
+Acc =
+
+1X
+1[f (xi ) == yi ]
+n i=1
+
+Acc = 1 − L
+n
+1X
+L=
+1[f (xi )! = yi ]
+n i=1
+⊙ equal to one minus the zero one error
+⊙ not suitable if frequency or importance of two classes is imbalanced
+
+|6
+
+Disadvantage of Accuracy
+
+What happens with the accuracy if one class is very rare ?
+⊙ suppose yi ∈ {0, 1} but yi = 1 occurs only with 0.1% frequency.
+⊙ choose f (x ) = 0 as predictor (constant prediction)
+⊙ f (x ) = 0 has 0.999 accuracy, but does all wrong on all samples
+yi = 1
+result: 0.999 accuracy but bad choice if prediction for the rare cases
+matters
+⊙ risk to be misled ... in the presence of strong class imbalance!
+
+|7
+
+Measures for Classification: Accuracy
+
+Use case for Accuracy and 0-1-Loss measures?
+⊙ banking: classify customers in risk-averse and risk-seeking, then offer
+product based on the prediction
+⊙ Classify a frog into 3 species, where each of them is equally
+important
+
+|8
+
+when to use? Accuracy
+
+Use case for Accuracy and 0-1-Loss measures
+In problems where positive and negative labeled samples are both
+important, and where a correct prediction on a positive sample as
+is important as on a negative sample.
+Additionally the ground truth labels of classes are roughly balanced
+(similar frequencies).
+In short: want to find samples from 2 or more similarly frequent classes,
+also the prediction quality is important for all classes
+
+|9
+
+Measures for Classification
+
+What to do for imbalanced cases ?
+Next: measures which look at positively labeled and negatively labeled
+samples separately
+
+| 10
+
+Measures for Classification: TPR/TNR
+true positive, true negative rates. For 2-class problems only!
+count {(predicted as positive) and (labeled positive) }
+count of samples (labeled positive)
+count {(predicted as negative) and (labeled negative) }
+TNR =
+count of samples (labeled negative)
+TPR =
+
+count means to count samples, or number of samples
+to remember:
+⊙ false positive (FP) means label is negative
+⊙ false negative (FN) means its label is positive
+”False” here has the semantics of an accusation, like a claim of being
+fake!
+
+| 11
+
+Measures for Classification: FPR/FNR
+
+false positive, false negative rates. For 2-class problems only!
+count { (predicted as positive) and (labeled negative) }
+count of samples (labeled negative)
+count { (predicted as negative) and (labeled positive) }
+FNR =
+count of samples (labeled positive)
+FPR =
+
+count means to count samples, or number of samples
+
+| 12
+
+Measures for Classification: TPR/TNR/FPR/FNR
+now words to math: yi ∈ {0, 1}
+TPR =
+
+pred+ & lb+
+=
+lb+
+
+pred- & lbTNR =
+=
+lb-
+
+Pn
+
+i=1 1[(f (xi ) == 1)&(yi == 1)]
+Pn
+i=1 1[yi == 1]
+
+Pn
+
+i=1 1[(f (xi ) == 0)&(yi == 0)]
+Pn
+i=1 1[yi == 0]
+
+pred+ & lb=
+FPR =
+lb-
+
+Pn
+
+pred- & lb+
+FNR =
+=
+lb+
+
+Pn
+
+i=1 1[(f (xi ) == 1)&(yi == 0)]
+Pn
+i=1 1[yi == 0]
+
+i=1 1[(f (xi ) == 0)&(yi == 1)]
+Pn
+i=1 1[yi == 1]
+
+| 13
+
+Measures for Classification: TPR/TNR/FPR/FNR
+TPR and FNR are a function of each other:
+pred+ & lb+
+lb+
+pred- & lb+
+FNR =
+lb+
+⇒TPR + FNR = 1
+
+TPR =
+
+Why?
+TPR + FNR =
+
+pred+ & lb+ pred- & lb+
++
+lb+
+lb+
+
+=
+
+(pred+ | pred- )& lb+
+lb+
+
+Since you predict either + or - and there is no other choice,
+(pred+ | pred- ) is always true and one is left with
+lb+
+=1
+lb+
+
+| 14
+
+Measures for Classification: TPR/TNR/FPR/FNR
+
+TPR and FNR are a dependent function of each other.
+TNR and FPR are a dependent function of each other, too.
+pred+ & lb+
+lb+
+pred- & lb+
+FNR =
+lb+
+⇒TPR + FNR = 1
+pred- & lbTNR =
+lbpred+ & lbFPR =
+lb⇒TNR + FPR = 1
+TPR =
+
+| 15
+
+Measures for Classification: TPR/TNR/FPR/FNR
+
+useful to consider:
+⊙ TPR and TNR together
+⊙ or ... FPR and FNR together (which are 1− the true versions)
+⊙ or TPR and FPR ... or TNR and FNR
+
+| 16
+
+Measures for Classification: TPR/TNR/FPR/FNR
+
+useful to consider
+⊙ TPR and TNR together
+⊙ or ... FPR and FNR together (which are 1− the true versions)
+reason:
+⊙ class prediction always pred(x ) = −1
+has TPR = 0 and TNR = 1 1
+⊙ class prediction always pred(x ) = 1
+has TNR = 0 and TPR = 1 2
+⊙ classifiers in between these two extremes achieve a tradeoff between
+TPR ↔ TNR or FPR ↔ FNR
+
+1
+2
+
+cannot predict positives
+cannot predict negatives
+
+| 17
+
+Measures for Classification: TPR/TNR/FPR/FNR
+
+⊙ class prediction always pred(x ) = −1
+has TPR = 0 and TNR = 1 3
+⊙ class prediction always pred(x ) = 1
+has TNR = 0 and TPR = 1 4
+⊙ classifiers in between these two extremes achieve a tradeoff between
+TPR ↔ TNR or FPR ↔ FNR
+⊙ next: how to interpolate between these two in a simple way?
+· adjust the decision threshold!
+
+3
+4
+
+cannot predict positives
+cannot predict negatives
+
+| 18
+
+Measures for Classification: TPR/TNR/FPR/FNR
+⊙ Consider a prediction model f (x ), which outputs real values on
+samples x . Given a test dataset D = {x {0} , . . . , x {n−1} }
+⊙ one could set the threshold t for predicting +1 to different values,
+predt (x ) = +1[f (x ) > t]
+from below minx ∈D f (x ) until above maxx ∈D f (x ), and observe the
+TPR/TNR rates as a function of the threshold .
+TPR and TNR
+⊙ One can achieve a tradeoff between TPR and TNR for a
+classifier f (x ) by setting the classification threshold t in
+(
++1 if f (x ) ≥ t
+predt (x ) =
+−1 if f (x ) < t
+
+| 19
+
+Measures for Classification: TPR/TNR/FPR/FNR
+
+TPR and TNR
+⊙ One can achieve a tradeoff between TPR and TNR for a
+classifier f (x ) by setting the classification threshold t in
+(
++1 if f (x ) ≥ t
+predt (x ) =
+−1 if f (x ) < t
+We will do something similar for ranking measures further below ... but
+then we will obtain a graph of TPR/FPR value pairs for a set of different
+values t, in terms of a graph: (x (t), y (t)) = (TPR(t), FPR(t)).
+
+– Next: use TPR and TNR to improve accuracy-type measurements on
+imbalanced problems.
+
+| 20
+
+Measures for Classification: class-weighted accuracy,
+2-class problems
+class-weighted accuracy
+A2,1/2 = 1/2TPR + 1/2TNR ← equal weights
+A2,w = wTPR + (1 − w )TNR ← weights w , (1 − w )
+⊙ useful for unbalanced problems!
+⊙ suppose yi ∈ {0, 1} but yi = 1 occurs only with 1% frequency.
+⊙ choose f (x ) = 0 as predictor (constant prediction)
+⊙ f (x ) = 0 has 0.99 accuracy, but A2,1/2 = 0.5 only
+⊙ class-weighted accuracy can visualize bad performance on 2-class
+problems with one rare class
+⊙ next step: do this similarly for multi-class problems
+
+| 21
+
+Measures for Classification: class-weighted accuracy,
+C-class problems
+⊙ define TPR for class c with c ∈ {0, . . . , C − 1}:
+pred:c & lb:c
+Pn lb:c
+1[(f (xi ) == c)&(yi == c)]
+= i=1 Pn
+i=1 1[(yi == c)]
+
+TPR(c) =
+
+⊙ next: define a weighted average of the TPR(c) over all classes:
+class-weighted accuracy
+C
+
+AC ,1/C =
+
+AC ,w =
+
+1 X
+TPR(c)
+C c=1
+C
+X
+
+wc TPR(c)
+
+c=1
+
+X
+c
+
+wc = 1, wc ≥ 0
+
+| 22
+
+Measures for Classification: class-weighted accuracy,
+C-class problems
+Compare:
+AC ,1/C =
+
+C
+1 X
+TPR(c)
+C c=1
+
+A2,0.5 = 1/2TPR + 1/2TNR
+for two classes
+⊙ TPR is here TPR(c) for c = 1 (the positive labeled ones),
+⊙ TNR is here TPR(c) for c = 0/ − 1, (the negative labeled
+
+ones)
+AC ,w is just TPR for one class in a multi-label or multi-class setting
+(extended from binary case, 2 classes).
+
+| 23
+
+when to use? class-weighted accuracy
+
+Use case for class-weighted accuracies:
+In problems where positive and negative labeled samples are
+both important, and where a correct prediction on a positive
+sample as is important as on a negative sample.
+Additionally the ground truth labels of classes are very imbalanced, and the accuracy on smaller classes is important.
+In short: the prediction quality is important on both classes, and
+the ground truth label frequencies are unbalanced.
+
+| 24
+
+Measures for Classification: Precision and Recall
+
+⊙ next: precision, recall, information retrieval issues
+
+In some problems the positives matter alone.
+If you want to find information about your migraine, why would you
+care about all the info on hair loss or diseases of tobacco plants?
+
+| 25
+
+Measures for Classification: Precision and Recall
+
+In some problems the positives matter alone.
+⊙ search engine outputs: information you want. Cases when you
+
+want to find all positives
+⊙ when one need to identify/find something specific via
+
+classification (e.g. all cancer cases, all high risk persons)
+⊙ in general, problems where the positive label is semantically
+
+relevant, the other class is irrelevant
+Problems of information retrieval, naming convention loaned from
+document retrieval.
+
+| 26
+
+Measures for Classification: Precision and Recall
+⊙ Recall = how many of the relevant documents are found ? Relevant
+= positive labeled in a two class setting. Found = predicted
+Recall =
+
+pred+ & lb+
+TP
+=
+= TPR
+lb+
+TP + FN
+
+⊙ Precision = how many of all found documents are relevant =
+something new!
+· all found documents: predicted positive: pred+.
+· Precision
+Precision =
+
+pred+ & lb+
+TP
+=
+pred+
+TP + FP
+
+This is not TPR or TNR, as the normalizer is made of the
+predicted positive ones, not labeled ones!
+· other name: precision ∼ positive predictive value (PPV)
+
+| 27
+
+Measures for Classification: Precision and Recall
+
+Recall = TPR
+Precision and Recall
+⊙ recall: how many of the positive labeled ones are found /
+predicted as positive?
+⊙ precision: how many of the positively predicted ones are
+relevant / labeled as positive ?
+The denominator differs between precision and recall!
+
+| 28
+
+Measures for Classification: Precision and Recall
+
+Usually, in well trained mappings there is a tradeoff between them
+as the classifier threshold is varied:
+⊙ high threshold:
+· one predicts only a few very easy and strongly evident samples
+as positive, high precision.
+· One misses out many samples: poor recall
+⊙ low threshold:
+· one predicts almost all positively labeled ones as positive,
+higher recall.
+· one also predicts many negatively labeled samples (those which
+look almost positive) as positive: lower precision
+
+When is precision and when recall important ?
+
+| 29
+
+Measures for Classification: Precision and Recall
+
+Precision and Recall use case examples
+⊙ search engine outputs: want high precision (among
+
+what is predicted ...)
+⊙ cancer diagnosis: want high recall (find them all ...)
+⊙ find all deepfakes (showing something outrageous) to
+
+remove them online: want high recall (find them all ... )
+⊙ find some deepfakes to send lawyer after their creators
+
+and get rich from the fees: want high precision more
+than high recall (only relevant finds which are easy to
+prosecute, lawyer hour costs 500 coins++)
+One uses precision and recall typically in asymmetrical prediction
+problems where one class is relevant and the other is not.
+
+| 30
+
+Section on: Recap on Performance/Quality/Loss measures for
+Classification
+
+Measures for Classification
+
+⊙ want to find only samples of one class: Precision, Recall =
+
+TPR/FPR/FNR
+⊙ want to find samples from 2 or more classes, prediction quality
+
+important on both classes: accuracy,
+class-wise/balanced/weighted accuracy, TPR/TNR/FPR/FNR
+
+| 32
+
+Measures for Classification
+
+⊙ want to find only samples of one class:
+· search engine mode: return a small set of findings, high
+precision desired
+· find them all mode: e.g. cancer diagnosis, high recall desired
+
+| 33
+
+Measures for Classification
+
+tradeoffs by varying the classification threshold:
+⊙ TPR/TNR
+⊙ FPR (= 1 − TNR)/FNR (= 1 − TPR)
+⊙ precision/recall
+
+| 34
+
+Measures for Classification: Accuracy
+
+⊙ average frequency of prediction matching the label
+⊙ unsuitable for imbalanced classes / data with rare classes
+
+| 35
+
+Measures for Classification: TPR/TNR/FPR/FNR
+
+⊙ usually one needs to consider a pair of those for observing
+
+tradeoff effects
+⊙ TPR and FNR are a function of each other, same as TNR and
+
+FPR
+
+| 36
+
+Measures for Classification: class-wise/weighted Accuracy
+| 37
+
+⊙ for two classes: weighted sum of TPR and TNR. For
+
+multi-class: weighted average of class-wise TPR
+⊙ suitable for data with imbalanced/rare classes or when one of
+
+the classes has much higher importance
+
+Outline
+
+1 Loss/Performance Measures for Classification
+2 Ranking measures
+
+| 38
+
+Loss Measures for Classification
+
+Today: ranking measures.
+⊙ ROC curves
+⊙ AUC=AUROC (Area under the ROC curve)
+⊙ Average Precision
+
+| 39
+
+Loss Measures for Classification
+Why ranking measures?
+⊙ useful for evaluation of the quality of top-k results from
+
+classifiers (when one uses the output of classification in
+search engine mode)
+⊙ able to measure the potential for good classification
+
+independent of the classification threshold
+⊙ useful for cases, when tuning of the classification
+
+threshold will be postponed
+⊙ can help to identify the case when the prediction is only
+
+bad because of a poor choice of classification threshold:
+if the ranking measure is high, but threshold-based
+measures such as accuracy are low!
+
+| 40
+
+Loss Measures for Classification: ROC Curve
+https://en.wikipedia.org/wiki/Receiver operating characteristic
+⊙ Take a classifier and vary the threshold which is used to predict
+positive samples in classification.
+⊙ for each threshold value one observe a pair of (FPR, TPR)
+⊙ plot the curve of FPR (= 1 − TNR) on x-axis and TPR on y-axis
+
+from https://en.wikipedia.org/wiki/Receiver operating characteristic#/media/File:Roccurves.png
+
+| 41
+
+Loss Measures for Classification: ROC Curve
+
+https://en.wikipedia.org/wiki/Receiver operating characteristic
+f (x ) gt label
+0.65
+1
+0.62
+1
+0.59
+0
+0.56
+0
+samples sorted according to confidence /
+0.55
+1
+logit f (x ):
+0.52
+1
+note: lb+ = 6, lb− = 5 for all thresholds
+0.48
+0
+0.45
+1
+0.42
+0
+0.41
+1
+0.35
+0
+
+| 42
+
+Loss Measures for Classification: ROC Curve
+
+https://en.wikipedia.org/wiki/Receiver operating characteristic
+f (x ) gt label
+t
+TP(t)
+0.65
+1
+0.65
+1
+0.62
+1
+0.62
+2
+(1) samples sorted according
+0.59
+0
+0.59
+2
+to confidence / logit f (x ):
+0.56
+0
+0.56
+2
+(2) note: lb+ = 6, lb− = 5
+0.55
+1
+0.55
+3
+for all thresholds
+0.52
+1
+0.52
+4
+(3) vary threshold value t for
+0.48
+0
+0.48
+4
+True == f (x ) ≥ t ?, count
+0.45
+1
+0.45
+5
+TP, FP at t
+0.42
+0
+0.42
+5
+0.41
+1
+0.41
+6
+0.35
+0
+0.35
+6
+
+| 43
+
+FP(t)
+0
+0
+1
+2
+2
+2
+3
+3
+4
+4
+5
+
+Loss Measures for Classification: ROC Curve
+https://en.wikipedia.org/wiki/Receiver operating characteristic
+f (x ) gt label
+t
+TP(t) FP(t) TPR(t) FPR(t)
+0.65
+1
+0.65
+1
+0
+0.17
+0.0
+0.62
+1
+0.62
+2
+0
+0.33
+0.0
+0.59
+0
+0.59
+2
+1
+0.33
+0.2
+0.56
+0
+0.56
+2
+2
+0.33
+0.4
+0.55
+1
+0.55
+3
+2
+0.5
+0.4
+samples
+0.52
+1
+0.52
+4
+2
+0.67
+0.4
+sorted:
+0.48
+0
+0.48
+4
+3
+0.67
+0.6
+0.45
+1
+0.45
+5
+3
+0.83
+0.6
+0.42
+0
+0.42
+5
+4
+0.83
+0.8
+0.41
+1
+0.41
+6
+4
+1.0
+0.8
+0.35
+0
+0.35
+6
+5
+1.0
+1.0
+AUROC = 0.33 ∗ (0.2 − 0.0) + 0.33 ∗ (0.4 − 0.2) + 0.67 ∗ (0.6 − 0.4) +
+0.83 ∗ (0.8 − 0.6) + 1.0 ∗ (1.0 − 0.8)
+= 3.16666 ∗ 0.2 ≈ 0.63
+
+| 44
+
+Loss Measures for Classification: ROC Curve
+
+https://en.wikipedia.org/wiki/Receiver operating characteristic
+f (x ) gt label
+t
+TP(t) FP(t) TPR(t) FPR(t)
+0.65
+1
+0.65
+1
+0
+0.17
+0.0
+0.62
+1
+0.62
+2
+0
+0.34
+0.0
+0.59
+1
+0.59
+3
+0
+0.5
+0.0
+0.56
+1
+0.56
+4
+0
+0.67
+0.0
+0.55
+1
+0.55
+5
+0
+0.83
+0.0
+samples
+0.52
+1
+0.52
+6
+0
+1.0
+0.0
+sorted:
+0.48
+0
+0.48
+6
+1
+1.0
+0.2
+0.45
+0
+0.45
+6
+2
+1.0
+0.4
+0.42
+0
+0.42
+6
+3
+1.0
+0.6
+0.41
+0
+0.41
+6
+4
+1.0
+0.8
+0.35
+0
+0.35
+6
+5
+1.0
+1.0
+AUROC = 5.0 ∗ 0.2 = 1.0
+
+| 45
+
+Loss Measures for Classification: ROC Curve
+https://en.wikipedia.org/wiki/Receiver operating characteristic
+
+from https://en.wikipedia.org/wiki/Receiver operating characteristic#/media/File:Roccurves.png
+
+⊙ interpretation: the level of TPR and FPR given a fixed threshold t.
+⊙ TPR ↑ and FPR ↑ if t ↓
+⊙ How good is it in identifying positives when we fix the threshold for
+the mistake made on negatives?
+⊙ higher TP at given FP is better
+⊙ a measure of the ability of a classifier to discriminate between
+positive and negative samples independent of a single threshold
+
+| 46
+
+Loss Measures for Classification: AUROC
+
+from https://en.wikipedia.org/wiki/Receiver operating characteristic#/media/File:Roccurves.png
+
+⊙ AUROC = Area under the ROC Curve
+⊙ interpretation: If we consider all pairs of positive and negative
+samples (x+ , y+ ), (x− , y− ), what is the probability for our classifier
+that f (x+ ) > f (x− ) when we draw such pairs randomly.
+AUROC = P(x+ ,y+ ),(x− ,y− ) (f (x+ ) > f (x− ))
+⊙ measure of ranking quality, independent of the used classification
+threshold (we take an area for all possible thresholds!) , higher is
+better
+
+| 47
+
+Loss Measures for Classification: AUROC
+
+from https://en.wikipedia.org/wiki/Receiver operating characteristic#/media/File:Roccurves.png
+
+⊙ AUROC = Area under the ROC Curve
+AUROC = P(x+ ,y+ ),(x− ,y− ) (f (x+ ) > f (x− ))
+⊙ measure of ranking quality, independent of the used classification
+threshold (we take an area for all possible thresholds!) , higher is
+better
+⊙ what is the baseline ? The expectation E [·] of the AUC for a
+random guess classifier is 0.5
+⊙ usable for imbalanced class frequencies
+
+| 48
+
+Loss Measures for Classification: AUROC
+
+AUROC/AUC
+⊙ ranking measure, threshold independent.
+⊙ Needs the whole set of predictions in order to be
+
+computed
+⊙ baseline: 0.5
+
+| 49
+
+Loss Measures for Classification: Average Precision
+⊙ Consider a set of decreasing thresholds t0 > . . . > tk−1 .
+For each threshold tj one observes the recall rj = Rec(tj ) and the
+precision Pr (tj )
+⊙ One can plot precision and recall in a curve as in https://scikit-learn.
+org/stable/auto examples/model selection/plot precision recall.html
+
+| 50
+
+Loss Measures for Classification: Average Precision
+⊙ One can plot precision and recall in a curve as in https://scikit-learn.
+org/stable/auto examples/model selection/plot precision recall.html
+
+⊙ to understand this diagram, one needs to consider Recall and
+precision as a function of falling!! thresholds t0 > . . . > tk−1 .
+
+| 51
+
+Loss Measures for Classification: Average Precision
+
+⊙ One can plot precision and recall in a curve as a function of the
+threshold t to predict something as positive
+⊙ one needs to consider Recall and precision as a function of falling!!
+thresholds t0 > . . . > tk−1 .
+
+samples sorted according to confidence /
+logit f (x ):
+note: TP + FN = 6 for all thresholds
+
+f (x )
+0.95
+0.92
+0.89
+0.86
+0.85
+0.82
+0.78
+0.75
+0.72
+0.71
+
+gt label
+1
+0
+1
+1
+0
+1
+1
+0
+1
+0
+
+| 52
+
+Loss Measures for Classification: Average Precision
+
+⊙ One can plot precision and recall in a curve as a function of the
+threshold t to predict something as positive
+⊙ one needs to consider Recall and precision as a function of falling!!
+thresholds t0 > . . . > tk−1 .
+
+samples sorted
+according to
+confidence / logit
+f (x ):
+note: TP + FN = 6
+for all thresholds
+
+f (x )
+0.95
+0.92
+0.89
+0.86
+0.85
+0.82
+0.78
+0.75
+0.72
+0.71
+
+gt label
+1
+0
+1
+1
+0
+1
+1
+0
+1
+0
+
+t
+0.95
+0.92
+0.89
+0.86
+0.85
+0.82
+0.78
+0.75
+0.72
+0.71
+
+TP(t)
+1
+1
+2
+3
+3
+4
+5
+5
+6
+6
+
+FP(t)
+0
+1
+1
+1
+2
+2
+2
+3
+3
+4
+
+| 53
+
+Loss Measures for Classification: Average Precision
+
+⊙ One can plot precision and recall in a curve as a function of the
+threshold t to predict something as positive
+⊙ one needs to consider Recall and precision as a function of falling!!
+thresholds t0 > . . . > tk−1 .
+f (x )
+0.95
+0.92
+0.89
+0.86
+0.85
+0.82
+0.78
+0.75
+0.72
+0.71
+
+gt label
+1
+0
+1
+1
+0
+1
+1
+0
+1
+0
+
+t
+0.95
+0.92
+0.89
+0.86
+0.85
+0.82
+0.78
+0.75
+0.72
+0.71
+
+TP(t)
+1
+1
+2
+3
+3
+4
+5
+5
+6
+6
+
+FP(t)
+0
+1
+1
+1
+2
+2
+2
+3
+3
+4
+
+Pr(t)
+1
+0.5
+0.67
+0.75
+0.6
+0.67
+0.71
+0.63
+0.67
+0.6
+
+Rec(t)
+0.17
+0.17
+0.33
+0.5
+0.5
+0.67
+0.83
+0.83
+1.0
+1.0
+
+| 54
+
+Loss Measures for Classification: Average Precision
+
+⊙ One can plot precision and recall in a curve as a function of the
+threshold t to predict something as positive
+⊙ one needs to consider Recall and precision as a function of falling!!
+thresholds t0 > . . . > tk−1 .
+Precision-recall curve:
+x = 0.17 :
+x = 0.34 :
+
+y =1
+y = 0.67
+
+x = 0.5 :
+
+y = 0.75
+
+x = 0.67 :
+
+y = 0.67
+
+x = 0.83 :
+
+y = 0.71
+
+x = 1.0 :
+
+y = 0.67
+
+| 55
+
+Loss Measures for Classification: Average Precision
+
+compare:
+x = 0.17 :
+
+y =1
+
+x = 0.34 :
+
+y = 0.67
+
+x = 0.5 :
+
+y = 0.75
+
+x = 0.67 :
+
+y = 0.67
+
+x = 0.83 :
+
+y = 0.71
+
+x = 1.0 :
+
+y = 0.67
+
+⊙ note 1: one need to evaluate this for sorted confidences only at
+points where label y = 1 (positive)
+⊙ note 2: https://github.com/rafaelpadilla/Object-Detection-Metrics
+
+| 56
+
+Loss Measures for Classification: Average Precision
+⊙ Consider a set of decreasing thresholds t0 > . . . > tk−1 . For each
+threshold tj one observes the recall Rec(tj ) and precision Pr (tj )
+TP
+Rec =
+TP + FN
+TP
+Pr =
+TP + FP
+⊙ Lets consider what happens if we go from tj−1 to tj (is smaller!)
+· if we lower the threshold for predicting something as positive,
+true positives will increase or stay the same:
+TP(tj ) ≥ TP(tj−1 )
+· Rec is TP divided by the number of ground truth positives.
+· The number of ground truth positives is independent of the
+prediction threshold.
+· Therefore: Rec(t) = TP(t) ∗ const , and thus Rec(t) will
+increase or stay the same, too, as t is decreasing.
+
+| 57
+
+Loss Measures for Classification: Average Precision
+⊙ Consider a set of decreasing thresholds t0 > . . . > tk−1 . For each
+threshold tj one observes the recall Rec(tj ) and precision Pr (tj )
+TP(t)
+Rec(t) =
+TP(t) + FN(t)
+TP(t)
+Pr (t) =
+TP(t) + FP(t)
+⊙ if we lower the threshold for predicting something as positive,
+· true positives will increase or stay the same:
+TP(tj ) ≥ TP(tj−1 )
+· false positives will increase or stay the same, too
+FP(tj ) ≥ FP(tj−1 )
+· TP(tj ) + FP(tj ) will increase or stay the same
+· the precision is a quotient of these two.
+TP(tj )
+Pr (tj ) = TP(tj )+FP(t
+j)
+it can go up or down or stay the same
+
+| 58
+
+Loss Measures for Classification: Average Precision
+⊙ One can plot precision and recall in a curve as in https://scikit-learn.
+org/stable/auto examples/model selection/plot precision recall.html
+
+⊙ one can see that the precision can have a dip, then increase again.
+⊙ Sometimes one wants to smooth this out by considering the highest
+precision from a certain recall value rj onwards:
+Printerp (Rec) = maxr ≥Rec Pr (r )
+· This is called interpolated precision
+
+| 59
+
+Loss Measures for Classification: Average Precision
+
+Then the average precision is defined as (without/with interpolation):
+AP =
+
+k−1
+X
+j=0
+
+AP =
+
+(Recj − Recj−1 ) Pr (Recj )
+|
+{z
+} | {z }
+
+two values on the x-axis y-axis value
+
+k−1
+X
+
+(Recj − Recj−1 )Printerp (Recj )
+
+j=0
+
+⊙ This is an estimate of the area under the precision / recall curve
+(AUPRC). Higher is better.
+https://scikit-learn.org/stable/modules/generated/sklearn.metrics.
+average precision score.html
+
+| 60
+
+Loss Measures for Classification: Average Precision
+
+⊙ AP use cases: Often used for Object Detection evaluation!
+⊙ BUT BUT for Object detection this is a two-stage procedure (next
+lecture!):
+(step 1: use an IoU threshold [and a matching of predicted boxes to
+ground truth boxes] to define what is a FP and a TP,
+(not comparing classification label vs f (x ) ≥ t)
+then in step 2: vary the threshold for class confidence of a predicted
+box to count above FP and TP and to get prediction and recall) ...
+next lecture
+
+| 61
+
+Loss Measures for Classification: Average Precision
+
+⊙ Average precision considers all thresholds, is thus threshold
+independent and also a ranking measure. Higher is better.
+⊙ What is the baseline ? For a very random classifier the expected AP
+is the fraction of positive to total samples.
+⊙ consequence: whether an AP of 0.6 is good or bad depends on the
+fraction of positive to total samples in your problem!
+· Assume that a random classifier assigns p ∼ U[0, 1] as
+confidence for the i-th sample. This distributes the positives
+and negatives evenly in expectation. Then the expected
+precision at any threshold will the the fraction of positives.
+
+| 62
+
+Loss Measures for Classification: Average Precision
+
+One encounters often mAP, mean average precision.
+This is the average of AP computed over separate classes of a
+multilabel classification problem.
+
+| 63
+
+Loss Measures for Classification: AP
+
+AP
+⊙ ranking measure, threshold independent.
+⊙ Needs the whole set of predictions in order to be
+
+computed
+⊙ baseline: fraction of positive samples
+⊙ mean average precision: average over binary
+
+classification problems of several classes.
+
+| 64
+
+Difference: accuracy/precision/recall vs ranking measures
+| 65
+
+One big difference in what is required as inputs
+⊙ accuracy/precision/recall can be computed as an average of terms,
+where each term depends on one pair (f (xi ), yi ) of prediction and
+label. Example:
+n
+
+accuracy =
+precision =
+n+,p =
+
+1X
+1[f (xi ) == yi ]
+n i=1
+n
+1 X
+
+n+,p i=1
+n
+X
+
+1[(f (xi ) = yi )&(f (xi ) > 0)]
+
+1[f (xi ) > 0]
+
+i=1
+n
+
+recall = TPR =
+n+ =
+
+n
+X
+i=1
+
+1 X
+1[(f (xi ) = yi )&(yi = +1)]
+n+ i=1
+
+1[yi = +1]
+
+Difference: accuracy/precision/recall vs ranking measures
+| 66
+
+One big difference in what is required as inputs
+⊙ accuracy/precision/recall can be computed as an average of terms,
+where each term depends on one pair (f (xi ), yi ) of prediction and
+label.
+⊙ to compute AUROC and average precision one needs as input a
+whole set of predictions and labels {(f (xi ), yi ), i = 0, . . . , n − 1}.
+They cannot be computed as an average over separate pairs
+(f (x ), y ).
+If you want to compute a ranking, you must collect all predictions
+first (and their labels).
+Compare to accuracy/prec/recall: One can compute accuracies for a
+dataset by looping over prediction/label pairs for single samples.
+Intuitively this makes sense! You cannot compute a ranking when by
+averaging some terms, where each term depends only on a single data
+sample. One sample = nothing to be ranked :-D !
+
+Comparison: AUROC vs Average Precision
+
+⊙ both need to sort predictions f (x ) (either logit or probability) in a
+descending order, and then to consider descending thresholds t
+⊙ AUROC: uses TPR(t) and FPR(t) - both ↑ if t ↓
+⊙ Average precision uses Precision and Recall(=TPR). Precision is not
+monotonic in t.
+· often Average precision uses a smoothed Precision due to its
+non-monotonicity
+· Recall needs to be re-computed only when at least one more
+sample with positive label y = 1 gets caught by the lowered
+threshold.
+
+| 67
+
+Compare ROC vs PRC
+
+receiver-operator-curve versus precision recall curve:
+https://arxiv.org/html/2401.06091v1
+Quote: AUROC favors model improvements in an unbiased
+manner; AUPRC prioritizes high-score mistakes first
+
+| 68
+
+

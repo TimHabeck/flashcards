@@ -1,0 +1,837 @@
+links
+
+know where to look for
+⊙ http://neuralnetworksanddeeplearning.com/ Chapter 1
+⊙ d2l.ai Chapter 3 and Chapter 4
+⊙ https://numpy.org/doc/
+
+|1
+
+What you will see today
+
+theory:
+⊙ the four basic components of ML problems
+·
+·
+·
+·
+
+Input and Output space examples
+The prediction model
+Loss function - how good is the prediction of the model ?
+the set/space of all possible prediction models
+
+|2
+
+What you will see today
+
+more theory:
+⊙ classification with the affine model
+⊙ the inner product and its properties
+
+|3
+
+Outline
+
+1 Categorizing (Discriminative) Machine Learning Problems
+2 The four essential components to define a machine learning problem
+3 Classification
+4 Important Intermezzo: the inner product
+5 Multi-Class and Multi-Label outputs in classification
+
+|4
+
+Section on: What are the essential components in machine learning problems?
+
+A Regression example:
+Next: Lets consider a very simple prediction problem.
+
+We want to predict the selling price of a species of aquarium fish - depending on its size and
+its color intensity.
+⊙ The intended output is: y - selling price in EUR
+⊙ we predict it based on two features: x0 - size in cm, x1 - color intensity, a dimensionless
+
+measurement from the interval [0, 1]
+⊙ our prediction model has to map a vector of two measurements (x0 , x1 ) onto a price y
+
+|6
+
+A Regression example:
+
+|7
+
+⊙ we have as inputs: the set of all 2 dimensional vectors (features column)
+R2 = {(x0 , x1 ), xi ∈ R a real number}
+⊙ goal: we want to output for any x a real value y
+⊙ a prediction model which can do that:
+f (x ) = w0 x0 + w1 x1 + b =
+
+1
+X
+
+w i xi + b
+
+i=0
+
+· simple mechanism: each feature dimension xi is weighted with wi , then summed.
+· open question: how to find w0 , w1 , b so that the model will output sale prices close to those
+observed in the real market?
+
+A Regression example:
+
+We can see three components in this example:
+⊙ an input space X = R2 = {(x0 , x1 )}
+⊙ an output space Y = R
+⊙ a prediction mapping f : X → Y
+−→ Lets look at more examples.
+
+|8
+
+Classification in Images
+
+credit: thankfully taken from https://pytorch.org/tutorials/beginner/blitz/cifar10 tutorial.html
+
+⊙ input: an image
+⊙ output:
+· binary classification: prediction labels usually {−1, +1} or {0, 1}
+· multi-class classification: mutually exclusive classes
+· multi-label classification: classes can appear together in the same image/input sample
+
+|9
+
+Classification in Images
+
+credit: thankfully taken from https://pytorch.org/tutorials/beginner/blitz/cifar10 tutorial.html
+
+⊙ output in math:
+· binary classification: prediction labels usually {−1, +1} or {0, 1}
+· multi-class classification: class-labels can be represented as C numbers:
+y ∈ {0, . . . , C − 1}
+· multi-label classification: a vector
+z = (z0 , . . . , zC −1 ), such that zt ∈ {0, 1}
+classes can appear together, like C independent binary classification problems
+
+| 10
+
+Classification in Images
+
+credit: thankfully taken from https://pytorch.org/tutorials/beginner/blitz/cifar10 tutorial.html
+
+⊙ output in code:
+· binary classification: a variable which takes 2 values
+· multi-class classification:
+- a variable which takes C values,
+- or a one-hot vector in C dimensions (0, . . . , 1, . . . , 0)
+
+· multi-label classification: a vector with C dimensions with two values in every dimension
+(e.g. 0 and 1) – sum of the zero vector and different one-hot vectors
+
+| 11
+
+Classification in Images
+
+What is the input? What is the space of all images?
+⊙ an RGB image has 3 channels, a height dimension H, a width dimension W
+⊙ possible code representations:
+⊙ a vector (1-array) with 3HW dimensions
+⊙ a matrix (2-array) with (3, HW ) dimensions or (3W , H)
+⊙ a 3-array with shape (3, H, W )
+⊙ common in deep learning: processing a set (’batch’) of images, so usually a 4-array or shape
+(b, 3, h, w ) where b is the number of images in a batch
+⊙ RGBA, multi-channel hyper spectral images (satellites)
+
+| 12
+
+Arrays / Tensors in pytorch
+
+⊙ a n-array is an array with a n-dimensional shape vector.
+⊙ in pytorch and other deep learning applications they are called n-tensors
+a=np.zeros((3,5,2)) # 3-array
+b= torch.zeros((3,5,2)) # the same in pytorch
+c=np.zeros((16,3,256,256)) # 4-array
+d= torch.zeros((16,3,256,256)) # the same in pytorch
+
+⊙ the mathematical definition of a tensor is something very different
+
+| 13
+
+Classification in Images
+
+| 14
+
+what is the input? Space of images? Mathematically?
+⊙ For RGB (3 channels) , and LDR values and all possible heights and widths:
+
+∪h≥1,w ≥1 Z 3×h×w
+Z = {0, . . . , 255}
+⊙ for HDR Z is the space of all 32-bit floating point numbers.
+⊙ in many toolboxes images are normalized so that every pixel lies in the interval [0, 1],
+
+then Z = [0, 1]
+⊙ message: there are many spaces to represent an image. If height and width are variable,
+
+it is a union of spaces with different dimensions
+
+Detection in Images: class label and position
+
+⊙ Input: image.
+⊙ Output: a number of bounding boxes
+⊙ How can one describe “a number of bounding boxes” in code ?
+
+| 15
+
+Detection in Images: class label and position
+
+⊙ Input: image.
+⊙ Output: a number of bounding boxes
+⊙ How can one describe “a number of bounding boxes” in code ?
+· e.g. a list of vectors. Each vector has 5 dimensions: (xl , yl , xr , yr , c)
+· (xl , yl ) – upper left box coordinates
+· (xl , yl ) – lower right box coordinates
+· c – class label for the box
+
+| 16
+
+Detection in Images: class label and position
+
+⊙ Input: image.
+⊙ Output: a number of bounding boxes
+⊙ How can one mathematically describe “a number of bounding boxes” ?
+· (xl , yl ) – upper left box coordinates
+· (xl , yl ) – lower right box coordinates
+· c – class label for the box
+
+| 17
+
+Text Summarization, Key word assignment
+
+⊙ Input: sequence of words (w1 , . . . , wK )
+⊙ Output: sequence of words (w1 , . . . , wL )
+
+(Example: “The text is about Star Trek. It mentions Spock and James T. Kirk.”)
+⊙ Input: sequence of words (w1 , . . . , wK )
+⊙ Output: set of words {w1 , . . . , wL } – setup can be a sequence of classification outputs,
+
+often sequential outputs from a RNN
+(Example: “Star Trek, RNN-generated nonsense”)
+
+| 18
+
+Reinforcement Learning
+
+⊙ Input: sequence of states (health, ammo, images of view)K
+⊙ Output: next action (move left, fire, ...) – C discrete states as in classification, but the
+
+machine learning problem is a different one
+⊙ Dosovitsky et al, ICLR 2017, https://arxiv.org/pdf/1611.01779.pdf
+
+| 19
+
+Visual Question answering
+
+| 20
+
+credit: https://okvqa.allenai.org/
+
+⊙ Input: Image + sequence of words
+⊙ Output: set of words – setup can be a sequence of classification outputs
+
+Semantic Segmentation
+
+| 21
+
+credit: DeepLabv3 https://arxiv.org/pdf/1706.05587
+
+⊙ Input: Image
+⊙ Output: Segmentation label per pixel 1
+
+1
+
+this is semantic segmentation, not instance segmentation
+
+Depth estimation
+
+| 22
+
+credit: DepthPro https://arxiv.org/pdf/2410.02073
+
+⊙ Input: Image
+⊙ Output: log-depth per pixel ∼ distance to camera per pixel
+
+General discriminative ML
+
+Takeaway:
+⊙ input and output spaces can have a non-trivial structure
+
+| 23
+
+Outline
+
+1 Categorizing (Discriminative) Machine Learning Problems
+2 The four essential components to define a machine learning problem
+3 Classification
+4 Important Intermezzo: the inner product
+5 Multi-Class and Multi-Label outputs in classification
+
+| 24
+
+General discriminative ML
+next: what do we need to describe any machine learning problem?
+the components of a machine learning problem
+⊙ input space and output space
+· need to be able to represent them in code, and to describe it mathematically
+⊙ The prediction model f which we can use to predict on samples from the input space.
+⊙ A loss function L(· · · )
+· it measures the quality of our predictions f (x ) made by the model f on samples x
+⊙ if we also train models, then we need additionally:
+· a description of the class of all possible prediction models
+· a way to select one model from this class based on a training dataset (example
+above: .fit(...))
+
+| 25
+
+How to describe a supervised machine learning problem?
+
+What else does one need for defining a supervised machine learning problem?
+So far we had:
+⊙ input spaces
+⊙ output spaces
+
+Next:
+⊙ loss functions
+
+| 26
+
+How to describe a supervised machine learning problem?
+
+⊙ We have a pair (x , y ) of input sample x and ground truth label y
+· regression model x = (x0 , x1 ) a 2-dim vector, y ∈ R1 a real number (fish sale price)
+· classification example above
+· bounding box example above
+A loss function L:
+The purpose of loss functions
+We have a sample (x , y ). The loss function L describes how good the prediction f (x ) of the
+model f on the input sample x is compared to the ground truth label y of the sample.
+⊙ a quality measure for your prediction by comparing the prediction f (x ) on x to the ground truth y
+of the pair (x , y )
+
+| 27
+
+How to describe a supervised machine learning problem?
+
+A loss function L:
+The purpose of loss functions
+We have a sample (x , y ). The loss function L describes how good the prediction f (x ) of the
+model f on the input sample x is compared to the ground truth label y of the sample.
+⊙ It usually takes as input a single pair (x , y ) or a set of samples with respective ground truths
+Z = {(x {1} , y {1} ), (x {2} , y {2} ), . . . , (x {n} , y {n} )}
+⊙ It returns usually a real number
+· L(f (x ), y ) for the single pair or
+· L({(f (x {1} ), y {1} ), (f (x {2} ), y {2} ), . . . , (f (x {n} ), y {n} )}) for the set of samples, respectively
+· Relative meaning: Lower loss is better.
+
+| 28
+
+Loss function examples:
+A typical loss for regression is the root mean square error
+v
+u n
+u1 X
+{1}
+{1}
+{n}
+{n}
+b
+L((x , y ), . . . , (x , y )) = t
+(f (x {i} ) − y {i} )2
+n i=1
+⊙ measure the squared deviation (a − b)2 between prediction f (x {i} ) and ground truth y {i}
+⊙ then computes the average over the data set of it
+⊙ then takes the square-root
+why used ?
+⊙ Zero for a perfect match. Symmetric error around the truth y , Simple to compute, easy to
+understand, gradient everywhere defined
+
+| 29
+
+Loss function examples:
+
+| 30
+
+Another typical loss for regression is the mean average error
+
+b {1} , y {1} ), . . . , (x {n} , y {n} )) =
+L((x
+
+n
+1X
+|f (x {i} ) − y {i} |
+n i=1
+
+⊙ measures the absolute deviation between prediction and ground truth
+⊙ then computes the average over the data set of it
+⊙ why used ? Symmetric error around the truth y , Simple to compute, easy to
+
+understand,
+⊙ the error for a single sample would be the absolute deviation |f (x {i} ) − y {i} |
+
+Loss function examples: MSE,RMSE and p-means
+
+How are the RMSE and MAE related to each other?
+
+| 31
+
+Loss function examples: MSE,RMSE and p-means
+
+| 32
+
+RMSE and MAE belong to the same class of loss functions:
+⊙ take for one sample (xi , yi ) the function zi = |f (xi ) − yi |
+⊙ define the generalized mean as for zi ≥ 0 and p > 0 as:
+n
+
+mp (z1 , . . . , zn ) =
+
+1X p
+z
+n i=1 i
+
+!1/p
+
+⊙ note:
+n
+
+1X
+zi
+n i=1
+v
+u n
+X
+1u
+m2 (z1 , . . . , zn ) = t
+z2
+n i=1 i
+
+m1 (z1 , . . . , zn ) =
+
+lim mp =
+
+p→0
+
+n
+Y
+1/n
+zi
+
+quadratic mean
+
+geometric mean
+
+i=1
+
+lim mp = max(z1 , . . . , zn )
+
+p→∞
+
+arithmetic mean
+
+the maximum
+
+Loss function examples: MSE,RMSE and p-means
+RMSE and MAE belong to the same class of loss functions:
+⊙ take for one sample (xi , yi ) the function zi = |f (xi ) − yi |
+⊙ define the generalized mean as for zi ≥ 0 and p > 0 as:
+n
+
+mp (z1 , . . . , zn ) =
+
+1X p
+z
+n i=1 i
+
+!1/p
+
+⊙ then RMSE = M2 (z1 , . . . , zn ), MAE = M1 (z1 , . . . , zn )
+⊙ p < q then mp (z1 , . . . , zn ) ≤ mq (z1 , . . . , zn )
+meaning of this: for larger p, the mean is more sensitive to large outliers.
+RMSE is more sensitive to large outliers than the MAE.
+
+| 33
+
+Extra stuff
+
+| 34
+
+For zi > 0 one can extend generalized means to negative p < 0, notably:
+zi > 0 ⇒ m−1 (z1 , . . . , zn ) =
+
+1
+1
+Pn 1 harmonic mean
+n i=1 z
+i
+
+Loss function examples:
+
+| 35
+
+A typical loss for classification: the 0-1 error
+⊙ for a single example: produce 1 if prediction not the same as the label: 1[f (x ) ̸= y ]
+⊙ for a set of examples: take the average:
+b {1} , y {1} ), . . . , (x {n} , y {n} )) =
+L((x
+
+n
+1X
+1[f (x {i} ) ̸= y {i} ]
+n i=1
+
+⊙ drawback of the 0-1-error: no meaningful gradient for training (0 or undefined).
+
+Loss function examples:
+
+Loss functions can be non-trivial. Example Cross-entropy vs Focal loss.
+https://arxiv.org/pdf/1708.02002.pdf
+
+Focal loss seems to improve training results, because it decreases the loss for correct predictions.
+
+| 36
+
+Loss function roles:
+
+Losses have 2 roles in machine learning:
+⊙ during training: find a good predictor on training data
+· for gradient based optimization the loss function needs to be differentiable (not needed with
+other solution strategies, e.g. genetic algorithms)
+⊙ after training: measure the quality of a predictor f on validation / test data
+· used to compare predictors
+· used to find samples with high losses (fail cases) for the next iteration of ML model
+development
+
+| 37
+
+How to describe a supervised machine learning problem?
+
+What else does one need for defining a supervised machine learning problem?
+So far we had:
+⊙ input spaces
+⊙ output spaces
+⊙ loss functions
+
+Next:
+⊙ only briefly: classes of prediction models
+⊙ latex lectures: how to train a model.
+
+| 38
+
+classes of prediction models
+
+| 39
+
+Often it is a model fw defined by parameters w . Then the class F of prediction models is the
+set of all models for all “allowed” parameters w
+F = {fw |w ∈ W }
+In our regression example:
+fw (x ) = w0 x0 + w1 x1 + b =
+
+1
+X
+
+wi xi + b
+
+i=0
+
+F = {fw |w = (b, w0 , w1 ) ∈ R3 }
+
+How to describe a supervised machine learning problem?
+
+What else does one need for defining a supervised machine learning problem?
+So far we had:
+⊙ input spaces
+⊙ output spaces
+⊙ loss functions
+⊙ briefly: classes of prediction models
+skipped: how to train a model.
+⊙ thinking about input/output spaces, loss functions, classes of prediction models can help to
+define/identify a ML problem
+
+| 40
+
+Outline
+
+1 Categorizing (Discriminative) Machine Learning Problems
+2 The four essential components to define a machine learning problem
+3 Classification
+4 Important Intermezzo: the inner product
+5 Multi-Class and Multi-Label outputs in classification
+
+| 41
+
+Classification
+
+Classification:
+⊙ some input space X
+⊙ task: assign to every sample x ∈ X a class label y (Klassenzugehörigkeit/Klassenmerkmal)
+
+| 42
+
+Classification
+
+Goal of classification: For every input vector x ∈ Rd , correctly predict which class y it belongs.
+⊙ For 2-class classification, y ∈ {−1, +1} or y ∈ {0, 1}.
+
+| 43
+
+Classification
+
+⊙ we have the spaces X , Y
+⊙ next step: choose a prediction model f : X → Y, f (x ) = y ∈ Y
+
+| 44
+
+Classification
+
+| 45
+
+The simplest model:
+⊙ apply a linear mapping
+⊙ predict/classify according to the sign of the output:
+f (x ) = w · x + b
+w ·x =
+
+d−1
+X
+
+wd xd inner product of w and x
+
+k=0
+
+s(x ) = sign(f (x )) ∈ {−1, +1}
+
+Outline
+
+1 Categorizing (Discriminative) Machine Learning Problems
+2 The four essential components to define a machine learning problem
+3 Classification
+4 Important Intermezzo: the inner product
+5 Multi-Class and Multi-Label outputs in classification
+
+| 46
+
+Inner product properties I
+
+| 47
+
+u·v =
+
+d−1
+X
+
+ud vd ∈ R
+
+k=0
+
+has the following properties:
+⊙ maps two real vectors u, v onto a real number u · v
+⊙ linear in the first argument (u)
+a ∈ R, (au) · v = a(u · v )
+(u {1} + u {2} ) · v = u {1} · v + u {2} · v
+or in short:
+(a1 u {1} + a2 u {2} ) · v = a1 (u {1} · v ) + a2 (u {2} · v )
+⊙ linear in the second argument (v )
+
+Inner product properties II
+
+| 48
+
+u·v =
+
+d−1
+X
+
+ud vd ∈ R
+
+k=0
+
+has the following properties:
+Symmetry: u · v = v · u
+v ̸= 0 ⇒ v · v > 0
+0·u =0
+where 0 is the Null vector. For example in R3 this is the element (0, 0, 0)
+
+Inner product properties III
+
+| 49
+
+u·v =
+
+d−1
+X
+
+ud vd ∈ R
+
+k=0
+
+has the following properties:
+⊙ it defines a norm ∥v ∥ is a norm, that is a notion of the length of a vector v :
+v · v = ∥v ∥2
+
+Inner product properties IV
+
+| 50
+
+u·v =
+
+d−1
+X
+
+ud vd ∈ R
+
+k=0
+
+has the following properties:
+⊙ it defines an angle between two vectors:
+u·v
+= cos(∠(u, v ))
+(u · u)1/2 (v · v )1/2
+· the angle can be measured in any dimensions
+· in higher dimensions, the angle is measured
+in the 2-dim plane spanned by u, v :
+L(u, v ) = {a0 u + a1 v , a0 ∈ R, a1 ∈ R}
+
+Inner product properties V
+
+| 51
+
+u·v =
+
+d−1
+X
+
+ud vd ∈ R
+
+k=0
+
+⊙ u · v defines an angle between two vectors:
+u·v
+(u · u)1/2 (v · v )1/2
+
+= cos(∠(u, v ))
+
+⊙ for two vectors u, v of unit length (∥u∥2 = 1) the
+inner product
+·
+·
+·
+·
+
+lies in [−1, +1]
+u · v = 1 if u = v
+gets close to 1 if their angle is close to zero,
+gets close to 0 if their angle is close to
+π/2 ∼ 90 deg,
+· u · v = −1 if u = −v
+
+Inner product properties VI
+
+u·v =
+
+d−1
+X
+
+u d vd ∈ R
+
+k=0
+
+⊙ u · v defines an angle between two vectors:
+u·v
+= cos(∠(u, v ))
+(u · u)1/2 (v · v )1/2
+Interpretation of the inner product
+for two vectors u, v of unit length (∥u∥2 = 1) the inner product computes a similarity measure
+between u and v based on their angle!
+
+| 52
+
+Classification
+
+Interpretation of the inner product
+for two vectors u, v of unit length (∥u∥2 = 1) the inner product computes a similarity measure
+between u and v based on their angle!
+next step:
+⊙ now we can use u · v to define a simple classifier:
+
+| 53
+
+Classification
+
+| 54
+
+f (x ) = w · x + b
+s(x ) = sign(f (x )) ∈ {−1, +1}
+Mechanism:
+⊙ f (x ) is large if the angle ∠(w , x ) is close to zero,
+⊙ it assigns large values to x with ∠(w , x ) close to zero,
+Simplest neural network:
+⊙ x = (x0 , x1 , . . . , xd−1 )⊤ ∈ Rd - input vector.
+⊙ f (x ) output of the only weight layer
+⊙ with weight vector w = (w0 , w1 , . . . , wd−1 , b) ∈ Rd
+⊙ y = sign(z) - activation function on top of f (x )
+
+Outline
+
+1 Categorizing (Discriminative) Machine Learning Problems
+2 The four essential components to define a machine learning problem
+3 Classification
+4 Important Intermezzo: the inner product
+5 Multi-Class and Multi-Label outputs in classification
+
+| 55
+
+Motivation
+
+| 56
+
+Two types of classification problems:
+Multi-label
+Multi-class
+
+exactly one of cat or mouse
+none / cat / mouse / cat+mouse
+
+Motivation
+
+Multi-class vs Multi-label classification
+⊙ A classification problem is multi-class, if for every sample exactly one ground truth class is
+present. The ground truth can be represented by a one-hot label.
+⊙ A classification problem is multi-label, if for every sample zero to C ground truth classes
+can be present. The ground truth can be represented by either the zero vector or a sum of
+one-hot labels.
+⊙ Most benchmark datasets are multiclass
+⊙ Most real-life classification problems are multi-label2
+⊙ the difference affects how to compute probabilities for the output, how to measure error, how to
+define training loss
+
+2
+
+if one just needs to account for absence of anything, one can add a background class in multi-class setups
+
+| 57
+
+(Ground truth) Labels for multiclass and multilabel problems
+
+⊙ multiclass: i-th one-hot vector. exactly one entry is one, all others are zero.
+e (i) = (0, . . . , 0, |{z}
+1 , 0, . . . , 0)
+i
+
+(1, 0, 0, 0, 0), (0, 1, 0, 0, 0), (0, 0, 1, 0, 0), (0, 0, 0, 1, 0), (0, 0, 0, 0, 1)
+⊙ multilabel: valid multilabel ground truths: (zero or sum of one-hot)
+(0, 0, 0, 0, 0)
+(0, 1, 0, 0, 0)
+(0, 0, 1, 0, 1)
+(1, 1, 1, 1, 1)
+
+| 58
+
+

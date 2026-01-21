@@ -1,0 +1,1747 @@
+L6 – Gradients and Gradient Descent
+Alexander Binder
+October 29, 2025
+
+links
+
+know where to look for
+⊙ d2l.ai Appendix A.3 and A.4
+⊙ https://pytorch.org/
+
+|2
+
+Takeaway points
+
+Takeaway points
+at the end of this lecture you should be able to:
+⊙ directional derivatives and gradient
+⊙ directional derivatives ↔ partial derivatives
+⊙ further topics in the deep learning lecture:
+– vector-valued function → Jacobi-matrix
+– chain rule with directional argument written as matrix multiplications
+– derivative of a linear function and matrix multiplications
+Linear and Bilinear mappings are the most common in deep learning. Combinations of these together
+with activation functions can be dealt with using the chain rule.
+
+|3
+
+Outline
+1 Motivation
+2 The derivative of a 1dim function and the Gradient
+3 The directional derivative and Derivatives of Linear mappings
+4 Chain Rule
+5 Gradients in PyTorch and Autograd
+6 Gradient Descent
+7 Properties of Gradient Descent
+8 Stochastic gradient descent
+
+|4
+
+...
+
+|5
+
+How to find the trainable parameters w in classification or regression?
+Problem setting for application of gradient-based minimization
+The Problem Setting, in which gradient methods can be used:
+⊙ given some function g(w )
+⊙ goal: find w ∗ = argminw g(w )
+⊙ assumption: can compute ∇g|w - the gradient in point w .
+
+Remember Logistic regression
+
+|6
+
+Example for such a g(w ) (assume binary classification with zero-one-labels yi ∈ {0, 1})
+g(w , b) =
+
+n
+X
+
+L(s(xi ), yi ) =
+
+i=1
+
+s(w ,b) (x ) =
+
+n
+X
+
+−yi ln s(w ,b) (xi )
+
+i=1
+
+1
+1 + e −w ·x −b
+
+for a given dataset Dn = {(xi , yi )}. Once (w , b) is found, we use s(w ,b) (x ) as prediction mapping.
+How to apply this:
+⊙ consider the loss g as function of w
+Pn
+⊙ compute ∇g|w = ∇(w ) i=1 L(s(xi ), yi ) - the gradient of the loss with respect to w
+
+Outline
+1 Motivation
+2 The derivative of a 1dim function and the Gradient
+3 The directional derivative and Derivatives of Linear mappings
+4 Chain Rule
+5 Gradients in PyTorch and Autograd
+6 Gradient Descent
+7 Properties of Gradient Descent
+8 Stochastic gradient descent
+
+|7
+
+Limits
+
+⊙ define sequence convergence
+⊙ define limit when input is moving to some value or to infinity
+
+|8
+
+Limits
+
+|9
+
+⊙ a limit limϵ→a g(ϵ) exists if
+
+for each sequence of numbers (sn )∞
+n=1 which converges to a (.i.e. limn→∞ sn = a)
+· the sequence g(sn ) converges to a value z
+· and it is the same value z for all such sequences (g(sn ))∞
+n=1
+
+out of exams: the definition of convergence of a sequence
+
+⊙ x : |x − e| < δ are those points x which are
+at most δ far away from e
+⊙ a sequence (sn )∞
+n=1 converges to a value s if:
+for each value of δ > 0 there exists an index
+K such that for all indices n ≥ K :
+|sn − e| < δ
+(1)
+· one writes this as: limn→∞ sn = e
+⊙ intuition: no matter how small the distance δ
+we require, from some K on all points sn will
+be closer to e than this δ
+1
+n→∞
+Example: sn = 3 + (−1)n , sn −→ 3
+n
+
+...
+
+| 10
+
+Gradient in 1 dimension
+
+| 11
+
+⊙ f : R1 → R1 is differentiable in input x if the limit exists:
+
+lim
+
+ϵ→0
+
+f (x + ϵ) − f (x )
+(=: f ′ (x ))
+ϵ
+
+(2)
+
+y
+g(x)
+
+⊙ intuition: slope of the function f at point x
+⊙ example: f (x ) = ax + b (affine with slope a),then
+f (x + ϵ) − f (x )
+a(x + ϵ) + b − (ax + b)
+=
+ϵ
+ϵ
+ax + aϵ + b − ax − b
+=
+ϵ
+aϵ
+=
+=a
+ϵ
+f (x + ϵ) − f (x )
+⇒ lim
+=a
+ϵ
+ϵ→0
+
+g'(3)
+
+(3)
+
+x
+
+x=3
+y
+
+(4)
+(5)
+(6)
+
+f(x)=ax+b
+b
+x
+
+Gradient in 1 dimension
+
+| 11
+
+⊙ f : R1 → R1 is differentiable in input x if the limit exists:
+
+lim
+
+ϵ→0
+
+f (x + ϵ) − f (x )
+(=: f ′ (x ))
+ϵ
+
+(2)
+
+y
+g(x)
+
+⊙ intuition: slope of the function f at point x
+⊙ example: f (x ) = ax + b (affine with slope a),then
+f (x + ϵ) − f (x )
+a(x + ϵ) + b − (ax + b)
+=
+ϵ
+ϵ
+ax + aϵ + b − ax − b
+=
+ϵ
+aϵ
+=
+=a
+ϵ
+f (x + ϵ) − f (x )
+⇒ lim
+=a
+ϵ
+ϵ→0
+
+g'(3)
+
+(3)
+
+x
+
+x=3
+y
+
+(4)
+(5)
+(6)
+
+f(x)=ax+b
+b
+x
+
+Gradient in 1 dimension
+
+| 11
+
+⊙ f : R1 → R1 is differentiable in input x if the limit exists:
+
+lim
+
+ϵ→0
+
+f (x + ϵ) − f (x )
+(=: f ′ (x ))
+ϵ
+
+(2)
+
+y
+g(x)
+
+⊙ intuition: slope of the function f at point x
+⊙ example: f (x ) = ax + b (affine with slope a),then
+f (x + ϵ) − f (x )
+a(x + ϵ) + b − (ax + b)
+=
+ϵ
+ϵ
+ax + aϵ + b − ax − b
+=
+ϵ
+aϵ
+=
+=a
+ϵ
+f (x + ϵ) − f (x )
+⇒ lim
+=a
+ϵ
+ϵ→0
+
+g'(3)
+
+(3)
+
+x
+
+x=3
+y
+
+(4)
+(5)
+(6)
+
+f(x)=ax+b
+b
+x
+
+Gradient in 1 dimension
+
+| 11
+
+⊙ f : R1 → R1 is differentiable in input x if the limit exists:
+
+lim
+
+ϵ→0
+
+f (x + ϵ) − f (x )
+(=: f ′ (x ))
+ϵ
+
+(2)
+
+y
+g(x)
+
+⊙ intuition: slope of the function f at point x
+⊙ example: f (x ) = ax + b (affine with slope a),then
+f (x + ϵ) − f (x )
+a(x + ϵ) + b − (ax + b)
+=
+ϵ
+ϵ
+ax + aϵ + b − ax − b
+=
+ϵ
+aϵ
+=
+=a
+ϵ
+f (x + ϵ) − f (x )
+⇒ lim
+=a
+ϵ
+ϵ→0
+
+g'(3)
+
+(3)
+
+x
+
+x=3
+y
+
+(4)
+(5)
+(6)
+
+f(x)=ax+b
+b
+x
+
+2-dimensions: directional derivatives
+
+| 12
+
+Function of 2 input variables: f (x1 , x2 ) ∈ R1
+
+⊙ in every point (x1 , x2 ): a two dimensional
+vector space of directions to move away
+from (x1 , x2 )
+⊙ in every direction there is a slope (red
+arrows) – the directional derivative
+
+n-dimensions: directional derivatives
+
+| 13
+
+Function of n input variables:
+f (x1 , x2 , . . . , xn ) ∈ R1
+
+⊙ in every point (x1 , x2 , . . . , xn ): a
+n-dimensional vector space of directions to
+move away from (x1 , x2 , . . . , xn )
+⊙ in every direction there is a slope (red
+arrows) – the directional derivative –
+provides information about function value
+change in this direction
+
+Gradients
+
+| 14
+
+Function of n input variables: f (x1 , x2 , . . . , xn ) ∈ R1
+Example:
+
+⊙ Now take the product space of two donut surfaces. It
+consists of all pairs (p1 , p2 ) such that p1 ∈ white donut
+surface, p2 ∈ red donut surface.
+· At every pair (p1 , p2 ) - the set of all directions to
+move away from (p1 , p2 ) is d = 4-dimensional!
+The surface of a donut is
+two-dimensional at every point. At every
+point there is a two-dimensional space of
+directions to move, each with a slope.
+
+⊙ in every point (x1 , x2 , . . . , xn ): a n-dimensional vector
+space of directions to move away from (x1 , x2 , . . . , xn )
+
+n-dimensions: directional derivatives and gradient
+
+The directional derivative
+The directional derivative of function f in point x in direction v is defined as:
+δv f |x = lim
+
+ϵ→0
+
+f (x + ϵv) − f (x)
+ϵ
+
+next step:
+⊙ define partial derivatives
+⊙ define the gradient ∇f |x via partial derivatives
+⊙ establish relationship: directional derivatives δv f |x versus the gradient ∇f |x
+
+| 15
+
+n-dimensions: the partial derivative
+
+| 16
+
+⊙ consider f : Rn → R1 , f (x) = f (x1 , . . . , xn ) ∈ R1
+The i-th one hot vector ei is defined as:
+ei = (0, . . . ,
+
+0,
+
+1 , 0 , . . . , 0)⊤
+|{z}
+i
+
+⊙ we can define a partial derivative for variable input xi :
+The partial derivative
+∂f
+f (x + ϵei ) − f (x)
+|x = δei f |x = lim
+ϵ→0
+∂xi
+ϵ
+note: x + ϵei = (x1 , . . . , xi−1 , xi + ϵ , xi+1 , . . . , xn )⊤
+| {z }
+i-th dim
+
+n-dimensions: the partial derivative
+
+| 17
+
+The partial derivative
+∂f
+f (x + ϵei ) − f (x)
+|x = δei f |x = lim
+ϵ→0
+∂xi
+ϵ
+
+note: x + ϵei = (x1 , . . . , xi−1 , xi + ϵ , xi+1 , . . . , xn )⊤
+| {z }
+i-th dim
+
+⊙
+
+∂f
+note: the partial derivative ∂x
+|x is the derivative of a function g(x \{xi }) (t) in one dimension – for
+i
+which all dimensions of vector x = (x0 , . . . , xi , . . . , xn ) are fixed except the i-th dimension:
+
+g(x \{xi }) (t) = f (x0 , . . . , t, . . . , xn )
+⇒ g ′ (xi ) = lim
+
+ϵ→0
+
+g(xi + ϵ) − g(xi )
+∂f
+=
+|x
+ϵ
+∂xi
+
+the gradient
+
+| 18
+
+⊙ define the gradient ∇f |x of function f in x as the vector of all partial derivatives in input point x:
+ ∂f 
+∂x1 |x
+ ∂f |x 
+ ∂x2 
+∇f |x =  . 
+(7)
+ .. 
+∂f
+∂xn |x
+⊙ the gradient stores information about all slopes of a function at x for every direction v from x:
+directional derivatives and gradient
+Fact: If the function is differentiable in x , then the directional derivative δv f (|x is equal to the
+inner product of the gradient ∇f |x of f in x with v
+δv f |x = ∇f |x · v =
+
+X ∂f
+d
+
+∂xd
+
+∇f |x · e(k) =
+
+| x vd
+
+∂f
+|x
+∂xk
+
+n-dimensions: directional derivatives and gradient
+
+Take-away I
+defined:
+⊙ directional derivative
+⊙ partial derivative
+⊙ gradient
+Take-away II
+⊙ directional derivatives tell you how the function grows from x in direction v when you take
+an infinitely small step
+⊙ the gradient contains information about all directional derivatives, if f is differentiable in
+x, via inner products of the gradient in x with directions v
+
+| 19
+
+What does it mean to be differentiable ?
+
+| 20
+
+definition of differentiability
+f : Rn → R1 , f (x) = f (x1 , . . . , xn ) ∈ R1
+is differentiable in input x if
+⊙ all directional derivatives (for all vectors v) exist
+⊙ the directional derivatives satisfy a linear relationship (with real numbers a1 , a2 )
+Linear relationship means that the following holds for all a1 , a2 ∈ R and vectors v1 , v2 ∈ Rn :
+∂a1 v1 +a2 v2 f (x) = a1 ∂v1 f (x) + a2 ∂v2 f (x)
+
+(8)
+
+n-dimensions: the partial derivative
+
+⊙ why we did not simply say f is
+differentiable if all its partial
+derivatives exist?
+⊙ (
+f ((x , y )) =
+y3
+if (x , y ) ̸= (0, 0)
+x 2 +y 2
+0
+if (x , y ) = (0, 0)
+⊙ both partial derivatives exist,
+but function has kinks in its
+directional derivatives
+⊙ linearity of directional
+derivatives (on the previous
+slide) not satisfied
+
+| 21
+
+Gradients
+
+next: show why gradients can help to find direction where a function is increasing or decreasing
+
+| 22
+
+Gradients
+
+| 23
+
+Which direction v maximizes δv f |x = ∇f |x · v ?
+δv f |x = ∇f |x · v
+Fact: the optimization problem
+argmaxv:∥v∥=1 w · v
+∇f |x
+w
+. This has an important consequence!: ∥∇f
+is solved by v := ∥w∥
+|x ∥ is the direction with the highest
+slope of f in x.
+
+Gradient and local function change
+The gradient is the direction where the function increases maximally when taking an infinitesimally small step.
+Analogously: the negative gradient is the direction where the function decreases maximally
+when taking an infinitesimally small step.
+
+Gradients
+
+| 24
+
+Fact: the optimization problem
+argmaxv:∥v∥=1 w · v
+w
+. Why?
+is solved by v := ∥w∥
+
+w · v = ∥w∥∥v∥ cos(∠(w, v)) = ∥w∥1 cos(∠(w, v))
+
+⊙ w is not optimized over / it is a constant .
+⊙ The cos(·) is maximized for an angle = 0.
+w
+⊙ therefore v = cw, c > 0. Now use the constraint: ∥v∥ = 1. Implies v := ∥w∥
+w
+⊙ analogously we obtain that −1 ∗ ∥w∥
+is the direction of argminv:∥v∥=1 w · v
+
+Gradients
+
+Gradient and local function change
+The gradient is the direction where the function increases maximally when taking an infinitesimally small step.
+Analogously: the negative gradient is the direction where the function decreases maximally
+when taking an infinitesimally small step.
+Preview: This will be the key idea to use gradients to find points which minimize a loss:
+⊙ we will start at some point, then always take a small step in the direction of the negative gradient
+
+| 25
+
+n-dimensions: vector-valued functions
+
+f(x) =(f1 (x1 , . . . , xn ), f2 (x1 , . . . , xn ), . . . , fs (x1 , . . . , xn ))
+f : x ∈ Rn 7→ f(x) ∈ Rs
+How to define a gradient for a vector-valued function f|x ?
+
+| 26
+
+n-dimensions: vector-valued functions
+
+f(x) =(f1 (x1 , . . . , xn ), f2 (x1 , . . . , xn ), . . . , fs (x1 , . . . , xn ))
+f : x ∈ Rn 7→ f(x) ∈ Rs
+
+⊙ Apply ∇ to every component fi :
+
+J(f)|x = ∇f1 |x , ∇f2 |x , . . . , ∇fs |x
+ ∂f1
+∂f2
+∂fs 
+∂x1 |x , ∂x1 |x , . . . , ∂x1 |x
+ ∂f1 |x , ∂f2 |x , . . . , ∂fs |x 
+∂x2
+∂x2
+∂x2 
+=
+
+
+...
+∂f1
+∂f2
+∂fs
+∂xn |x , ∂xn |x , . . . , ∂xn |x
+We treat every component fi separately
+
+| 27
+
+n-dimensions: vector-valued functions
+
+Jacobi-Matrix
+Let f be a vector-valued function, then
+
+J(f)|x = ∇f1 |x , ∇f2 |x , . . . , ∇fs |x
+ ∂f1
+∂f2
+∂fs 
+∂x1 |x , ∂x1 |x , . . . , ∂x1 |x
+∂f
+∂f
+ 1 |x , 2 |x , . . . , ∂fs |x 
+∂x2
+∂x2
+∂x2 
+=
+
+
+...
+∂f2
+∂fs
+∂f1
+∂xn |x , ∂xn |x , . . . , ∂xn |x
+
+is called the Jacobi-Matrix of f in x
+One can also write it by abuse of notation as ∇f|x
+
+| 28
+
+Its piece of cake!
+
+Outline
+1 Motivation
+2 The derivative of a 1dim function and the Gradient
+3 The directional derivative and Derivatives of Linear mappings
+4 Chain Rule
+5 Gradients in PyTorch and Autograd
+6 Gradient Descent
+7 Properties of Gradient Descent
+8 Stochastic gradient descent
+
+| 30
+
+n-dimensions: derivatives as linear mappings into the space of all directional
+derivatives
+| 31
+
+⊙ if f is differentiable in x, then the directional derivatives satisfy a linearity condition.
+
+Therefore we can define a linear mapping Df |x [v] in point x using the directional
+derivatives:
+Df |x [v] := ∇f |x · v
+⊙ Df |x [v] has two arguments
+· the point x in which the derivative is computed
+· the vector v for the direction, in which one wants to know the slope
+⊙ the mapping Df |x [v] is linear only in its second argument v (the direction)
+
+(9)
+
+n-dimensions: derivatives as linear mappings into the space of all directional
+derivatives
+| 32
+
+⊙ Df |x [v] is linear in v means:
+
+Df |x [cv] = cDf |x [v] for c ∈ R
+
+(10)
+
+Df |x [v1 + v2 ] = Df |x [v1 ] + Df |x [v2 ]
+
+(11)
+
+Df |x [0] = 0
+
+(12)
+
+n-dimensions: derivatives as linear mappings into the space of all directional
+derivatives
+| 33
+
+What is the definition
+Df |x [v] := ∇f |x · v
+
+(13)
+
+good for ?
+⊙ computing derivatives sometimes clearer when starting from the directional derivatices
+
+(example F(X) = AXC below) :
+⊙ can help getting the gradient written using linear algebra, without many sum terms
+
+(example of the gradient of a quadratic function f (x) = x⊤ Ax below):
+
+the derivative of a linear function
+
+| 34
+
+⊙ let f be a linear mapping in x. Then we can write it as:
+X
+
+f (x) = u · x =
+
+∂f
+|x = ui and therefore:
+⊙ then ∂x
+i
+
+ui xi
+
+Df |x [v] = ∇f |x · v = u · v = f (v)
+⊙ the derivative of a linear function is a linear function
+⊙ practical for matrix algebra!
+
+(14)
+
+i
+
+(15)
+
+f (x) = z⊤ x
+⇒ Df |x [v] =?
+∇f (x) =?
+f|x = A⊤ x
+⇒ Df |x [v] =?
+∇fk |x =?
+can get all directional derivatives as matrix-multiplications (GPU-implementations!)
+
+example A ∈ Rk×m , X ∈ Rm×l , C ∈ Rl×r
+F(X) = AXC
+⇒ DF|X [V] =
+
+example A ∈ Rk×m , X ∈ Rm×l , C ∈ Rl×r
+F(X) = AXC
+linear in X !!!
+⇒ DF|X [V] =
+
+example A ∈ Rk×m , X ∈ Rm×l , C ∈ Rl×r
+F(X) = AXC
+linear in X !!!
+⇒ DF|X [V] = AVC
+sooo easy!!!
+
+From here getting partial derivatives is easy:
+F(X) = AXC
+∂F
+|X = DF|X [1(kl) ] = A1(kl) C
+∂Xkl
+(kl)
+
+where 1ij
+
+= 1 if i = k and l = j, and 0 else
+
+Outline
+1 Motivation
+2 The derivative of a 1dim function and the Gradient
+3 The directional derivative and Derivatives of Linear mappings
+4 Chain Rule
+5 Gradients in PyTorch and Autograd
+6 Gradient Descent
+7 Properties of Gradient Descent
+8 Stochastic gradient descent
+
+| 38
+
+Why chainrule?
+
+| 39
+
+Why ?
+⊙ Use case 1: being able to compute directional derivatives and gradients for a single neuron r (x)
+with respect to inputs x and trainable weights w
+g(x) = w · x + b
+r (x) = f (w · x + b) = f (g(x))
+⊙ Use case 2: being able to compute directional derivatives and gradients for a generalized
+quadratic function
+r (x) = x⊤ Ax = Matmul(x⊤ , Ax) = f (g(x), h(x))
+with g(x) = x⊤ , h(x) = Ax
+
+Recovering the chainrule by writing f (g(x )) as a graph
+
+⊙ 1-dim case:
+
+r (x ) = f (g(x ))
+′
+
+′
+
+| 40
+
+(16)
+′
+
+r (x ) = f (g(x ))g (x )
+
+(17)
+
+h(x) = (f ◦ g)(x) = f (g(x))
+
+(18)
+
+⊙ n-dim case:
+
+Dh|x [v] =?
+
+(19)
+
+⊙ Good news: you can remember it by drawing a graph, and assigning partial derivatives to its edges
+
+Recovering the chainrule by writing f (g(x )) as a graph
+⊙ n-dim case:
+h(x) = (f ◦ g)(x) = f (g(x))
+Dh|x [v] =?
+⊙ high level view: f (x ) −→ ∇fx −→ Df |x [v ] = ∇fx · v
+· Df |x [v ] = ∇f |x · v computes a linear approximation to f at x by encoding all possible slopes
+in all possible directions
+⊙ if we compute the slopes for the concatenation h(x ) = f (g(x )),
+... expect to use the concatenation of linear approximations Df |g(x ) [·], Dg|x [·] for the respective
+component functions f and g
+informally:
+D(f ◦ g)|x [v] = Df |g(x) [Dg|x [v]] = [∇f |g(x) ]⊤ [Jg|x ]⊤ v
+⊙ Good news: you can remember it by drawing a graph, and assigning partial derivatives to its edges
+
+| 41
+
+Recovering the chainrule by writing f (g(x )) as a graph
+
+∂f ◦ g
+∂f
+∂g1
+∂f
+∂g2
+∂f
+∂g3
+(x) =
++
++
+∂x2
+∂z1 g(x) ∂x2
+∂z2 g(x) ∂x2
+∂z3 g(x) ∂x2
+Three steps:
+∂h
+⊙ we assign to an edge zi 7→ h(zi , other vars) the edge term: ∂z
+i
+
+⊙ we multiply all edge terms along a backward path x2 → f (g(x))
+⊙ at a node x2 we sum terms from all backward paths
+
+| 42
+
+Recovering the chainrule by writing f (g(x )) as a graph
+
+⊙ next step: Write the result as a linear operation between two directional derivative terms
+∂f ◦ g
+∂f
+∂f
+∂f
+∂g1
+∂g2
+∂g3
+|x =
+|x +
+|x +
+|x
+∂x2
+∂z1 g(x) ∂x2
+∂z2 g(x) ∂x2
+∂z3 g(x) ∂x2
+=
+
+3
+X
+∂f
+k=1
+
+∂gk
+|x
+∂zk z=g(x ) ∂x2
+
+| 43
+
+Recovering the chainrule by writing f (g(x )) as a graph
+
+⊙ next step: Write the result as a linear operation between two directional derivative terms
+∂f
+∂f
+∂f
+∂g1
+∂g2
+∂g3
+∂f ◦ g
+|x =
+|x +
+|x +
+|x
+∂x2
+∂z1 g(x) ∂x2
+∂z2 g(x) ∂x2
+∂z3 g(x) ∂x2
+3
+X
+∂f
+
+∂gk
+|x
+∂zk z=g(x ) ∂x2
+k=1
+ 
+
+
+∂g[:]
+∂f
+·
+as inner product, [:] denotes what makes it a vector
+=
+∂z[:]
+∂x2
+
+
+∂g[:]
+= ∇f |g(x) ·
+|x gradient of f and a slice of the Jacobi-matrix of g
+∂x2
+=
+
+⊤ (2)
+= ∇f |g(x) · (J(g|x )⊤ e (i) ) = ∇f |⊤
+chain of linear mappings
+g(x) J(g|x ) e
+
+= J(f |g(x) )⊤ J(g|x )⊤ e (2)
+
+| 44
+
+Recovering the chainrule by writing f (g(x )) as a graph
+
+One can remember the chain rule also as follows (now f is also vector valued):
+D(f ◦ g)|x [e(l) ] =
+= J(f|g(x) )⊤ J(g|x )⊤ e (l)
+= Df|g(x) [Dg|x [e(l) ]]
+
+... as chain of Matmul of Jacobi⊤
+...as chain of linear operations
+
+Chain rule
+for any general direction vector v:
+D(f ◦ g)|x [v] =
+= J(f|g(x) )⊤ J(g|x )⊤ v
+= Df|g(x) [Dg|x [v]]
+
+... as chain of Matmul of Jacobi⊤
+...as chain of linear operations
+
+| 45
+
+Recovering the chainrule by writing f (g(x )) as a graph
+
+Chain rule
+for any general direction vector v:
+D(f ◦ g)|x [v] =
+... as chain of Matmul of Jacobi⊤
+
+= J(f|g(x) )⊤ J(g|x )⊤
+= Df|g(x) [Dg|x [v]]
+
+...as chain of linear operations
+
+This extends to 3 or more mappings:
+D(f ◦ g ◦ h ◦ k)|x [v] =
+= J(f)⊤ J(g)⊤ J(h)⊤ J(k)⊤ v
+with the respective function arguments, i.e. f at (g ◦ h ◦ k)(x)
+
+| 46
+
+Recovering the chainrule by writing f (g(x )) as a graph
+Chain rule
+for any general direction vector v:
+D(f ◦ g)|x [v] =
+= J(f|g(x) )⊤ J(g|x )⊤ v
+= Df|g(x) [Dg|x [v]]
+
+... as chain of Matmul of Jacobi⊤
+...as chain of linear operations
+
+high level:
+Concatenation of functions f ◦ g(x) ↔ Concat their linearizations Df |g(x) [·] , Df |x [·] / respectively
+J(f)⊤ , J(g)⊤
+⊙ There is a summing (k) which implements a chaining of linear mappings
+P ∂f
+∂gk
+D(f ◦ g)|x [e(l) ] = ∂f◦g
+k ∂zk |g(x) ∂xl |x
+∂xl |x =
+⊙ The summing runs for the outer function (f ) over the partial derivatives of the input variables
+⊙ The summing runs for the inner function (g) over its output components.
+
+| 47
+
+Chain rule
+
+| 48
+
+⊙ next: motivate why the chaining of linear mappings is something to be expected.
+⊙ consider the 1-dim case:
+
+r (x ) = f (g(x ))
+′
+
+′
+
+(20)
+′
+
+r (x ) = f (g(x ))g (x )
+this is almost a concatenation of linear mappings!
+· every real number a ∈ R defines a linear mapping via:
+La : R → R, x ∈ R : La (x ) = ax
+⊙ f ′ (g(x )) defines a linear mapping Lf ′ (g(x )) [v ] = f ′ (g(x ))v
+⊙ g ′ (x ) defines a linear mapping Lg ′ (x ) [h] = g ′ (x )h
+⊙ now:
+r ′ (x )h = f ′ (g(x ))g ′ (x )h = f ′ (g(x ))Lg ′ (x ) [h] = Lf ′ (g(x )) [Lg ′ (x ) [h]]
+we have a concatenation of mappings already in the 1-dim case
+
+(21)
+
+Chain rule
+
+| 49
+
+N-dim case: concatenation of linear mappings Df |g(x) [·] and Dg|x [·]
+e(x) = f (g(x))
+De|x [v] = Df |g(x) [Dg|x [v]]
+Df is derivated at point g(x) in direction c = Dg|x [v]
+
+(22)
+(23)
+(24)
+
+This linear algebra perspective can be useful for functions written in linear algebra terms (see
+below)
+
+...
+
+| 50
+
+Preview:
+⊙ Backpropagation computes gradients via chainrule along the (directed) edges in the
+
+neural network graph.
+⊙ additional feature: made efficient by expressing the chainrule terms via matrix
+
+multiplications
+
+Outline
+1 Motivation
+2 The derivative of a 1dim function and the Gradient
+3 The directional derivative and Derivatives of Linear mappings
+4 Chain Rule
+5 Gradients in PyTorch and Autograd
+6 Gradient Descent
+7 Properties of Gradient Descent
+8 Stochastic gradient descent
+
+| 51
+
+Takeaway points
+
+Takeaway points
+at the end of this lecture you should be able to:
+⊙ computing gradients in pytorch
+
+| 52
+
+The computational graph
+A directed-graph representation of computations done.
+
+| 53
+
+The computational graph
+Naming convention: Forward pass: compute your function
+
+| 54
+
+The computational graph
+Naming convention: Backward pass: computing derivatives of your function
+
+| 55
+
+Autograd
+How to get some gradients of some computations ?
+⊙ You can define a sequence of computations
+⊙ then call .backward() or torch.autograd.grad(...).
+import torch
+import numpy as np
+a=torch.tensor(0.25*np.ones((2),dtype=np.float32) ,requires_grad=True)
+b=torch.tensor( 2*np.ones((2),dtype=np.float32),requires_grad=True)
+c=torch.tensor( 3*np.ones((2),dtype=np.float32),requires_grad=True)
+d=a*b #element-wise product of two (2)-dim vectors
+e=torch.dot ( d,c) #the computations until here
+print('e.requires_grad? ',e.requires_grad)
+e.backward() # computes gradients
+print( 'de/dc', c.grad) #gradients in all tensors marked with
+print( 'de/db', b.grad) #requires_grad=True
+print( 'de/da', a.grad)
+
+| 56
+
+Autograd
+
+When gradients are computed and stored for a tensor ?
+⊙ If tensors are leaf tensors and have their requires grad=True attribute set, then they are
+marked for tracking operations along the computation sequence for later gradient computation.
+⊙ leaf tensor: A tensor created by the user .
+https://pytorch.org/tutorials/beginner/blitz/autograd tutorial.html#
+sphx-glr-beginner-blitz-autograd-tutorial-py
+
+| 57
+
+Autograd
+Autograd: Automatic differentiation with respect to tensors used in computations.
+How does it work?
+⊙ It records all operations when a function is executed as a graph
+import torch
+import numpy as np
+def print_graph(g, level=0):
+if g == None:
+return
+print('*'*level*1, g)
+for subg in g.next_functions:
+print_graph(subg[0], level+1)
+if __name__ == '__main__':
+a=torch.ones((2,1),requires_grad=True) #requires_grad=True !!
+b=torch.tensor( 2*np.ones((2,1),dtype=np.float32),requires_grad=True)
+c=torch.tensor( 3*np.ones((2,1),dtype=np.float32),requires_grad=True)
+#computations
+d=a+b
+e=d*c
+print(e)
+print_graph(e.grad_fn, 0)
+
+| 58
+
+Autograd
+
+Autograd: Automatic differentiation with respect to tensors used in computations.
+How does it work?
+⊙ It records all operations when a function is executed as a graph
+⊙ when one asks Pytorch to compute a gradient, it used the graph and performs chain rule along
+the graph to get the gradient
+
+| 59
+
+Autograd: Automatic differentiation with respect to tensors used in
+computations.
+Autograd:
+⊙ You can define a function or any compute sequence
+⊙ then call .backward() or torch.autograd.grad(...).
+import torch
+import numpy as np
+def somefunction(a):
+b= a[:,1] #torch.sum(a,dim=1) #b.shape = (3)
+e= b[0]**2 -2.0*torch.exp(b[1]) +3.0*b[2]
+return e
+if __name__ == '__main__':
+a=torch.randn( (3,2) )
+a.requires_grad=True
+r = somefunction(a)
+r.backward() # computes gradients
+print( 'dr/da', a.grad )
+print( 'input value of tensor a as numpy: a.data.numpy(): \n', a.data.cpu().numpy()
+print( 'de/da as numpy: a.grad.numpy():\n ', a.grad.cpu().numpy() )
+
+)
+
+| 60
+
+Autograd: Automatic differentiation with respect to tensors used in
+computations.
+Autograd:
+⊙ You can define a sequence of computations
+⊙ then call .backward() or torch.autograd.grad(...).
+import torch
+import numpy as np
+def somefunction2(a,x):
+b= torch.mm( x.unsqueeze(0), a ).squeeze(0)
+e = 2*b[0]+b[1]**2
+return e
+if __name__ == '__main__':
+a=torch.randn( (3,2) )
+a.requires_grad=True
+x=torch.randn( (3) )
+x.requires_grad=True
+r = somefunction2(a,x)
+r.backward() # computes gradients
+print( 'dr/da', a.grad
+print( 'dr/dx', x.grad
+
+)
+)
+
+| 61
+
+Autograd
+
+...
+if e is a tensor with 1 element, then e.backward() computes the gradient of e with
+respect to all its inputs that are leaf tensors involved in computing e and are marked
+with requires_grad=True.
+
+| 62
+
+Autograd
+
+See the pytorch fmnist training code for logistic regression or the 2-/3-layer NN:
+Question: Why using .backward() does compute gradients with respect to all model parameters?
+⊙ it knows what was defined as instances of the class torch.nn.Parameter
+⊙ useful: you can list all parameters of a neural network:
+for nm,param in module.named_parameters():
+print('name:',nm, ' shape: ', param.shape)
+
+| 63
+
+Autograd for tensors with more than one element
+If the result of a computation is a tensor e(x ) of n ≥ 2 elements, then the gradient of it is a matrix,
+the Jacobi-matrix. Example for 2 elements:
+e(x) = (e1 (x), e2 (x))
+∇e|x = (∇e1 |x , ∇e2 |x )
+For result tensors with more than one element
+Important: !!! In this case cannot apply e.backward() directly.
+⊙ instead need to provide a weight tensor v with the same number of elements as the output e(x ),
+and to multiply the output e(x ) with v as inner product.
+⊙ the inner product e(x ) · v is again a tensor with 1 element.
+⊙ Then compute the gradient of the scalar e(x ) · v = e1 v1 + e2 v2 + . . . + en vn with respect to the
+input tensors x of e(x).
+
+| 64
+
+Autograd for tensors with more than one element
+⊙ example of a function which returns a tensor with more than one element:
+import torch
+import numpy as np
+def somefunction2(a,x):
+b= torch.mm( x.unsqueeze(0), a ).squeeze(0) # 2-tensor
+return b
+if __name__=='__main__':
+a=torch.randn( (3,2) )
+a.requires_grad=True
+x=torch.randn( (3) )
+x.requires_grad=True
+r = somefunction2(a,x)
+#r.backward() # ERROR
+weight = torch.tensor([2., 1.]) #r inner product weight = scalar!
+r.backward(weight) # computes gradients
+print( 'dr/da', a.grad
+print( 'dr/dx', x.grad
+
+)
+)
+
+| 65
+
+Autograd
+
+If you feel not up to computing derivatives for some functions
+
+Pytorch can do that for you!
+
+| 66
+
+autograd
+
+| 67
+
+Autograd
+⊙ Autograd tracks the graph of computations when one runs code
+⊙ Tracked computations will be used to compute a gradient automatically
+⊙ use with torch.no grad(): environment to not record computations for
+
+gradient calculations for some larger block of code that is reused – use case:
+everything outside of handling training data, e.g. computing validation or test
+scores.a
+a
+
+Why you dont want to track gradient computations in this case?
+
+⊙ out of exams: for GAN-training sometensor.detach() prevents the gradient flowing
+
+from sometensor to all those parts used to compute sometensor.
+
+autograd
+
+Note: If you have a tensor with attached gradient, then the .data stores the tensor values,
+and .grad.data the gradient values
+vals=x.data.cpu().numpy() #exports function values to numpy
+g_vals=x.grad.data.cpu().numpy() #exports gradient values to numpy
+
+| 68
+
+I hope this messing around with gradients helps you!!
+
+gradients are not that dangerous
+
+Takeaway:
+
+⊙ directional derivatives ↔ partial derivatives
+⊙ directional derivatives and gradient
+⊙ other topics ergarding gradients:
+– vector-valued function → Jacobi-matrix
+– next lecture: derivative of a bilinear function
+⊙ Computing gradients in PyTorch
+
+| 70
+
+Takeaway:
+
+https://www.youtube.com/watch?v=dp8zV3YwgdE
+Are we all doomed ?
+
+| 71
+
+Outline
+1 Motivation
+2 The derivative of a 1dim function and the Gradient
+3 The directional derivative and Derivatives of Linear mappings
+4 Chain Rule
+5 Gradients in PyTorch and Autograd
+6 Gradient Descent
+7 Properties of Gradient Descent
+8 Stochastic gradient descent
+
+| 72
+
+Problem
+
+| 73
+
+How to find the trainable parameters w in classification ? We have, for example for logistic regression:
+f (x ) = w · x + b
+1
+g(x ) =
+1 + e −f (x )
+and some training, test and validation samples (x , y )
+⊙ first attempt: compute an average loss function on a training data set D of size n
+L=
+
+1 X
+(−y ln g(x) − (1 − y ) ln(1 − g(x)))
+n
+(x ,y )∈D
+
+⊙ L depends on trainable parameters u = (w , b)
+⊙ next step: find parameters (w , b) which minimize this loss
+
+A coarse solution
+
+How to find the trainable parameters w in classification or regression?
+Problem setting for application of gradient-based minimization
+The problem setting, in which gradient methods can be used:
+⊙ given some function L(u)
+⊙ goal: find u ∗ = argminu L(u)
+⊙ assumption: can compute ∇(u) L(v ) - the gradient in point u = v with respect to
+
+the variables u.
+⊙ use a variant of Gradient Descent
+
+| 74
+
+Remember Logistic regression
+
+⊙ next: why is the gradient with respect to u useful to find a local minimum of function L(u) ?
+
+| 75
+
+Gradients
+
+| 76
+
+Which direction v minimizes δv f |x = ∇f |x · v
+Fact: the optimization problem
+argminv:∥v∥=1 w · v
+∇f |x
+w
+. This has an important consequence!: − ∥∇f
+is solved by v := −1 ∗ ∥w∥
+|x ∥ is the direction with the
+highest negative slope of f in x.
+
+Gradient and local function change
+The negative gradient is the direction where the function decreases maximally when taking
+an infinitesimally small step.
+
+why the gradient can inform optimization
+Idea: negative gradient at a point w is the direction of steepest function decrease from w , if the step
+size is sufficiently small.
+
+Note: the direction of locally steepest decrease does not point to a global or local minimum.
+
+| 77
+
+Why the gradient can be used for optimization
+Idea: negative gradient at a point u is the direction of steepest function decrease from u, if the step
+size is sufficiently small.
+
+⊙ how to use it for an algorithm ?
+⊙ take a small step into the direction of the negative gradient:
+⊙ Let u (old) be the parameters at the current step , then
+u (new ) = u (old) − η∇(u) L(u (old) ), η > 0 is the stepsize
+⊙ next: write this as an algorithm!
+
+| 78
+
+Gradient Descent Algorithm
+
+Gradient Descent
+Basic Algorithm: name: Gradient Descent:
+⊙ given: step size parameter η, initialize start vector u (0) to a value.
+⊙ run while loop, until function value changes (δL ) drop below a threshold, do at iteration t:
+· u (t+1) = u (t) − η∇(u) L(u (t) )
+· compute change of objective to last value: δL = ∥L(u (t+1) ) − L(u (t) )∥
+immediate conclusions:
+⊙ minimizing the gradient on training data ensures low loss on training data
+⊙ does not guarantee low losses on new unseen test data (cf. overfitting)
+
+| 79
+
+Outline
+1 Motivation
+2 The derivative of a 1dim function and the Gradient
+3 The directional derivative and Derivatives of Linear mappings
+4 Chain Rule
+5 Gradients in PyTorch and Autograd
+6 Gradient Descent
+7 Properties of Gradient Descent
+8 Stochastic gradient descent
+
+| 80
+
+Gradient Descent Algorithm
+
+Gradient Descent
+Basic Algorithm: name: Gradient Descent:
+⊙ given: step size parameter η, initialize start vector u (0) to a value.
+⊙ run while loop, until function value changes (δL ) drop below a threshold, do at iteration t:
+· u (t+1) = u (t) − η∇(u) L(u (t) )
+· compute change of objective to last value: δL = ∥L(u (t+1) ) − L(u (t) )∥
+questions:
+⊙ sensitivity to starting point
+⊙ sensitivity to learning rate
+⊙ quality of obtained solutions
+
+| 81
+
+Gradient Descent: sensitivity to starting point
+
+Lets explore starting point effects:
+⊙ in learnThu8.py run tGD2([initvalue]) with initvalue ∈ [−4, +4] to see the effect of a
+constant stepsize, but different starting points – see in what minimum you end up.
+possible problems of gradient descent I
+⊙ we find a local minimum, not the global minimum of a function. Local optimum can be
+good or bad.
+⊙ effects of starting point – for non-convex functions: different starting point leads to
+possibly different solutions u ∗ .
+
+| 82
+
+Gradient Descent: sensitivity to starting point
+Lets explore starting point effects:
+⊙ in learnThu8.py run tGD2([initvalue]) with initvalue ∈ [−4, +4] to see the effect of a
+constant stepsize, but different starting points – see in what minimum you end up.
+solutions with respect to starting point
+⊙ Do not train from scratch for any practical applications. ALWAYS fine-tune a neural net
+pretrained on a large corpus like ImageNet (later lecture)
+⊙ if – in rare cases – one would train from scratch (e.g. a totally new architecture), then
+careful initialization, and special learning rate treatments are important (later lecture)
+see e.g. https://arxiv.org/abs/1502.01852 for examples how initialization matters for training deep
+neural networks
+training deep neural networks from scratch without care about initialization can result in very bad
+performance
+
+| 83
+
+Gradient Descent: sensitivity to learning rate
+
+Lets explore learning rate effects:
+⊙ in learnThu8.py run tGD([stepsize]) to see the effect of different stepsizes.
+effects of bad stepsize choices:
+⊙ too large ⇒ divergence/no solution.
+⊙ too small ⇒ slow convergence
+
+| 84
+
+Gradients
+
+| 85
+
+possible problems of gradient descent
+⊙ the size of the update step ut+1 = ut − η∇u L(ut ) depends on the norm of the
+
+gradient ∥∇L(u)∥, too. So when starting in a steep region (∥∇L(u)∥ is large),
+even a small stepsize can lead to divergence.
+
+large, f'(x) large
+
+small, f'(x) small
+
+learning rate adjustment
+
+| 86
+
+⊙ one way to deal with the question of how to set the stepsize, is to reduce it over time:
+learning rate adjustment schemes / learning rate annealing schemes
+In practice: one starts with a learning rate, and decreases it over time, either with a polynomial
+decrease, or by a factor every N iterations.
+polynomial: λ(t) = c0 ∗
+regular step at each T : λ(t) = c0 ∗
+in code:
+pytorch: torch.optim.lr scheduler
+a1
+
+1
+
+What happens if one decreases the learning rate very fast?
+
+(t + 1)−α , α > 0
+c ⌊t/T ⌋ , c ∈ (0, 1)
+
+Outline
+1 Motivation
+2 The derivative of a 1dim function and the Gradient
+3 The directional derivative and Derivatives of Linear mappings
+4 Chain Rule
+5 Gradients in PyTorch and Autograd
+6 Gradient Descent
+7 Properties of Gradient Descent
+8 Stochastic gradient descent
+
+| 87
+
+Batch gradient descent
+
+| 88
+
+Consider setting with an average of losses over all training samples, and a predictor which depends
+on trainable parameters u:
+n
+
+1X
+L(fu (xi ), yi )
+n i=1
+The application of gradient descent to a loss computed over all training samples results in the following
+algorithm:
+!
+n
+1X
+ut+1 = ut − η∇u
+L(fut (xi ), yi )
+n i=1
+This is called batch gradient descent because it uses the set of all training data samples to
+compute the gradient in each step.
+
+Stochastic gradient descent / minibatches
+The alternative is stochastic gradient descent (SGD). This is the default in deep learning.
+Stochastic gradient descent for an average of losses
+The core idea of Stochastic gradient descent is to compute the gradient only over a randomly
+selected subset of all training samples. After updating the parameters, one draws a new randomly
+selected subset of all training samples for gradient computation.
+SGD in practice
+⊙ shuffle/permute your training data {zi = (xi , yi ), i = 0, . . . , n − 1}2 ,
+⊙ iterate over minibatches , computing the gradient of the loss in each iteration – until all data has
+been used once
+⊙ repeat the two above steps
+For example, stochastic gradient descent when starting at index m and using the next k samples uses
+as update:
+m+k−1
+1 X
+L(fut (xi ), yi )
+ut+1 = ut − η∇u
+k i=m+0
+2
+
+make sure that features x and labels y of one sample (x , y ) will stay together!!
+
+| 89
+
+Gradients
+
+| 90
+
+stochastic gradient descent for an average of losses
+⊙ initialize start vector u0 as something, choose step size parameter η
+⊙ shuffle/permute your training data {zi = (xi , yi ), i = 0, . . . , n − 1}
+⊙ until all data has been used once:
+· compute the gradient of the loss for the next k samples (here it starts at an index m)
+· apply it to update the parameters of the mapping f :
+ut+1 = ut − η∇u
+
+m+k−1
+1 X
+L(fut (xi ), yi )
+k i=m+0
+
+⊙ measure loss on validation data . If low enough, stop.
+⊙ otherwise repeat from the shuffle step
+
+Advantages of stochastic gradient descent
+
+⊙ Full-batch is often too costly to compute a gradient using all samples when its more than
+
+tens of thousands
+⊙ SGD is a noisy, approximated version of the batch gradient (it is based on a random
+
+subset, that causes the noise).
+· injecting small noise is one way to prevent overfitting! For deep neural networks SGD can be
+better than full batch gradient descent in finding good local optima.
+
+| 91
+
+Advantages of stochastic gradient descent
+
+⊙ An illustration why noise to the loss function (e.g. by randomized sampling of training
+
+batches) may help to jump out of bad local optima
+
+Left: a loss surfaces at some point (orange). Middle and Right: changes in the loss surfaces as different
+training data subsets are used. In the right it allows to jump out of the local minimum.
+
+| 92
+
+Outline
+1 Motivation
+2 The derivative of a 1dim function and the Gradient
+3 The directional derivative and Derivatives of Linear mappings
+4 Chain Rule
+5 Gradients in PyTorch and Autograd
+6 Gradient Descent
+7 Properties of Gradient Descent
+8 Stochastic gradient descent
+
+| 93
+
+Why gradient descent is hard in practice?
+
+What makes it hard to use gradient descent in deep neural networks?
+⊙ one cannot simply stack convolution layers: see for example Fig 1 in
+
+https://arxiv.org/abs/1512.03385
+⊙ the problem of vanishing or exploding gradients
+· the graphics on gradient magnitudes in
+http://neuralnetworksanddeeplearning.com/chap5.html
+
+| 94
+
+Challenge 1: vanishing gradients
+
+What makes it hard to use gradient descent in deep neural networks?
+⊙ the problem of vanishing or exploding gradients
+· vanishing gradients: scale of gradient gets smaller and smaller as neural network
+architectures become deeper - in particular in layers closer to the input
+
+| 95
+
+Challenge 2: exploding gradients
+
+What makes it hard to use gradient descent in deep neural networks?
+⊙ the problem of vanishing or exploding gradients
+· exploding gradients: scale of gradient gets unbounded as neural network architectures
+become deeper, if learning rates are too high
+
+| 96
+
+Challenge 3: imbalanced gradient scales
+
+What makes it hard to use gradient descent in deep neural networks?
+⊙ the problem of vanishing or exploding gradients
+· imbalanced gradient scales (e.g. Bjorck et al, Understanding Batchnorm
+https://arxiv.org/abs/1806.02375): the scale of gradients has large variation across neurons
+- this means some neurons have faster updates than others
+
+| 97
+
+

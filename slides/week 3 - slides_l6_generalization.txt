@@ -1,0 +1,1691 @@
+a Prelude
+
+Segment based on pointing a few points as positives and negatives:
+https://github.com/facebookresearch/sam2/blob/main/notebooks/image predictor example.ipynb
+other stuff (textual inputs):
+https://github.com/IDEA-Research/GroundingDINO
+https://github.com/IDEA-Research/Grounded-SAM-2
+https://github.com/LLaVA-VL/LLaVA-NeXT
+
+|1
+
+Starting point
+
+We train a neural network for classification.
+We get an accuracy of 0.93 ∼ 93% on test data and of 0.94 on training data.
+What can we do with this information ?
+
+|2
+
+Starting point
+
+You are in your PhD. You train another neural network for classification.
+You get an accuracy of 0.93 ∼ 93% on test data and this is higher than the results with other
+methods. Yay, a paper will be written :) .
+What can you do with this information ?
+
+|3
+
+What is the goal in machine learning?
+
+next: what is a good machine learning/deep learning model ?
+The goal of machine learning described in words
+To find a prediction model, which predicts well(=?) on unseen and unforeseeable data points
+two things to be clarified:
+⊙ formalize: on unseen and unforeseeable data points
+... using probability distributions.
+⊙ formalize: well
+... using mean and expectation
+
+|4
+
+Outline
+
+1 Probability distributions
+2 Modelling future unforeseeable data points
+3 The goal of training machine learning / AI systems
+4 Why one MUST NEVER use test data to select/optimize your ML system
+5 Overfitting
+
+|5
+
+Mean over data samples
+
+|6
+
+the first idea:
+aka Mittelwert über eine Stichprobe
+Mean over data samples / Mittelwert über eine Stichprobe
+given n samples x {i} from a vector space: S = (x {0} , . . . , x {n−1} ),
+n−1
+
+M1 (S) :=
+
+1 X {i}
+x
+n i=0
+
+Beispiel:
+{(3, 0, 1), (−2, 4, −5), (6, −1, 3)}, n = 3
+M1 (S) = (7/3, 1.0, −1/3)
+
+Random variables
+
+random variable X :
+⊙ concept: a mathematical model for a process which outputs values X (o) in a non-predictable
+manner
+⊙ we will characterize the process by probabilities for its outputs
+no exam stuff/kein Klausurstoff:
+⊙ technically: a function X : O → E which maps outcomes o ∈ O (O - Ergebnisraum, o ∈ O
+zufaelliges Ereignis) of a randomized experiment onto numbers in E
+⊙ we omit here further details on the concept of measurability. This requires to define sets of
+measurable events for O and E
+
+|7
+
+Discrete probability distribution
+
+|8
+
+discrete probability distribution
+⊙ we have a set S = {x {0} , . . . , x {i} , . . .} which is finite (endlich viele) or countably infinite
+(abzählbar unendlich)
+⊙ a diskrete probability is a mapping P : S → [0, 1] with the following properties:
+x {i} ∈ S ⇒ P(x {i} ) ∈ [0, 1]
+X
+P(x {i} ) = 1
+x {i} ∈S
+
+Examples:
+
+1
+6
+i +1
+S = {0, . . . , 5}, P(i) =
+21
+S = {i ∈ Z, i ≥ 1}, P(i) = 2−i
+6
+S = {i ∈ Z, i ≥ 1}, P(i) = 2 2
+i π
+S = {0, . . . , 5}, P(i) =
+
+Countability?
+
+⊙ whole number/ganze Zahlen are countable
+⊙
+
+Q = { pq , p ∈ Z, q ∈ Z, q ≥ 1} (rationale Zahlen) is countable
+
+⊙
+
+R (reelle Zahlen) is not countable (no exam / kein Klausurstoff:
+https://www.mathe-online.at/mathint/zahlen/i Rueberabz.html)
+
+|9
+
+Absolutely continuous probability distribution
+
+| 10
+
+absolutely continuous probability distribution
+⊙ we have an interval I ⊂ R
+⊙ we want to model the probability that a random variable X takes values in an interval
+[a, b] ⊂ I
+⊙ an absolutely continuous probability distribution P : I → [0, 1] is defined by a density
+function f : I → R such that:
+f (x ) ≥ 0
+Z x =b
+[a, b] ⊂ I ⇒ P(X ∈ [a, b]) =
+
+f (x ) dx
+x =a
+
+Z
+P(X ∈ I) = 1 =
+
+f (x ) dx
+x ∈I
+
+Conceptually, integration and measure theory is the generalization of summing to non-countable sets
+like intervals.
+
+Absolutely continuous probability distribution
+
+Examples:
+I = [0, 1],f (x ) = 1 ⇒ P(X ∈ [a, b]) = b − a
+I = [0, 1],f (x ) = 3x 2 ⇒ P(X ∈ [a, b]) = b 3 − a3
+1
+I = [0, 2π],f (x ) = 1[x ≤ π] sin(x )
+2
+1
+1
+if a < π ⇒ P(X ∈ [a, b]) = − cos(min(b, π)) + cos(a)
+2
+2
+1
+1
+P(X ∈ [0, 2π]) = − cos(π) + cos(0) = −(−1/2) + 1/2
+2
+2
+1
+I = R, f (x ) =
+π(1 + x 2 )
+
+| 11
+
+Expectation over a distribution
+
+| 12
+
+aka Erwartungswert über eine Verteilung
+Expectation over a distribution / Erwartungswert über eine Verteilung, discrete case
+given a set of values S = {x {0} , . . . , x {i} , . . .} from a vector space which possibly could be
+outputted by a random variable, we define
+X
+E [X ] :=
+x {i} P(x {i} )
+i
+
+Beispiel:
+
+Expectation over a distribution
+
+| 13
+
+aka Erwartungswert über eine Verteilung
+Expectation over a distribution / Erwartungswert über eine Verteilung, case with a density function
+given an interval I,
+Z
+E [X ] :=
+
+x f (x )dx
+x ∈I
+
+Beispiel:
+Z 1
+I = [0, 1], f (x ) = 1, E [x ] =
+
+xdx =
+0
+
+x 2 x =1
+12
+02
+|x =0 =
+−
+2
+2
+2
+
+Expectation over a distribution
+
+| 14
+
+note the analogy:
+E [X ] :=
+
+X
+
+x
+
+{i}
+
+P(x
+
+{i}
+
+Z
+)
+
+E [X ] :=
+
+x f (x )dx
+x ∈I
+
+i
+
+X
+
+Z
+(· · · ) ↔
+
+i
+
+P(x {i} ) ↔
+
+(· · · )dx
+ix ∈I
+
+f (x )
+
+Conceptually, integration and measure theory is the generalization of summing to non-countable sets
+like intervals.
+
+Mean ←→ expectation ?
+
+How are they related ?
+⊙ mean is defined over the samples which we have collected
+⊙ expectation is defined over all possible values which can be observed as a sample
+
+| 15
+
+Mean ←→ expectation ?
+
+| 16
+
+How are they related ?
+⊙ mean is defined over the samples which we have collected
+⊙ the mean over a collection of samples S can be defined as an expectation over a space T which
+contains (only) all unique samples in S!
+(and the probability is zero for all values not observed in S)
+S = (x {0} , . . . , x {n−1} )
+T = {x {i} ∈ S} here every sample from S appears only 1x
+count(S)T [x ] = the number of occurrences of x in S
+=
+
+n−1
+X
+
+1[x = x {i} ]
+
+i=0
+
+how often does t occur in S
+count(S)T [x ]
+=
+t ∈ T ⇒ P(X = t) =
+n
+number of elements in S
+
+Mean ←→ expectation ?
+
+| 17
+
+How are they related ?
+Then we have:
+1=
+
+X
+
+1[x {i} == t]
+
+t∈T
+n−1
+X
+
+n−1
+1 X {i} X
+1
+x {i} 1 =
+x
+1[x {i} == t]
+n i=0
+n i=0
+t∈T
+
+=
+
+=
+
+n−1 X
+X
+
+1
+n i=0
+
+t∈T
+
+n−1
+1 XX
+
+n i=0
+
+x {i} 1[x {i} == t]
+t1[x {i} == t] switch now the summings!
+
+t∈T
+
+n−1
+X 1X
+X count(S)T [x ]
+=
+t
+1[x {i} == t] =
+t
+n i=0
+n
+t∈T
+t∈T
+X
+=
+t P(X = t)
+t∈T
+
+Mean ←→ expectation ?
+
+| 18
+
+Summary: the mean over n samples in S is an expectation over T = { unique values } in S with a
+probability P(X = t), t ∈ T such that
+⊙ ...
+how often does t occur in S
+count(S)T [x ]
+=
+n
+number of elements in S
+Pn−1
+{i}
+1
+[x
+==
+t]
+= i=0
+n
+
+⇒ P(X = t) =
+
+Note again: if t̂ ̸∈ S then P(X = t̂) = n0
+The mean over a collection of samples S can be defined as an expectation over a space T which
+contains (only) all unique samples in S!
+
+Outline
+
+1 Probability distributions
+2 Modelling future unforeseeable data points
+3 The goal of training machine learning / AI systems
+4 Why one MUST NEVER use test data to select/optimize your ML system
+5 Overfitting
+
+| 19
+
+What is the goal in machine learning?
+
+back to:
+The goal of machine learning described in words
+To find a prediction model, which predicts well(=?) on unseen and unforeseeable data points
+steps:
+⊙ model on unseen and unforeseeable data points by drawing them from a random variable which
+has a certain probability distribution
+⊙ model predicts well by low loss value in expectation over the probability distribution of that
+random variable
+
+| 20
+
+Modelling the idea of unforeseeable data points
+
+We had before:
+the goal of machine learning described in words
+To find a prediction model, which predicts well on unseen and unforeseeable data points
+What does it mean on unseen and unforeseeable data points?
+⊙ We do not know what samples (x , y ) we can expect in the future
+⊙ uncertainty can be modeled by assuming that the samples are drawn from a probability
+distribution:
+(x , y ) ∼ P(x , y )
+
+| 21
+
+Modelling the idea of unforeseeable data points
+
+A common assumption in machine learning described in words
+Model the uncertainty of future/unseen data by assuming that there exists a probability
+distribution P which generates the data:
+(x , y ) ∼ P(x , y )
+
+| 22
+
+Conditional probabilities
+Next step: conditional probabilities.
+The use case for conditional probabilities are random processes, in which a pair (x , y ) is drawn, and the
+value for X can be observed first, before we can observe the value for X .
+Simple example: Y = 1 – will get diabetes in the next 5 years, X = current age.
+Y = Giftgehalt von Giftzwergen, X = location of the forest
+intuition behind conditional probabilities
+We consider a pair of random variables (X , Y ) (which could have some kind of relationship).
+P(Y = y |X = x ) is the probability that the variable Y takes value y given that we know that
+the other variable has a specific value X = x .
+This is a probability for the values of one variable, given that we obtained information about the
+value of the other variable.
+
+| 23
+
+Conditional probabilities
+
+| 24
+
+two variables:
+P(Y = y |X = x ) =
+
+P(Y = y , X = x )
+P(X = x )
+
+n variables:
+P(X0 , X1 , . . . , Xn |Xn+1 , . . . , Xn+k ) =
+
+P(X0 , X1 , . . . , Xn , Xn+1 , . . . , Xn+k )
+P(Xn+1 , . . . , Xn+k )
+
+Let A, B be sets of random variables. Then we can write it compactly:
+P(A = a|B = b) =
+How to memorize the definition?
+
+P(A = a, B = b)
+P(B = b)
+
+Conditional probabilities
+
+| 25
+
+how to remember the definition of conditional probability
+⊙ requirement 1: P(A = a|B = b) = C P(A = a, B = b), it is the joint probability times
+some constant
+⊙ requirement 2: P(A|B = b) is a Probability over the (non-conditioning) variables in A:
+X
+P(A = a|B = b) = 1
+a
+
+From there one can easily deduce c and the definition of the conditional probability:
+
+1=
+
+X
+a
+
+1
+solving for C : C = P(B=b)
+
+P(A = a|B = b) = C P(A = a, B = b)
+X
+P(A = a|B = b) = C
+P(A = a, B = b) = C P(B = b)
+a
+
+Conditional probabilities and statistical independence
+
+next step: a brief look at statistical independence
+The standard definition of statistical independence for discrete variables
+Discrete variables X0 , . . . , Xn are statistically independent if for all possible values x0 , . . . , xn−1
+the following holds:
+P(X0 = x0 , X1 = x1 , . . . , Xn−1 = xn−1 ) = P(X0 = x0 )P(X1 = x1 ) · · · P(Xn−1 = xn−1 )
+For the case with a density function a similar definition holds using the density functions.
+
+| 26
+
+Conditional probabilities and statistical independence
+
+The more interpretable of statistical independence: We have for all possible values x0 , . . . , xn−1 that:
+P(X0 , X1 , . . . , Xn |Xn+1 , . . . , Xn+k ) = P(X0 , X1 , . . . , Xn )
+for two variables or two sets of variables:
+∀a, b : P(A = a|B = b) = P(A = a)
+the meaning of statistical independence
+A and B are independent random variables:
+Knowing the exact value of B does not tell anything about the probability distribution of A
+
+| 27
+
+Conditional versus marginal probabilities
+how to remember the definition of conditional probability
+
+⊙ requirement 1: P(A = a|B = b) = cP(A = a, B = b)
+⊙ requirement 2: P(A|B = b) is a Probability over the variables in A, that is
+X
+P(A = a|B = b) = 1
+
+a
+
+There is a second way to obtain a probability over only the variables in A given the joint probability
+P(A = a, B = b), by computing the marginal probability / Randverteilung :
+X
+P(A = a) =
+P(A = a, B = b)
+all possible b
+
+⊙ question: How are
+the conditional probability P(A = a|B = b) and the marginal probability P(A = a)
+related to each other?
+
+| 28
+
+Conditional versus marginal probabilities
+
+P(A = a) =
+
+X
+
+P(A = a, B = b) =
+
+all possible b
+
+=
+
+X
+
+| 29
+
+X
+all possible b
+
+P(A = a, B = b)
+P(B = b)
+P(B = b)
+
+P(A = a|B = b)P(B = b) = Eb∼P(B) [P(A = a|B = b)]
+
+all possible b
+
+So:
+marginal vs conditional distribution
+
+P(A = a|B = b)
+
+compare / vgl.
+
+←→
+
+P(A = a) = Eb∼P(B) [P(A = a|B = b)]
+
+The marginal distribution is an expectation over conditional distributions for all possible conditioning values !
+Makes perfect sense: for the marginal distribution we dont know the value of the conditioning
+variables, so we average over all possible choices. For the conditional distribution we know the values,
+so we pick that values and compute the probability given that we know them.
+
+Modelling the idea of unforeseeable data points
+
+Next step: an excursion to
+⊙ how can a random draw of samples (x , y ) ∼ P(x , y ) look like in practice?
+⊙ one common principle
+
+p(x , y ) = p(x |y )p(y )
+p(x , y ) = p(y |x )p(x )
+
+| 30
+
+Modelling the idea of unforeseeable data points
+
+Examples for such abstract (x , y ) ∼ P(x , y ) in binary classification:
+⊙ Input space X = R1 , Output Space {−1, +1}
+x ∼ P(x ) = N(0, 1)
+y ∼ P(y |x )
+1
+∈ (0, 1)
+1 + e −3x +1
+P(y = 0|x ) = 1 − P(y = 1|x )
+P(y = 1|x ) = σ(3x − 1) =
+
+| 31
+
+Modelling the idea of unforeseeable data points
+
+Examples for such abstract (x , y ) ∼ P(x , y ) in binary classification:
+⊙ Input space X = R2 , Output Space {−1, +1}
+x = (x
+
+(1)
+
+,x
+
+(2)
+
+
+) ∼ N µ = (0, 0), Σ =
+
+
+
+1
+0
+
+
+0
+1
+
+y ∼ P(y |x )
+P(y = 1|x ) = σ(2x (1) + 3x (2) − 1) ∈ (0, 1)
+P(y = 0|x ) = 1 − P(y = 1|x )
+⊙ defines P(x ) and P(y = 1|X = x ).
+⊙ allows to draw samples step by step. How to get P(x , y ) from that?
+
+| 32
+
+Modelling the idea of unforeseeable data points
+
+x = (x
+
+(1)
+
+,x
+
+(2)
+
+
+
+1
+) ∼ N µ = (0, 0), Σ =
+0
+
+0
+1
+
+
+
+y ∼ P(y |x ), P(y = 1|x ) = σ(2x (1) + 3x (2) − 1) ∈ (0, 1)
+How to get P(x , y ) from that?
+⊙ by the definition of conditional probabilities:
+P(x , y ) = P(y |x )p(x ) done!
+⊙ insight: when we draw x ∼ P(x ), y ∼ P(Y |X = x ), then P(y , x ) is fully specified already
+
+| 33
+
+Modelling the idea of unforeseeable data points
+
+⊙ useful: gives an idea how to draw samples from P(x , y ) when one specifies (P(x ), P(y |x )) or
+(P(y ), P(x |y ))
+⊙ have P(x , y ) = P(x )P(y |x ) from known P(x ), p(y |x )
+· draw x ∼ P(x )
+· draw y ∼ p(y |X = x ) where you condition on your drawn x
+· obtain sample (x , y ) drawn from p(x , y )
+⊙ use this to generate synthetic data to test algorithms
+
+| 34
+
+Modelling the idea of unforeseeable data points
+
+⊙ useful: gives an idea how to draw samples from P(x , y ) when one specifies (P(x ), P(y |x )) or
+(P(y ), P(x |y ))
+⊙ reverse way: also have P(x , y ) = P(y )P(x |y ) from known P(y ), P(x |y )
+· draw y ∼ P(y )
+· draw x ∼ p(x |Y = y ) where you condition on your drawn y
+· obtain sample (x , y ) drawn from p(x , y )
+⊙ use this to generate synthetic data to test algorithms
+
+| 35
+
+Outline
+
+1 Probability distributions
+2 Modelling future unforeseeable data points
+3 The goal of training machine learning / AI systems
+4 Why one MUST NEVER use test data to select/optimize your ML system
+5 Overfitting
+
+| 36
+
+the goal of machine learning specified further
+We had before:
+the goal of machine learning described in words
+To find a prediction model, which predicts well on unseen and unforeseeable (unvorhersagbar) data points
+⊙ We want a model which predicts well on (x , y ) ∼ P .
+
+What does it mean to predict well?
+⊙ low value of the loss function L on (x , y ) ∼ P!
+⊙ can be expressed as expected loss under data drawn from P:
+
+E(x ,y )∼P [L(f (x ), y )]
+
+| 37
+
+the goal of machine learning specified further
+
+⊙ The loss function L(f (x ), y ) measures the deviation between prediction f (x ) and ground truth y ,
+for a given sample (x , y )
+the goal of machine learning specified further
+For a given loss function L, to find a prediction model f such that under the probability distribution
+for samples with their labels (x , y ) the expected loss
+E(x ,y )∼P [L(f (x ), y )]
+is low
+Low expected loss means: errors are not prevented. Predictions will make mistakes.
+
+| 38
+
+the goal of machine learning specified further
+
+For binary classification one would choose for example the 0-1 loss
+(
+1 f (x ) ̸= y
+L(f (x ), y ) = 1[f (x ) ̸= y ] =
+0 f (x ) = y
+E(x ,y )∼P(x ,y ) [1[f (x ) ̸= y ]] = 1 P(f (x ) ̸= y ) + 0 P(f (x ) = y ) = P(f (x ) ̸= y )
+
+| 39
+
+the goal of machine learning specified further
+
+⊙ in real ML problems: you do not know the data-generating P(x , y )
+⊙ challenge of ML: want
+E(x ,y )∼P [L(f (x ), y )]
+to be low, but do not know P (+ cannot compute this loss).
+important question
+How to know whether the expected loss for a given f is high or low
+... when we cannot compute it exactly???
+
+| 40
+
+Approximating the expected loss
+
+| 41
+
+⊙ assume that we have drawn some samples T = ((x0 , y0 ), . . . , (xn−1 , yn−1 )) such that (xi , yi ) ∼ P
+⊙ we could compute the mean of the loss on them:
+b (L, f , T ) = 1
+E
+n
+
+X
+
+L(f (xi ), yi )
+
+i
+
+b (L, f , T ) inform us about E(x ,y )∼P [L(f (x ), y )] ?
+⊙ in what way does E
+
+Approximating the expected loss
+
+the central limit theorem
+Let Z0 , Z1 , . . . , Zn−1 , . . . be an (infinite) sequence of iid (identically distributed P
+and independent)
+n
+random variables. Let E [Zi ] = m and Var [Zi ] = σ 2 < ∞. Consider b
+e = n1 ( i Zi ) to be the
+empirical mean (Mittelwert )
+Then the random variable
+
+√
+
+n(b
+e − m) converges in distribution to a normal distribution N(0, σ 2 )
+
+(Convergence in distribution is convergence of cumulative distribution functions.)
+⊙ we apply it to: Zi = L(f (Xi ), Yi ) – the loss of the predictor on a sample
+⊙ E [Zi ] = m = E [L(f (Xi ), Yi )] – what we want to know.
+Pn
+√
+⊙ need to clarify what n(b
+e − m) tells us about n1 ( i Zi ) !?
+
+| 42
+
+Approximating the expected loss
+√
+
+n(b
+e − m) converges in distribution to a normal distribution N(0, σ 2 )
+Pn
+√
+⊙ Assume that the random variable A with A = n( n1 ( i Zi ) − m) would be exactly normally
+Pn
+distributed as N(0, σ 2 ), then what would be the distribution of n1 ( i Zi ) ?
+√
+A = n(b
+e − m)
+A
+⇒ √ =b
+e−m
+n
+n
+A
+1 X
+⇒ √ +m =b
+e= (
+Zi )
+n i
+n
+
+One thing to understand:
+
+Pn
+⊙ we are interested to know how b
+e = n1 ( i Zi ) is distributed
+⊙ it is a an affine transformation of a random variable A ∼ N(0, σ 2 )
+
+| 43
+
+Approximating the expected loss
+
+if A ∼ N(0, σ 2 ) and B = cA + m, then B is also normally distributed with the following
+parameters: B ∼ N(m, c 2 σ 2 )
+Pn
+1
+⊙ b
+e=
+distributed with mean m = E [L(f (X ), Y )] and variance σ 2 /n, that is
+Pnn( i Zi ) is normally
+1
+2
+(
+Z
+)
+∼
+N(m,
+σ
+/n)
+i i
+n
+⊙ m = E [L(f (X ), Y )] the uncomputable quantity we want to know about
+⊙ what is the impact of a variance σ 2 /n ?
+
+| 44
+
+Approximating the expected loss
+Lets look at normal distributions with σ 2 /n → 0 as n increases:
+
+⊙ as σ 2 /n → 0 the distribution convergences to one point, namely m = E [L(f (X ), Y )]
+Pn
+⊙ as we get larger test sets, the probability that our estimate b
+e = n1 ( i L(f (xi ), yi )) is close to the
+uncomputable E [L(f (X ), Y )], increases towards 1.
+Pn
+⊙ as we get larger test sets, the probability that our estimate b
+e = n1 ( i L(f (xi ), yi )) has a large
+deviation from the uncomputable E [L(f (X ), Y )], decreases towards 0.
+
+| 45
+
+how to estimate
+
+| 46
+
+⊙ use data {(x {1} , y {1} ), . . . , (x {n} , y {n} )} which one never have used to select the function f
+⊙ if (x {i} , y {i} ) ∼ P and drawn statistically independently, and if the variance of the loss
+σ 2 = E [L(f (x ), y )2 ] − (E [L(f (x ), y )])2 < ∞,
+then by the central limit theorem, we have that
+n
+X
+b (L, f , T ) = 1
+E
+L(f (x {i} ), y {i} )
+n i=1
+2
+
+is approximately (!!) normally distributed with mean E(x ,y )∼P [L(f (x ), y )] and variance σn , where
+σ 2 is the variance of L under the unknown P.
+⊙ E(x ,y )∼P [L(f (x ), y )] is what we want to know!
+
+how to estimate
+
+| 47
+
+Under some conditions, by the central limit theorem, we have that
+n
+X
+b (L, f , T ) = 1
+E
+L(f (x {i} ), y {i} )
+n i=1
+2
+
+is approximately (!!) normally distributed with mean E(x ,y )∼P [L(f (x ), y )] and variance σn , where σ 2
+is the variance of L under the unknown P.
+Consequence ?
+⊙
+
+σ2
+n → 0 as n → ∞. This means, the normal distribution collapses onto a point centered at the
+mean E(x ,y )∼P [L(f (x ), y )]
+
+⊙ this means that for a sufficiently large test set,
+n
+X
+b (L, f , T ) = 1
+L(f (x {i} ), y {i} )
+E
+n i=1
+
+will be close to the uncomputable E(x ,y )∼P [L(f (x ), y )]
+However, we cannot say exactly how close for a given n!
+
+out of exams/kein Klausurstoff
+
+There are so-called concentration inequalities which give bounds for large deviations of
+b (L, f , T ) − E(x ,y )∼P [L(f (x ), y )]|
+|E
+which are valid with a certain probability to be true, e.g.
+https://en.wikipedia.org/wiki/Hoeffding%27s inequality,
+however these bounds are too conservative for practical machine learning tasks
+
+| 48
+
+how to estimate the expected loss
+
+The normal distribution has infinite tails
+b (L, f , T )
+⊙ !! there is non-zero probability, that the test set T might result in an average loss E
+which is far off the expected loss
+b (L, f , T ) ≫ or ≪ E(x ,y )∼P [L(f (x ), y )]
+E
+⊙
+
+σ2
+n → 0 as n → ∞ ... as the test set gets larger, the probability of such large deviations goes to
+
+zero.
+⊙ we can approximately estimate the probability that the expected loss is far off the average loss
+b (L, f , T ) which we have computed on n test samples - by using the cumulative density function
+E
+https://en.wikipedia.org/wiki/Cumulative distribution function of the normal distribution
+
+| 49
+
+How to deal with it in practice ?
+
+Measuring loss on test data not used in training
+If you use only data, which was never used for training and hyperparameter selection, and for a
+sufficiently large sample size n , then the loss
+n
+1X
+b
+E (L, f , Dn ) =
+L(f (x {i} ), y {i} )
+n i=1
+
+is an approximation for the performance on new, unseen data points.
+
+Therefore, if the average loss on test data, never used in training/hyperparameter selection is
+small, then we can be satisfied with the prediction function f
+b (L, f , T )
+though there is a small probability that there is a large deviation between the average loss E
+and the expectation of the loss under the probability which generates the data
+
+| 50
+
+How to deal with it in practice ?
+
+| 51
+
+Example:
+E [1(f (X ) ̸= Y )] = P(f (X ) ̸= Y ) ≈
+
+n−1
+
+1X
+1(f (xi ) ̸= yi )
+n i=0
+
+is an approximation which would get better if we collect more test data , provided that the sample
+collection is done statistically independently
+( remember: knowing the value of one variable does not provide information about the distribution of
+another variable)
+
+What we want
+
+The key challenge in machine learning
+⊙ We want to be able to predict well on unseen and unforeseeable data - the data which we
+expect when the model is deployed.
+⊙ In real ML problems we do not know from what distribution that future data to be seen in
+deployment is coming.
+⊙ Instead we have a finite set of data samples {(x {1} , y {1} ), . . . , (x {n} , y {n} )} from the
+unknown distribution to ensure that we do well on unseen and unforeseeable data.
+⊙ goal is to find a mapping f such that its (uncomputable) expected loss is close to the best
+possible one: E [L(f (x ), y )] ≈ inf g∈F E [L(g(x ), y )]
+
+| 52
+
+How to do machine learning in practice ?
+
+How to do machine learning in practice ?
+⊙ collect a set of data points S = (x0 , y0 ), . . . , (xn−1 , yn−1 ), such that they are
+approximately statistically independent
+⊙ split the dataset S into disjoint!! training, validation and test sets –
+⊙ train on the training set
+⊙ select hyperparameters on the validation set
+⊙ at the end, measure the performance on the test set
+
+| 53
+
+Outline
+
+1 Probability distributions
+2 Modelling future unforeseeable data points
+3 The goal of training machine learning / AI systems
+4 Why one MUST NEVER use test data to select/optimize your ML system
+5 Overfitting
+
+| 54
+
+Why you must not use your test data to train or set hyperparameters
+
+The DONOT of ML
+Never use test data to train your model or to choose hyperparameters
+⊙ If your model development sees and uses the test data, then you do not measure the loss on
+unseen and unforeseeable data anymore.
+⊙ You have no guarantee anymore to predict well on unseen and unforeseeable data
+⊙ changes to: to predict well on data which you have seen before
+
+| 55
+
+Why we cannot check the performance on test data to improve our selection of
+mappings?
+| 56
+Why never use test data for training and hyperparameter selection?
+The simple answer:
+Why it is forbidden to check on test data
+⊙ We want a guarantee that our predictions are good on unseen and unforeseeable data
+samples.
+If we use data used in training or hyperparameter selection, then we have a guarantee for
+partially seen data samples - this is not a useful guarantee for models to be deployed.
+The precise reason why to use only data, which was never used for training and hyperparameter
+selection ... is subtle: Central limit theorem does not hold anymore / its conditions are not met
+anymore. For those who want to know, it is explained out of class at the end of these slides.
+
+Why we cannot check the performance on test data to improve our selection of
+mappings?
+| 57
+Why never use test data for training and hyperparameter selection?
+If f is a constant function, not depending on the data, then the random variable Zi = L(f (Xi ), Yi ) is
+drawn from the same distribution for all test datasets Tn . Then we can apply the central limit theorem
+for the limit n → ∞.
+However, if f is chosen using data sets which contains test samples (Xi , Yi ) from Tn , then f becomes a
+function of the test data. In that case the distribution of
+L(f (Xi ), Yi ) = L(f [Ti ](Xi ), Yi )
+changes for every n, because
+⊙ we use Tn , Tn+1 , Tn+2 etc to select f
+⊙ when we take the limit n → ∞ in the CLT, we might choose a different f for some Tn+k than for
+Tn
+(even if it happens only for some draws of test sets)
+Consequence: Zi = L(f [Ti ](Xi ), Yi ) is not identically distributed anymore. Central limit theorem does
+not apply in this case anymore
+
+Why we cannot check the performance on test data to improve our selection of
+mappings?
+| 58
+One can show even a stronger result:
+Let F be a set of mappings from which we select one by the training algorithm. Then the following
+always holds
+E [ inf L(f (X ), Y )] ≤ inf E [L(f (X ), Y )]
+f ∈F
+
+f ∈F
+
+What does that mean?
+⊙ inf f ∈F L(f (X ), Y ) selects the best mapping for a given random draw (x , y ) – in this case f
+changes with X , Y . Then we compute the average E [·] over all (x , y )
+⊙ inf f ∈F E [L(f (X ), Y )] – this is the best single unchanging mapping which we can choose from F
+if we had a perfect training algorithm
+⊙ When we select the best mapping for each sample (x , y ), then the expectation over this is
+ALWAYS optimistic:
+E [ inf L(f (X ), Y )] ≤ inf E [L(f (X ), Y )]
+f ∈F
+f ∈F
+{z
+}
+|
+{z
+}
+|
+maximal cheating
+
+and therefore an uninformative estimate
+
+best possible constant choice
+
+Why we cannot check the performance on test data to improve our selection of
+mappings?
+| 59
+
+Why we cannot check the performance on test data to improve our selection of mappings
+Why only use only data, which was never used for training and hyperparameter selection?
+the short version: we lose our performance guarantees on new unseen data points (x , y )
+
+Something offtopic
+
+https://www.creativebloq.com/ai/ai-art/
+forget-ai-image-generators-an-autonomous-ai-artist-just-sold-usd351-600-in-paintings-at-sothebys
+
+| 60
+
+Outline
+
+1 Probability distributions
+2 Modelling future unforeseeable data points
+3 The goal of training machine learning / AI systems
+4 Why one MUST NEVER use test data to select/optimize your ML system
+5 Overfitting
+
+| 61
+
+Overfitting
+
+setup:
+⊙ we have some training data set D of samples (x , y ) and possibly a test set T of different
+
+samples.
+⊙ we want to use the training data set to train a model, that is to select a mapping
+
+f : X → Y from a set F of all possible mappings.
+Next: try to understand by examples what overfitting is
+informally: one chooses a mapping by training on data which is not the best in the sense of
+expected loss
+
+| 62
+
+overfitting
+
+| 63
+
+The key challenge in machine learning
+⊙ We want to be able to predict well on unseen and unforeseeable data - the data
+
+which we expect when the model is deployed.
+⊙ In real ML problems we do not know from what distribution P the future data in
+
+deployment will be coming from.
+⊙ Instead we have a finite set of data samples D = {(x {1} , y {1} ), . . . , (x {n} , y {n} )}
+
+from the unknown distribution to ensure that we do well on unseen and
+unforeseeable data.
+⊙ goal is to find a mapping f such that its (uncomputable) expected loss is close to
+
+the best possible one: E [L(f (x ), y )] ≈ inf g∈F E [L(g(x ), y )]
+informally: one chooses a mapping by training on data which is not the best in the sense of
+expected loss
+f (ov ) = Training(D)
+E [L(f (ov ) (x ), y )] > inf E [L(g(x ), y )]
+g
+
+overfitting
+
+| 64
+
+⊙ challenge of ML: want
+
+E(x ,y )∼P [L(f (x ), y )]
+to be low, but do not know P (+ cannot compute this expectation).
+⊙ Have instead a few data samples {(x {1} , y {1} ), . . . , (x {n} , y {n} )} drawn from P
+
+Next step:
+⊙ show that even for very simple ML problems ... one has a substantial probability
+
+to choose a model f with high error under P – when one makes the choice based
+on a finite set of samples.
+
+overfitting example
+
+The setup of our next example:
+⊙ we can observe outcomes of an unfair coin, heads or tails
+⊙ goal: predict which the most likely outcome: 0 or 1?
+⊙ binary classification problem: 2 outcome states Y = {0, 1}
+⊙ have no features here to use, but we have some data samples y {1} , . . . , y {n} drawn from the
+unknown distribution P
+· we assume that the mechanism deciding the outcome stays the same over time, no hidden
+changes over time
+⊙ goal: estimate P(Y = 0) > 0.5 or P(Y = 0) < 0.5 from observations of the coin y {1} , . . . , y {n}
+⊙ we can predict only two models here: f0 (x ) = 0 or f1 (x ) = 1
+
+| 65
+
+Overfitting
+
+| 66
+
+⊙ we can predict only two models here: f0 (x ) = 0 or f1 (x ) = 1
+⊙ lets assume we would know what P is: P(y = 0) = 0.4. Then we do know which one is the best
+model.
+⊙ what is the best model to predict – in the sense of lowest expected loss E [L(f (x ), y )]?
+⊙ use classification loss L(f (x ), y ) = 1[f (x ) ̸= y ]. Then:
+E [L(f0 (x ), y )] = 1[f0 (x ) ̸= y ](0)p(y = 0) + 1[f0 (x ) ̸= y ](1)p(y = 1)
+= 1[0 ̸= y ](1)p(y = 1) = 0.6
+E [L(f1 (x ), y )] = 0.4
+⊙ Therefore the optimal model to be chosen is f1 (x ) (in the sense of lowest expected loss)
+
+Overfitting
+
+⊙ P(y = 0) = 0.4. The optimal prediction is f1 (x )
+⊙ if we draw one sample y ∼ P(y ), and if we would base our decision to select f0 or f1 on the data
+(y ) we have seen, what is the probability to choose the wrong model f0 ?
+⊙ this happens if we observe y = 0. P(y = 0) = 0.4 This occurs 40% of the time!!
+
+Take away:
+even in simple problems we have a high chance to decide for the suboptimal model ( which has
+not the lowest loss) if we decide based on a finite set of data samples
+Intuition: the randomness when collecting data can lead to data sets which are misleading about the
+true distribution of samples P(x , y ) ...
+a finite set of random samples can be non-representative about P(x , y )
+
+| 67
+
+Overfitting
+
+We still assume P(y = 0) = 0.4. The optimal prediction in the sense of lowest expected loss is f1 (x )
+⊙ if we draw three samples y1 , y2 , y3 ∼ P(y ), and if we would base our decision on the data we have
+seen, what is the probability to choose the wrong model f0 ?
+P3
+⊙ one can check the sum of the three samples and make a majority decision based on i=1 yi
+⊙ we make the wrong decision if two out of the three will be yi = 0. That is if we observe
+100, 010, 001, 000
+⊙ what is the probability for that ?
+
+| 68
+
+Overfitting
+
+| 69
+
+⊙ if we draw three samples y1 , y2 , y3 ∼ P(y ), and if we would base our decision on the data we have
+seen, what is the probability to choose the wrong model f0 ?
+⊙ we make the wrong decision if two out of the three will be yi = 0. That is if we observe
+100, 010, 001, 000
+⊙ what is the probability for that ?
+
+· P(100) = (1 − 0.4) ∗ 0.4 ∗ 0.4 = 0.42 (1 − 0.4)1 , P(100, 010, 001) = 31 0.42 (1 − 0.4)1
+· repeated experiments, binary outcome in each, independent, same probability for outcome
+· Binomial distribution with n = 3, p = 0.4 and outcomes of at least 2.
+ 
+n k
+Pn,p (k) =
+p (1 − p)n−k
+k
+r=
+
+3
+X
+k=2
+
+Pn,p (k)
+
+Overfitting
+
+| 70
+
+⊙ Whenever we observe one of these sets of three samples: 100, 010, 001, 000,
+
+we will choose the suboptimal prediction model f0 (x ).
+One can show:
+P({100, 010, 001, 000}) =
+
+3
+X
+
+P3,0.4 (k) ≈ 0.35 < 0.4
+
+k=2
+
+⊙ still a large probability to choose the poorly performing prediction f0 (x ).
+
+Overfitting
+
+| 71
+
+⊙ Same setup, but draw 5 samples. Probability to choose the non-optimal model, if we
+
+observe at least 3 of the 5 to be yi = 0.
+One can show:
+P(
+
+5
+X
+i=1
+
+yi ≤ 2) =
+
+5
+X
+
+P5,0.4 (k) ≈ 0.317 < 0.35
+
+k=3
+
+⊙ still a large probability to choose the poorly performing prediction f0 (x ).
+⊙ probability to choose the non-optimal model decreases as the training sample size
+
+increases.
+
+Overfitting
+
+⊙ We had this problem : deciding based on some observations y {1} , . . . , y {n} whether the
+
+most likely outcome is y = 0 or y = 1 (and thus whether we should choose f0 or f1 ).
+⊙ Observation: Even in the simplest problems , if you have some randomness in your data,
+
+then you could end up choosing a suboptimal model with a not so small probability.
+
+| 72
+
+Overfitting
+
+| 73
+
+⊙ When randomness is present, then the finite set of samples y {1} , . . . , y {n} can be “not
+
+fully representative” for your distribution P (in our example, whenever we observe more
+y {i} = 0 than y {i} = 1 despite P(Y = 0) = 0.4)
+
+4
+
+4
+
+learn from
+nite training data
+
+3
+
+2
+
+3
+
+2
+
+1
+
+1
+
+0
+
+0
+
+−
+
+−
+
+1
+
+−
+
+2
+
+−
+
+3
+
+−
+
+4
+
+1
+
+−
+
+2
+
+−
+
+3
+
+−
+
+4
+
+−
+
+3
+
+−
+
+2
+
+−
+
+1
+
+0
+
+1
+
+2
+
+risk: overtting to
+specics of the
+nite training set
+
+3
+
+3
+
+−
+
+4
+
+3
+
+2
+
+1
+
+0
+
+−
+
+1
+
+−
+
+2
+
+−
+
+3
+
+−
+
+4
+
+−
+
+3
+
+−
+
+2
+
+−
+
+1
+
+0
+
+1
+
+2
+
+3
+
+−
+
+2
+
+−
+
+1
+
+0
+
+1
+
+2
+
+3
+
+Overfitting
+
+How is above problem related to classification problems?
+⊙ in the above problem we are estimating P(Y = 0) in a single feature point x
+⊙ binary classification problems: we want to estimate P(Y = 0|X = x ) for all possible
+
+features x , not only P(Y = 0) in a single point.
+
+| 74
+
+Overfitting
+
+| 75
+
+generalizing the setup:
+⊙ We have a class of prediction models F = {f0 , f1 , f2 , f3 , . . .}
+⊙ we have a loss function L(f (x ), y )
+⊙ We want to choose fi ∈ F with minimal expected loss under the distribution P
+
+min E(x ,y )∼P [L(f (x ), y )]
+f ∈F
+
+(we asssume for simplicity that F is countable)
+
+Overfitting: selecting from finitely many functions
+
+Consider the setup where we have a loss L, some data, and a set of prediction functions f ∈ F to
+choose from. F contains only finitely many functions.
+The best possible prediction is to choose an f ∗ such that its expected loss is minimal:
+f ∗ = argming∈F E(x ,y )∼P [L(g(x ), y )]
+Overfitting (finite function class)
+Overfitting occurs, if we choose a function f (ov ) which has a higher expected loss than the best
+possible function:
+E(x ,y )∼P [L(f (ov ) (x ), y )] > min E(x ,y )∼P [L(g(x ), y )]
+g∈F
+
+| 76
+
+one note
+
+| 77
+
+This contains two aspects, where finite randomly drawn samples (x , y ) can be misleading:
+
+4
+
+4
+
+learn from
+
+3
+
+3
+
+nite training data
+
+2
+
+2
+
+1
+
+1
+
+0
+
+0
+
+−
+
+1
+
+−
+
+2
+
+−
+
+3
+
+−
+
+4
+
+−
+
+3
+
+−
+
+2
+
+−
+
+1
+
+0
+
+1
+
+2
+
+risk: overtting to
+specics of the
+nite training set
+
+3
+
+−
+
+1
+
+−
+
+2
+
+−
+
+3
+
+−
+
+4
+
+3
+
+−
+
+−
+
+2
+
+−
+
+1
+
+0
+
+1
+
+2
+
+3
+
+4
+
+3
+
+2
+
+1
+
+0
+
+−
+
+1
+
+−
+
+2
+
+−
+
+3
+
+−
+
+4
+
+−
+
+3
+
+−
+
+2
+
+−
+
+1
+
+0
+
+1
+
+2
+
+3
+
+⊙ training:
+· training data - could lead to too much overfitting
+· validation data - selection of the wrong hyperparameters
+⊙ testing data - could lead to an estimate of the expected loss (via the average on test samples)
+which is far off the true expectation of the loss
+
+

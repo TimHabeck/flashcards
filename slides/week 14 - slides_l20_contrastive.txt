@@ -1,0 +1,484 @@
+Self-supervised Pretraining in Vision
+Prof. Alexander Binder
+January 10, 2026
+
+Something offtopic
+Ich glaube, dass Ideen wie absolute Gewissheit, absolute Genauigkeit, endgültige Wahrheit
+usw. Erfindungen der Vorstellungskraft sind, die in keinem Bereich der Wissenschaft zulässig
+sein sollten. Andererseits ist jede Behauptung der Wahrscheinlichkeit vom Standpunkt der Theorie, auf der sie basiert, entweder richtig oder falsch. Diese Lockerung des Denkens scheint mir
+der größte Segen zu sein, den uns die moderne Wissenschaft gegeben hat. Denn der Glaube an
+eine einzige Wahrheit und daran, ihr Besitzer zu sein, ist die Grundursache allen Übels in der
+Welt.
+I believe that ideas such as absolute certitude, absolute exactness, final truth, etc. are figments
+of the imagination which should not be admissible in any field of science. On the other hand,
+any assertion of probability is either right or wrong from the standpoint of the theory on which
+it is based. This relaxation of reasoning seems to me to be the greatest blessing which modern
+science has given to us. For the belief in a single truth and in being the possessor thereof is the
+root cause of all evil in the world.
+Max Born, physicist with experience with 20th-century Fascism, Quantum Mechanics, Indian
+philosophy
+
+|2
+
+Problem description
+
+We have seen self-supervised pretraining in NLP.
+Examples ?
+
+|3
+
+Problem description
+
+Question
+⊙ Can we pretrain a vision model with something else than (image,label)-pairs used in
+classification ? If so, with what kind of (data, losses)?
+⊙ How will the performance be compared to supervised classification pretraining ?
+Two ways:
+⊙ partially self-supervised pretraining
+⊙ multimodal foundational models: pretraining using (image,text)-pairs, where the text is processed
+into a feature vector using NLP networks.
+
+|4
+
+Problem description
+
+⊙ Problem: what if you have lots of domain-specific unlabeled data (and limited labeled data) ?
+⊙ original setup: alternative to pretraining on imagenet - to achieve similar quality but with less
+labels
+⊙ practical use case: Fine-tuning with very limited labeled data and lots of domain-specific
+unlabeled data (e.g. histopathology for rare conditions)
+⊙ another possible goal: a pretraining, which gives very good finetuning results on very many
+different tasks ( −→ multimodal foundational models )
+
+|5
+
+links
+
+know where to look for
+⊙ https://lilianweng.github.io/posts/2021-05-31-contrastive/
+⊙ http://cs231n.stanford.edu/slides/2022/lecture 14 jiajun.pdf
+
+|6
+
+Key Papers
+
+⊙ SimCLR https://arxiv.org/abs/2002.05709 (not GPU usable due to a too high required
+
+batchsizes !!!), SimCLR v2 https://arxiv.org/abs/2006.10029
+⊙ MoCo https://arxiv.org/abs/1911.05722 (better usable!!), MoCo v2
+
+https://arxiv.org/abs/2003.04297
+⊙ DINOv2, Oquab et al. https://arxiv.org/abs/2304.07193
+
+|7
+
+Takeaway points
+
+Takeaway points
+at the end of this lecture you should be able to:
+⊙ be able to explain the motivation behind contrastive learning
+⊙ be able to explain the loss used in contrastive learning
+⊙ be able to explain the momentum encoder idea
+⊙ be able to explain the cross-entropy for the global features in DinoV2
+
+|8
+
+Preliminary idea
+
+⊙ The initial idea: (not used as such in SimCLR/MoCo)
+· create auxiliary prediction tasks for which one can self-generate labels.
+· predict rotation, patch position in an image, coloring of grey-scale images, jigsaw puzzles
+reconstruction
+⊙ train a neural net with such tasks. It still requires a large set of unlabeled images across multiple
+setups (as replacement for class labels)
+⊙ slides 14-36 in http://cs231n.stanford.edu/slides/2022/lecture 14 jiajun.pdf
+
+|9
+
+SIMCLR/MoCo idea
+
+| 10
+
+A different task formulation used in
+SIMCLR/MoCo:
+⊙ take two data augmentations x , x + from the
+same image xpos
+⊙ take data augmentations xj− from another
+image of origin xneg
+⊙ learn to predict that x , x + should have a
+higher similarity than x , xj−
+
+note: MOCO does not use the same encoder for positive and negative
+
+SIMCLR/MoCo idea
+
+A different task formulation used in
+SIMCLR/MoCo:
+⊙ take two data augmentations
+x , x + from the same image xpos
+⊙ take data augmentations xj− from
+another image of origin xneg
+⊙ learn to predict that x , x + should
+have a higher similarity than
+x , xj−
+
+| 11
+
+slides 54-63 in
+http://cs231n.stanford.edu/slides/2022/lecture 14 jiajun.pdf
+⊙ use a feature extractor f (·) to compute f (x ), f (x + ), f (xj− )
+⊙ output head:
+(sim(x , x + ), sim(x , x0− ), sim(x , x1− ), . . . , sim(x , xK−−1 ))
+⊙ ”contrastive”: compare an (augmented) example with data
+augmentation from the same and from different images of
+origin
+⊙ next: formulate loss for training, to enforce high/low
+similarities
+
+SIMCLR/MoCo idea
+
+| 12
+
+A different task formulation:
+⊙ take two data augmentations from the same image x , x +
+⊙ take data augmentations from another image of origin xj−
+⊙ learn to predict that x , x + should have a higher similarity than x , xj−
+
+1
+L=−
+N
+
++
+
+e q·k
+log
+−
+P
+e q·k + + j e q·kj
+sample sets (x ,x + ,{x − })
+X
+
+j
+
+q = f (x ), k + = f (x + ), kj− = f (xj− )
+what is this ?
+L=
+
+X
+
+−
+− log softmax{q · k + , q · k0− , q · k1− , . . . , q · kl−1
+}[q · k + ]
+
+The neg log softmax of the positive and all negative similarities, for the output component given by
+the similarity between the positive examples (from the same images). Name: InfoNCE loss.
+
+SIMCLR/MoCo idea
+
+https://arxiv.org/pdf/2002.05709.pdf
+
+| 13
+
+SIMCLR/MoCo idea
+
+| 14
+
+A different task formulation:
+⊙ take two data augmentations from the same image x , x +
+⊙ take data augmentations from another image of origin xj−
+⊙ learn to predict that x , x + should have a higher similarity than x , xj−
+
+1
+L=−
+N
+
++
+
+e s(f (x ),f (x ))
+log
+−
+P
+e s(f (x ),f (x + )) + j e s(f (x ),f (xj ))
+sample sets (x ,x + ,{x − })
+X
+
+j
+
+what is this ?
+−
+L = − log softmax{s(f (x ), f (x + )), s(·, f (x0− )), s(·, f (x1− )), . . . , s(·, f (xl−1
+))}[s(f (x ), f (x + ))]
+
+The neg log softmax of the positive and all negative similarities, for the output component
+s(f (x ), f (x + )) given by the similarity between the positive examples x , x + (from the same images)
+
+SIMCLR/MoCo idea
+
+| 15
+
+A different task formulation:
+⊙ take two data augmentations from the same image x , x +
+⊙ take data augmentations from another image of origin xj−
+⊙ learn to predict that x , x + should have a higher similarity than x , xj−
+
+L=−
+
+1
+N
+
++
+
+X
+sample sets (x ,x + ,{xj− })
+
+log
+
+e s(f (x ),f (x ))
+−
+P
+e s(f (x ),f (x + )) + j e s(f (x ),f (xj ))
+
+works because, if the similarity s(f (x ), f (x + )) is higher than for the negatives, then:
+−
+P
++
++
+1
+e s(f (x ),f (x )) ≫ j e s(f (x ),f (xj )) , therefore − log t +t+t − = − log 1 − ≈ − log 1+0
+= − log 1 = 0
+t
+1+
+t+
+|{z}
+≈0
+
+SIMCLR results
+
+SimCLR tried this with a very similar loss formulation (they made always two consecutive pairs to be
+augmented from the same image).
+⊙ performance okay! see slide 70
+⊙ Problem: requires a non-GPU compatible batchsize , at least 1024 for a reasonable performance
+
+– see slide 72 ... in 2020 effectively required google cloud TPUs
+
+| 16
+
+SIMCLR results
+⊙ Using more than one linear layer on top is important!
+⊙ the MLP head is discarded and replaced for finetuning!
+
+https://arxiv.org/pdf/2002.05709.pdf
+
+| 17
+
+MoCo, MoCo v2
+MoCo, MoCo v2 motivation:
+⊙ self-supervised pretraining towards acceptable performance with a batchsize of 256
+
+| 18
+
+MoCo, MoCo v2
+
+⊙ two key ideas:
+(1) two different encoders:
+· encode new positive images using a
+separate positive feature encoder f+
+· encode new negative images using a
+separate negative feature encoder f−
+- negative encoder models weights are
+updated via momentum from the
+positive encoder model weights. No
+backprop updates on the negative
+encoder!
+- prevents overfitting from rapid
+changes in the positive encoder (also
+common in reinforcement learning,
+see Mnih et al, Nature 2015)
+
+| 19
+
+MoCo, MoCo v2
+
+⊙ two key ideas:
+(2) put former positive featuremaps x + into
+a queue. Reuse them as negatives in
+the next iterations.
+Why? Allows to choose batchsize
+independent of number of negatives.
+
+| 20
+
+MoCo, MoCo v2
+
+| 21
+
+⊙ loss with a temperature parameter τ
+
+L = − log
+
+e q·k
+e q·k + /τ +
+
++
+
+P
+
+je
+
+q·kj− /τ
+
+⊙ see Tables 1,2,3 in MoCo v2 https://arxiv.org/pdf/2003.04297.pdf
+⊙ pretrained on ImageNet without labels
+
+What are the important ingredients
+
+⊙ high amount of data augmentation
+· otherwise task too easy, poor filters learned
+⊙ non-linear projection heads (= multiple layers of linear-activation), to be thrown away
+
+after training
+· top-layers learn features too specific to data augmentations
+⊙ rather large batchsize
+
+| 22
+
+Outline
+
+1 Dino v1/v2
+
+| 23
+
+Dino v1/v2
+Dino v2 Oquab et
+al. https://arxiv.org/pdf/2304.07193
+(1) pretrain on a larger, specially curated dataset
+(142M vs 1.3M from Imagenet)
+⊙ different objective - the big picture:
+(2) have a student and a teacher network.
+update teacher network parameters
+using momentum as in MoCo from the
+student network.
+(3) multiple augmentations of the same
+image
+(4) loss terms: cross-entropy between the
+output probabilities of a teacher and a
+student network over the [CLS] token,
+cf. Dinov1https:
+//arxiv.org/pdf/2104.14294 ... we have
+no class labels ?
+
+| 24
+
+Dino v1/v2
+Dino v2 Oquab et al. https://arxiv.org/pdf/2304.07193
+(2) have a student and a teacher network. Update teacher network parameters using momentum as
+in MoCo from the student network.
+(3) multiple augmentations of the same image
+· get logits ft from the teacher from one part of augmentations of the same image
+· get logits fs from the student from another part of augmentations of the same image
+· typically the student sees smaller crops. the teacher sees large crops of the image
+(4) loss terms: cross-entropy between the output probabilities of a teacher and a student network
+cf. Dinov1https://arxiv.org/pdf/2104.14294 ... we have no class labels ?
+· teacher and student network have a K -dim output vector from a Linear layer
+· imagine their outputs as logits for cluster membership probabilities rather than class
+membership probabilities
+· see eq(2) and eq(3), Algorithm 1 in https://arxiv.org/pdf/2104.14294
+
+| 25
+
+Dino v1/v2
+Dino v2 Oquab et al. https://arxiv.org/pdf/2304.07193
+(2) have a student and a teacher network. Update teacher network parameters using momentum as
+in MoCo from the student network.
+(3) multiple augmentations of the same image
+· get logits ft from the teacher from one part of augmentations of the same image
+· get logits fs from the student from another part of augmentations of the same image
+· typically the student sees smaller crops. the teacher sees large crops of the image
+(4) loss terms: cross-entropy between the output probabilities of a teacher and a student network
+cf. Dinov1https://arxiv.org/pdf/2104.14294 ... we have no class labels ?
+· teacher and student network have a K -dim output vector from a Linear layer
+P
+P
+P
+L = teacher crops x student crops x ′ ,x ′ ̸=x − d sm(ft (x ))[d] log(sm(fs (x ′ )/τ )[d])
+· use a temperature τ in the student softmax fs
+· center teacher logits by subtraction of a center vector
+· see eq(2) and eq(3), Algorithm 1 in https://arxiv.org/pdf/2104.14294
+
+| 26
+
+Dino v1/v2
+
+| 27
+
+L=
+
+X
+
+X
+
+−
+
+X
+
+teacher crops x student crops x ′ ,x ′ ̸=x
+
+sm(ft (x ))[d] log(sm(fs (x ′ )/τ )[d])
+
+d
+
+Observations:
+P
+⊙ − d sm(ft (x ))[d] log(sm(fs (x ′ )/τ )[d]) is simply the cross entropy between teacher probabilities
+on one crop x and student probabilities on another crop x ′
+⊙ use a temperature τ in the student softmax fs
+⊙ center teacher logits by subtraction of a center vector:
+ft (x ) 7→ ft (x ) − c, c 7→ mc + (1 − m)
+
+X
+
+ft (x )
+
+samples x
+
+Why the above ?
+⊙ centering of teacher logits prevents domination of one single output dimension
+⊙ temperature τ prevents convergence against the uniform distribution
+
+Dino v1/v2
+
+Dino v2 Oquab et al. https://arxiv.org/pdf/2304.07193
+⊙ additional patch/token-wise loss in DinoV2 (page 5 bottom in the paper), see also
+https://arxiv.org/pdf/2111.07832
+· mask randomly a certain percentage of student patches of the augmented image
+· compute a cross entropy for only the local features over masked patches between the teacher
+logits and the student logits.
+· idea: loss is computed only over masked patches, but the student transformer sees the whole
+image as input. Thus can learn to reconstruct the masked patches from the surrounding
+unmasked image features.
+
+| 28
+
+Dinov2
+
+Many small modifications: Table 1 in https://arxiv.org/pdf/2304.07193
+
+| 29
+
+Dinov2
+
+⊙ section 3 in the paper for data curation. Check the section Self-supervised image retrieval
+Data quality matters a lot but costs somewhat (48h*8*0.5 EUR):
+
+The whole processing is distributed on a compute cluster of 20 nodes equipped with 8 V100-32GB
+GPUs and takes less than two days to produce the LVD-142M dataset.
+
+| 30
+
+Dinov2
+
+Pretraining costs: low 10k Euro
+
+| 31
+
+

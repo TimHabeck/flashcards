@@ -1,0 +1,391 @@
+Intro to DL4MSc: Quantization
+Alexander Binder
+January 5, 2026
+
+Outline
+
+1 Quantization overview
+2 Recap
+
+|2
+
+Quantization - Goials
+
+goals:
+⊙ use less memory for inference
+⊙ use less inference time or inference compute
+· save energy = money during inference
+· embedded devices (drones) with limited mem, compute and battery capacity
+⊙ tradeoff: goal of low loss of accuracy compared to original weights
+
+|3
+
+Quantization
+
+Weight quantization:
+⊙ map FP32 weights to floating point weights with less space usage, eg FP16 or FP8, or to integer
+weights like INT8 or UINT8
+Activation quantization:
+⊙ map FP32 activations to floating point weights with less space usage, eg FP16 or FP8, or to
+integer values like INT8 or UINT8
+
+|4
+
+Quantization
+
+Learning goals
+⊙ explain QAT vs PTQ and the basic approach to QAT
+⊙ explain the basic symmetric and asymmetric quantization for PTQ
+⊙ explain the differences between dynamic and static activation quantization
+⊙ explain the simple baseline for fitting the parameters for asymmetric and symmetric
+(max-abs) quantization
+⊙ explain the idea of the parametrization of WX before quantization in Xiao et al. 2022
+
+|5
+
+Quantization
+
+for some nice graphics on FP32/16 types:
+https://newsletter.maartengrootendorst.com/p/a-visual-guide-to-quantization
+
+|6
+
+Quantization
+
+some papers:
+⊙ Sec. 3 in Wu et al. https://arxiv.org/pdf/2004.09602
+⊙ Nagel et al. https://arxiv.org/abs/2106.08295
+⊙ Xiao et al. https://arxiv.org/pdf/2211.10438
+⊙ Lin et al. https://arxiv.org/pdf/2306.00978
+
+|7
+
+Quantization
+
+some more difficult papers for bonus reading:
+⊙ Frantar et al. https://arxiv.org/abs/2210.17323 (difficult paper)
+⊙ Ashkboos et al. https://arxiv.org/pdf/2404.00456 (difficult paper)
+
+|8
+
+Quantization basics
+The basics: Several ways to quantize. Here: affine schemes.
+⊙ asymmetric quantization to unsigned integers
+xint = q(x |s, z, b) = clamp(round(x /s) + z, [0, 2b − 1]) ∈ {0, . . . , 2b − 1}
+x̂ = deq(xint |s, z) = s(xint − z) dequantization
+· two trainable parameters s scale, zero point z
+· quantization limits: qmin = s(0 − z), qmax = s(2b − 1 − z)
+· abs. rounding error:|x − x̂ | ≤ 0.5s
+⊙ symmetric quantization to signed integers:
+xint = q(x |s, b, −) = clamp(round(x /s), [−2b−1 , 2b−1 − 1]), z = 0
+x̂ = deq(xint |s) = sxint dequantization
+· z = 0, version here for signed integers. For non-neg maps (ReLU) one could use a version
+with unsigned integers
+
+|9
+
+Quantization
+
+next: quantization-aware training (QAT) vs post training quantization (PTQ):
+
+| 10
+
+Quantization
+
+quantization-aware training (QAT)
+(+) easy to implement
+(+) potentially better performance
+(–)!!! often infeasible for large LLMs (training costs)
+(-) fine-tuning-based variant usually needs some additional PTQ-based mitigations
+
+| 11
+
+Quantization
+
+post training quantization (PTQ)
+(+) the vanilla option with a given pretrained model
+(-) more elaborate to implement to deal with problems
+(-) potentially worse performance compare to quantization-aware training
+
+| 12
+
+quantization-aware training
+
+quantization-aware training (QAT):
+very simple idea:
+⊙ simulate effects of quantization during pretraining of the LLM
+
+| 13
+
+quantization-aware training
+
+| 14
+
+quantization-aware training (QAT):
+very simple idea:
+⊙ for every weight to be quantized apply in the forward pass a quantization followed by
+dequantization
+⊙ for every activation to be quantizated do the same in the forward pass
+ŵ = deq(q(w |s, z, b)|s, z, b)
+â = deq(q(a|s, z, b)|s, z, b)
+· simulates during training the rounding errors of quantization
+⊙ backward pass / gradients ? use straight-through-estimator:
+(
+1 if v ∈ [qmin , qmax ]
+d v̂
+(v ) =
+dv
+0 if v ∈
+/ [qmin , qmax ]
+(quantization is not differentiable ... )
+
+quantization-aware training
+
+if Batch-normalization folding is done at inference time, simulate this, as well:
+⊙ See section 3.2 in https://openaccess.thecvf.com/content cvpr 2018/papers/
+Jacob Quantization and Training CVPR 2018 paper.pdf
+⊙ simulate the fusion of the Batch normalization into the next convolution layer
+QAT in code: https://pytorch.org/blog/quantization-aware-training/
+
+| 15
+
+Quantization - PTQ variants
+
+next: flavours of post training quantization (PTQ):
+⊙ quantize weights only
+⊙ weight quantization and dynamic activation quantization
+⊙ weight quantization and static activation quantization
+
+| 16
+
+Quantization - PTQ variants
+
+next: flavours of post training quantization (PTQ):
+⊙ quantize weights only
+· memory reduction due to less weights
+· might lead to more efficiency if less GPUs are used (e.g. 70B params in FP32 ≈ 280GB)
+· speedups only possible with custom implementations of mixed-precision kernels for
+multiplications of int8 with fp32 or fp16, see eg Fig 9 in Lin et
+al. https://arxiv.org/pdf/2306.00978 for Ours(FP16) vs Ours(W4A16)
+
+| 17
+
+Quantization - PTQ variants
+
+⊙ common alternative: weight quantization and dynamic activation quantization
+· quantize activations to the same type as the weights on-the-fly. Therefore can use standard
+kernels for low FP or for INT8.
+· compute activation quantization parameters (s, z) for every input sample and every channel
+(+) no activation outliers
+(-) on the fly operations lead to compute overhead
+(-) reading FP32 activations can lead to higher mem bandwith compared to pure INT8 pipelines
+where activations are statically quantized!
+
+| 18
+
+Quantization - PTQ variants
+
+next: flavours of post training quantization (PTQ):
+⊙ weight quantization and static activation quantization
+· compute activation quantization parameters ((s, z) per layer) using a separate calibration
+dataset
+(-) need to deal with activations at inference time outside [qmin , qmax ] which were not seen in
+calibration samples. Thus often more complicated approaches
+(+) can lead to inference speedups due to lower memory bandwidth requirements
+
+| 19
+
+Quantization
+
+| 20
+
+A simple baseline for quantization:
+https://newsletter.maartengrootendorst.com/p/a-visual-guide-to-quantization
+⊙ asymmetric: fit (s, z). Given a set of activations {a} or weights {w }, map to [0, 2b − 1]
+⊙ Idea: fit min value to 0, fit max value to 2b − 1.
+We know that
+a 7→
+
+a − min({a})
+∈ [0, 1]
+max({a}) − min({a})
+
+Now need to multiply this only by 2b − 1, then separate it into an a-dependent term minus the
+offset: a/s − z
+
+Quantization
+
+| 21
+
+Try affine mapping of activations without rounding:
+a − min({a})
+∗ (2b − 1)
+max({a}) − min({a})
+2b − 1
+min({a})(2b − 1)
+=a
+−
+max({a}) − min({a}) max({a}) − min({a})
+
+a 7→
+
+next: write this as a/s − z:
+max({a}) − min({a})
+max({a}) − min({a})
+) − min({a})/(
+)
+b
+2 −1
+2b − 1
+= a/s − min({a})/s
+
+= a/(
+
+max({a}) − min({a})
+2b − 1
+⇒ z = −round(min({a})/s)
+⇒s=
+
+Quantization
+
+| 22
+
+A simple baseline for quantization:
+https://newsletter.maartengrootendorst.com/p/a-visual-guide-to-quantization
+⊙ asymmetric: fit (s, z). Given a set of activations {a} or weights {w }, map to [0, 2b − 1]
+max({a}) − min({a})
+2b − 1
+⇒ z = −round(min({a})/s)
+⇒s=
+
+If one would want to fit not in [0, 2b − 1] but into [−2b−1 , 2b−1 − 1], then zsym = z − 2b−1
+because [0, 2b − 1] − 2b−1 = [−2b−1 , 2b−1 − 1]
+
+Quantization
+
+| 23
+
+A simple baseline for quantization:
+https://newsletter.maartengrootendorst.com/p/a-visual-guide-to-quantization
+⊙ symmetric: fit s only. Given a set of activations {a} or weights {w } , map to [−2b−1 , 2b−1 − 1]
+⊙ therefore max({a}) 7→ v < 2b−1 − 1 , min({a}) 7→ v > −2b−1
+a simple solution is dividing by the maximum absolute value to get something bounded in
+[−1, +1] , after that multiply by 2b−1 :
+a 7→
+
+a
+a
+7→
+∗ (2b−1 − 1)
+max({|a|})
+max({|a|})
+|
+{z
+}
+∈[−1,+1]
+
+⇒ s = max({|a|})/(2b−1 − 1)
+
+Quantization
+
+| 24
+
+Symmetric or asymmetric? Consider dequantization step to compute activation times weight:
+deq(w )deq(x ) = sw (wint − zw )sx (xint − zint ) = sw sx (wint − zw )(xint − zint )
+= sw sx wint xint − sw sx xint zw − sw sx zint wint + sw sx zint zw
+
+⊙ first term: data-dependent, present if all symmetric
+⊙ terms in blue: data-independent, can be precomputed once
+⊙ last term in red: data-dependent, can be dropped if weight quantization is done symmetrically.
+For this reason often weight quantization is done symmetrically
+
+baseline for Quantization
+
+baseline for quantization:
+⊙ use the asymmetric variant for activations, get max /min-values either on the fly (for weights +
+dynamic) or compute max /min-values on activations on calibration data
+⊙ round weights to nearest after quantization
+⊙ often big loss in accuracy with this, eg Tables 3 and 4 in Frantar et
+al. https://arxiv.org/pdf/2210.17323, see also the RTN baseline results in Lin et
+al. https://arxiv.org/pdf/2306.00978
+⊙ next: some better approaches
+
+| 25
+
+SmoothQuant
+a well readable paper with an improved method: Xiao et al. https://arxiv.org/pdf/2211.10438
+
+| 26
+
+SmoothQuant
+
+a well readable paper with an improved method: Xiao et al. https://arxiv.org/pdf/2211.10438
+⊙ see Section 3
+⊙ see ”However, per-channel activation quantization does not map well to hardware-accelerated
+GEMM kernels” on p3, right column
+⊙ uses W8A8 means INT8 for both
+⊙ Fig 8 for speedups
+
+| 27
+
+SmoothQuant
+
+| 28
+
+a well readable paper with an improved method: Xiao et al. https://arxiv.org/pdf/2211.10438
+idea:
+⊙ per sample activations have bigger scale difference issues than weights
+⊙ downscale activations and upscale weights before quantization:
+Y = XW = (Xdiag(s −1 ))(Wdiag(s))
+bW
+c
+(Xdiag(s −1 ))(Wdiag(s)) 7→ X
+The last equation say: quantize the scaled weights and activations after s was determined.
+⊙ need to find s by dynamic or static approaches
+
+SmoothQuant
+
+| 29
+
+⊙ before the actual quantization step: optimize on a set of calibration samples the tradeoff
+hyperparameter α, per-tensor (or, slower, per-token), see Table 2 in the paper:
+α
+
+sj = max |Xj | /max (|Wj |)1−α
+
+SmoothQuant
+
+| 30
+
+SmoothQuant to AWQ
+
+(out of exams):
+The AWQ paper https://arxiv.org/pdf/2306.00978 builds on a similar idea but with asymmetric data
+types for weights and activations – see section 4 there.
+
+| 31
+
+Quantization
+
+Further idea if quantization yields bad accuracy: Selective quantization
+⊙ quantize single layer, measure impact on accuracy, loop ove all layers
+⊙ obtain an order for best-quantizable layers using this greedy estimate
+⊙ quantize K best quantizable layers by dropping the most sensitive ones
+
+| 32
+
+Outline
+
+1 Quantization overview
+2 Recap
+
+| 33
+
+Recap
+
+⊙ LoRA and variants for better memory efficiency during finetuning
+⊙ quantization for memory and compute efficiency during inference
+
+| 34
+
+

@@ -1,0 +1,1706 @@
+Lecture 14:
+Self-Supervised Learning
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 1
+
+May 17, 2022
+
+Administrative
+- Assignment 3 due in two weeks 5/25
+- Midterm grade is out
+- Regrade request:
+- Gradescope regrade only for mistakes
+according to the current rubric
+- Teaching team will discuss concerns in MC & T/F
+next Monday
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 2
+
+May 17, 2022
+
+Last Lecture: Generative Modeling
+Given training data, generate new samples from same distribution
+
+learning
+
+pmodel(x
+)
+
+sampling
+
+Training data ~ pdata(x)
+
+Objectives:
+1. Learn pmodel(x) that approximates pdata(x)
+2. Sampling new x from pmodel(x)
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 3
+
+May 17, 2022
+
+Last Lecture: Generative Modeling
+
+Direct
+GAN
+
+Generative models
+Explicit density
+Tractable density
+Fully Visible Belief Nets
+- NADE
+- MADE
+- PixelRNN/CNN
+- NICE / RealNVP
+- Glow
+- Ffjord
+
+Implicit density
+Markov Chain
+
+Approximate density
+
+GSN
+
+Variational
+
+Markov Chain
+
+Variational Autoencoder
+
+Boltzmann Machine
+
+Figure copyright and adapted from Ian Goodfellow, Tutorial on Generative Adversarial Networks, 2017.
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 4
+
+May 17, 2022
+
+Generative vs. Self-supervised Learning
+● Both aim to learn from data without manual label annotation.
+● Generative learning aims to model data distribution pdata(x),
+e.g., generating realistic images.
+● Self-supervised learning methods solve “pretext” tasks that
+produce good features for downstream tasks.
+○ Learn with supervised learning objectives, e.g., classification,
+regression.
+○ Labels of these pretext tasks are generated automatically
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 5
+
+May 17, 2022
+
+Self-supervised pretext tasks
+Example: learn to predict image transformations / complete corrupted images
+
+?
+θ=?
+
+image completion
+
+1.
+2.
+
+rotation prediction
+
+“jigsaw puzzle”
+
+colorization
+
+Solving the pretext tasks allow the model to learn good features.
+We can automatically generate labels for the pretext tasks.
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 6
+
+May 17, 2022
+
+Generative vs. Self-supervised Learning
+
+Left: Drawing of a dollar bill from memory. Right: Drawing subsequently made
+with a dollar bill present. Image source: Epstein, 2016
+
+Learning to generate pixel-level details is often unnecessary; learn
+high-level semantic features with pretext tasks instead
+Source: Anand, 2020
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 7
+
+May 17, 2022
+
+How to evaluate a self-supervised learning method?
+We usually don’t care about the performance of the self-supervised
+learning task, e.g., we don’t care if the model learns to predict image
+rotation perfectly.
+Evaluate the learned feature encoders on downstream target tasks
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 8
+
+May 17, 2022
+
+How to evaluate a self-supervised learning method?
+feature
+extractor
+(e.g., a
+convnet)
+
+self-supervised
+learning
+lots of
+unlabeled
+data
+
+90°
+
+conv
+
+fc
+
+1. Learn good feature extractors from
+self-supervised pretext tasks, e.g.,
+predicting image rotations
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 9
+
+May 17, 2022
+
+How to evaluate a self-supervised learning method?
+feature
+extractor
+(e.g., a
+convnet)
+
+self-supervised
+learning
+lots of
+unlabeled
+data
+
+supervised
+learning
+
+evaluate on the
+target task
+e.g. classification, detection
+
+90°
+
+conv
+
+fc
+
+1. Learn good feature extractors from
+self-supervised pretext tasks, e.g.,
+predicting image rotations
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+bird
+small amount of
+labeled data on
+the target task
+
+conv
+
+linear
+classifier
+
+2. Attach a shallow network on the
+feature extractor; train the shallow
+network on the target task with small
+amount of labeled data
+
+Lecture 14 - 10
+
+May 17, 2022
+
+Broader picture
+
+Today’s lecture
+
+computer vision
+
+language modeling
+
+speech synthesis
+
+Wavenet (van den Oord et
+al., 2016)
+
+Doersch et al., 2015
+
+robot / reinforcement learning
+
+...
+Dense Object Net (Florence
+and Manuelli et al., 2018)
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+GPT3 (Brown, Mann,
+Ryder, Subbiah et al., 2020)
+
+Lecture 14 - 11
+
+May 17, 2022
+
+Today’s Agenda
+Pretext tasks from image transformations
+- Rotation, inpainting, rearrangement, coloring
+Contrastive representation learning
+- Intuition and formulation
+- Instance contrastive learning: SimCLR and MOCO
+- Sequence contrastive learning: CPC
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 12
+
+May 17, 2022
+
+Today’s Agenda
+Pretext tasks from image transformations
+- Rotation, inpainting, rearrangement, coloring
+Contrastive representation learning
+- Intuition and formulation
+- Instance contrastive learning: SimCLR and MOCO
+- Sequence contrastive learning: CPC
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 13
+
+May 17, 2022
+
+Pretext task: predict rotations
+
+Hypothesis: a model could recognize the correct rotation of an object
+only if it has the “visual commonsense” of what the object should look
+like unperturbed.
+(Image source: Gidaris et al. 2018)
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 14
+
+May 17, 2022
+
+Pretext task: predict rotations
+Self-supervised
+learning by rotating
+the entire input
+images.
+The model learns to
+predict which rotation
+is applied (4-way
+classification)
+(Image source: Gidaris et al. 2018)
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 15
+
+May 17, 2022
+
+Pretext task: predict rotations
+Self-supervised
+learning by rotating
+the entire input
+images.
+The model learns to
+predict which rotation
+is applied (4-way
+classification)
+(Image source: Gidaris et al. 2018)
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 16
+
+May 17, 2022
+
+Evaluation on semi-supervised learning
+Self-supervised learning on
+CIFAR10 (entire training set).
+Freeze conv1 + conv2
+Learn conv3 + linear layers
+with subset of labeled
+CIFAR10 data (classification).
+
+(Image source: Gidaris et al. 2018)
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 17
+
+May 17, 2022
+
+Transfer learned features to supervised learning
+Pretrained with full
+ImageNet supervision
+No pretraining
+
+Self-supervised learning on
+ImageNet (entire training
+set) with AlexNet.
+Finetune on labeled data
+from Pascal VOC 2007.
+Self-supervised learning with rotation prediction
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 18
+
+source: Gidaris et al. 2018
+
+May 17, 2022
+
+Visualize learned visual attentions
+
+(Image source: Gidaris et al. 2018)
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 19
+
+May 17, 2022
+
+Pretext task: predict relative patch locations
+
+(Image source: Doersch et al., 2015)
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 20
+
+May 17, 2022
+
+Pretext task: solving “jigsaw puzzles”
+
+(Image source: Noroozi & Favaro, 2016)
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 21
+
+May 17, 2022
+
+Transfer learned features to supervised learning
+
+“Ours” is feature learned from solving image Jigsaw puzzles (Noroozi &
+Favaro, 2016). Doersch et al. is the method with relative patch location
+(source: Noroozi & Favaro, 2016)
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 22
+
+May 17, 2022
+
+Pretext task: predict missing pixels (inpainting)
+
+Context Encoders: Feature Learning by Inpainting (Pathak et al., 2016)
+Source: Pathak et al., 2016
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 23
+
+May 17, 2022
+
+Learning to inpaint by reconstruction
+
+Learning to reconstruct the missing pixels
+Source: Pathak et al., 2016
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 24
+
+May 17, 2022
+
+Inpainting evaluation
+
+Input (context)
+
+reconstruction
+
+Source: Pathak et al., 2016
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 25
+
+May 17, 2022
+
+Learning to inpaint by reconstruction
+Loss = reconstruction + adversarial learning
+
+Adversarial loss between “real” images and inpainted images
+Source: Pathak et al., 2016
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 26
+
+May 17, 2022
+
+Inpainting evaluation
+
+Input (context)
+
+reconstruction
+
+adversarial
+
+recon + adv
+
+Source: Pathak et al., 2016
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 27
+
+May 17, 2022
+
+Transfer learned features to supervised learning
+
+Self-supervised learning on ImageNet training set, transfer to
+classification (Pascal VOC 2007), detection (Pascal VOC 2007), and
+semantic segmentation (Pascal VOC 2012)
+Source: Pathak et al., 2016
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 28
+
+May 17, 2022
+
+Pretext task: image coloring
+
+Source: Richard Zhang / Phillip Isola
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 29
+
+May 17, 2022
+
+Pretext task: image coloring
+
+Source: Richard Zhang / Phillip Isola
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 30
+
+May 17, 2022
+
+Learning features from colorization:
+Split-brain Autoencoder
+Idea: cross-channel predictions
+
+Source: Richard Zhang / Phillip Isola
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 31
+
+May 17, 2022
+
+Learning features from colorization:
+Split-brain Autoencoder
+
+Source: Richard Zhang / Phillip Isola
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 32
+
+May 17, 2022
+
+Learning features from colorization:
+Split-brain Autoencoder
+
+Source: Richard Zhang / Phillip Isola
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 33
+
+May 17, 2022
+
+Transfer learned features to supervised learning
+Self-supervised learning on
+ImageNet (entire training
+supervised
+set).
+this paper
+
+Use concatenated features
+from F1 and F2
+Labeled data is from the
+Places (Zhou 2016).
+
+Source: Zhang et al., 2017
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 34
+
+May 17, 2022
+
+Pretext task: image coloring
+
+Source: Richard Zhang / Phillip Isola
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 35
+
+May 17, 2022
+
+Pretext task: image coloring
+
+Source: Richard Zhang / Phillip Isola
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 36
+
+May 17, 2022
+
+Pretext task: video coloring
+Idea: model the temporal coherence of colors in videos
+how should I color these frames?
+
+reference frame
+
+...
+
+t=0
+
+t=1
+
+t=2
+
+t=3
+
+Source: Vondrick et al., 2018
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 37
+
+May 17, 2022
+
+Pretext task: video coloring
+Idea: model the temporal coherence of colors in videos
+how should I color these frames?
+
+reference frame
+
+Should be the same color!
+...
+
+t=0
+
+t=1
+
+t=2
+
+t=3
+
+Hypothesis: learning to color video frames should allow model to
+learn to track regions or objects without labels!
+Source: Vondrick et al., 2018
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 38
+
+May 17, 2022
+
+Learning to color videos
+Learning objective:
+Establish mappings
+between reference and
+target frames in a
+learned feature space.
+Use the mapping as
+“pointers” to copy the
+correct color (LAB).
+Source: Vondrick et al., 2018
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 39
+
+May 17, 2022
+
+Learning to color videos
+
+attention map on the
+reference frame
+
+Source: Vondrick et al., 2018
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 40
+
+May 17, 2022
+
+Learning to color videos
+
+attention map on the
+reference frame
+
+predicted color = weighted
+sum of the reference color
+
+Source: Vondrick et al., 2018
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 41
+
+May 17, 2022
+
+Learning to color videos
+
+attention map on the
+reference frame
+
+predicted color = weighted
+sum of the reference color
+
+loss between predicted color
+and ground truth color
+
+Source: Vondrick et al., 2018
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 42
+
+May 17, 2022
+
+Colorizing videos (qualitative)
+reference frame
+
+target frames (gray)
+
+predicted color
+
+Source: Google AI blog post
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 43
+
+May 17, 2022
+
+Colorizing videos (qualitative)
+reference frame
+
+target frames (gray)
+
+predicted color
+
+Source: Google AI blog post
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 44
+
+May 17, 2022
+
+Tracking emerges from colorization
+Propagate segmentation masks using learned attention
+
+Source: Google AI blog post
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 45
+
+May 17, 2022
+
+Tracking emerges from colorization
+Propagate pose keypoints using learned attention
+
+Source: Google AI blog post
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 46
+
+May 17, 2022
+
+Summary: pretext tasks from image
+transformations
+●
+
+Pretext tasks focus on “visual common sense”, e.g., predict rotations,
+inpainting, rearrangement, and colorization.
+
+●
+
+The models are forced learn good features about natural images, e.g.,
+semantic representation of an object category, in order to solve the
+pretext tasks.
+
+●
+
+We don’t care about the performance of these pretext tasks, but rather
+how useful the learned features are for downstream tasks (classification,
+detection, segmentation).
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 47
+
+May 17, 2022
+
+Summary: pretext tasks from image
+transformations
+●
+
+Pretext tasks focus on “visual common sense”, e.g., predict rotations,
+inpainting, rearrangement, and colorization.
+
+●
+
+The models are forced learn good features about natural images, e.g.,
+semantic representation of an object category, in order to solve the
+pretext tasks.
+
+●
+
+We don’t care about the performance of these pretext tasks, but rather
+how useful the learned features are for downstream tasks (classification,
+detection, segmentation).
+
+●
+
+Problems: 1) coming up with individual pretext tasks is tedious, and 2)
+the learned representations may not be general.
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 48
+
+May 17, 2022
+
+Pretext tasks from image transformations
+?
+θ=?
+
+image completion
+
+rotation prediction
+
+“jigsaw puzzle”
+
+colorization
+
+Learned representations may be tied to a specific pretext task!
+Can we come up with a more general pretext task?
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 49
+
+May 17, 2022
+
+A more general pretext task?
+?
+θ=?
+
+same object
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 50
+
+May 17, 2022
+
+A more general pretext task?
+?
+θ=?
+
+same object
+different object
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 51
+
+May 17, 2022
+
+Contrastive Representation Learning
+?
+θ=?
+
+attract
+repel
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 52
+
+May 17, 2022
+
+Today’s Agenda
+Pretext tasks from image transformations
+- Rotation, inpainting, rearrangement, coloring
+Contrastive representation learning
+- Intuition and formulation
+- Instance contrastive learning: SimCLR and MOCO
+- Sequence contrastive learning: CPC
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 53
+
+May 17, 2022
+
+Contrastive Representation Learning
+?
+θ=?
+
+attract
+repel
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 54
+
+May 17, 2022
+
+Contrastive Representation Learning
+?
+θ=?
+
+reference
+positive
+negative
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 55
+
+May 17, 2022
+
+A formulation of contrastive learning
+What we want:
+
+x: reference sample; x+ positive sample; x- negative sample
+Given a chosen score function, we aim to learn an encoder
+function f that yields high score for positive pairs (x, x+) and
+low scores for negative pairs (x, x-).
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 56
+
+May 17, 2022
+
+A formulation of contrastive learning
+Loss function given 1 positive sample and N - 1 negative samples:
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 57
+
+May 17, 2022
+
+A formulation of contrastive learning
+Loss function given 1 positive sample and N - 1 negative samples:
+
+...
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 58
+
+May 17, 2022
+
+A formulation of contrastive learning
+Loss function given 1 positive sample and N - 1 negative samples:
+
+score for the
+positive pair
+
+score for the N-1
+negative pairs
+
+This seems familiar …
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 59
+
+May 17, 2022
+
+A formulation of contrastive learning
+Loss function given 1 positive sample and N - 1 negative samples:
+
+score for the
+positive pair
+
+score for the N-1
+negative pairs
+
+This seems familiar …
+Cross entropy loss for a N-way softmax classifier!
+I.e., learn to find the positive sample from the N samples
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 60
+
+May 17, 2022
+
+A formulation of contrastive learning
+Loss function given 1 positive sample and N - 1 negative samples:
+
+Commonly known as the InfoNCE loss (van den Oord et al., 2018)
+A lower bound on the mutual information between f(x) and f(x+)
+
+The larger the negative sample size (N), the tighter the bound
+Detailed derivation: Poole et al., 2019
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 61
+
+May 17, 2022
+
+SimCLR: A Simple Framework for Contrastive Learning
+Cosine similarity as the score function:
+
+Use a projection network g(·) to project
+features to a space where contrastive
+learning is applied
+Generate positive samples through data
+augmentation:
+● random cropping, random color
+distortion, and random blur.
+Source: Chen et al., 2020
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 62
+
+May 17, 2022
+
+SimCLR: generating positive samples from
+data augmentation
+
+Source: Chen et al., 2020
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 63
+
+May 17, 2022
+
+*We use a slightly different
+formulation in the assignment.
+You should follow the
+assignment instructions.
+
+SimCLR
+Generate a positive pair
+by sampling data
+augmentation functions
+
+Source: Chen et al., 2020
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 64
+
+May 17, 2022
+
+*We use a slightly different
+formulation in the assignment.
+You should follow the
+assignment instructions.
+
+SimCLR
+Generate a positive pair
+by sampling data
+augmentation functions
+
+InfoNCE loss:
+Use all non-positive
+samples in the
+batch as x Source: Chen et al., 2020
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 65
+
+May 17, 2022
+
+*We use a slightly different
+formulation in the assignment.
+You should follow the
+assignment instructions.
+
+SimCLR
+Generate a positive pair
+by sampling data
+augmentation functions
+
+InfoNCE loss:
+Use all non-positive
+samples in the
+batch as x -
+
+Iterate through and
+use each of the 2N
+sample as reference,
+compute average loss
+
+Source: Chen et al., 2020
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 66
+
+May 17, 2022
+
+SimCLR: mini-batch training
+“Affinity matrix”
+
+list of positive pairs
+
+Each 2k and 2k + 1
+element is a positive pair
+*We use a slightly different formulation in the assignment.
+You should follow the assignment instructions.
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 67
+
+May 17, 2022
+
+SimCLR: mini-batch training
+“Affinity matrix”
+
+list of positive pairs
+
+Each 2k and 2k + 1
+element is a positive pair
+*We use a slightly different formulation in the assignment.
+You should follow the assignment instructions.
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+= classification label for each row
+
+Lecture 14 - 68
+
+May 17, 2022
+
+Training linear classifier on SimCLR features
+Train feature encoder on
+ImageNet (entire training set)
+using SimCLR.
+Freeze feature encoder, train a
+linear classifier on top with
+labeled data.
+
+Source: Chen et al., 2020
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 69
+
+May 17, 2022
+
+Semi-supervised learning on SimCLR features
+Train feature encoder on
+ImageNet (entire training set)
+using SimCLR.
+Finetune the encoder with 1% /
+10% of labeled data on ImageNet.
+
+Source: Chen et al., 2020
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 70
+
+May 17, 2022
+
+SimCLR design choices: projection head
+Linear / non-linear projection heads improve
+representation learning.
+A possible explanation:
+● contrastive learning objective may discard
+useful information for downstream tasks
+● representation space z is trained to be
+invariant to data transformation.
+● by leveraging the projection head g(ᐧ),
+more information can be preserved in the
+h representation space
+
+Source: Chen et al., 2020
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 71
+
+May 17, 2022
+
+SimCLR design choices: large batch size
+Large training batch size is crucial for
+SimCLR!
+
+Large batch size causes large memory
+footprint during backpropagation:
+requires distributed training on TPUs
+(ImageNet experiments)
+
+Source: Chen et al., 2020
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 72
+
+May 17, 2022
+
+Momentum Contrastive Learning (MoCo)
+no_grad
+
+Key differences to SimCLR:
+●
+
+Keep a running queue of keys
+(negative samples).
+
+●
+
+Compute gradients and update the
+encoder only through the queries.
+
+●
+
+Decouple min-batch size with the
+number of keys: can support a large
+number of negative samples.
+
+Source: He et al., 2020
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 73
+
+May 17, 2022
+
+Momentum Contrastive Learning (MoCo)
+no_grad
+
+Key differences to SimCLR:
+●
+
+Keep a running queue of keys
+(negative samples).
+
+●
+
+Compute gradients and update the
+encoder only through the queries.
+
+●
+
+Decouple min-batch size with the
+number of keys: can support a large
+number of negative samples.
+
+●
+
+The key encoder is slowly progressing
+through the momentum update rules:
+
+Source: He et al., 2020
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 74
+
+May 17, 2022
+
+MoCo
+Generate a positive pair
+by sampling data
+augmentation functions
+Use the running
+queue of keys as the
+negative samples
+
+No gradient through
+the positive sample
+
+InfoNCE loss
+Update f_k through
+momentum
+
+Update the FIFO
+negative sample queue
+
+Source: He et al., 2020
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 75
+
+May 17, 2022
+
+“MoCo V2”
+
+A hybrid of ideas from SimCLR and MoCo:
+● From SimCLR: non-linear projection head and strong data
+augmentation.
+● From MoCo: momentum-updated queues that allow training
+on a large number of negative samples (no TPU required!).
+Source: Chen et al., 2020
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 76
+
+May 17, 2022
+
+MoCo vs. SimCLR vs. MoCo V2
+Key takeaways:
+●
+
+Non-linear projection head and
+strong data augmentation are crucial
+for contrastive learning.
+
+Source: Chen et al., 2020
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 77
+
+May 17, 2022
+
+MoCo vs. SimCLR vs. MoCo V2
+Key takeaways:
+●
+
+Non-linear projection head and
+strong data augmentation are crucial
+for contrastive learning.
+
+●
+
+Decoupling mini-batch size with
+negative sample size allows
+MoCo-V2 to outperform SimCLR with
+smaller batch size (256 vs. 8192).
+
+Source: Chen et al., 2020
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 78
+
+May 17, 2022
+
+MoCo vs. SimCLR vs. MoCo V2
+Key takeaways:
+●
+
+Non-linear projection head and
+strong data augmentation are crucial
+for contrastive learning.
+
+●
+
+Decoupling mini-batch size with
+negative sample size allows
+MoCo-V2 to outperform SimCLR with
+smaller batch size (256 vs. 8192).
+
+●
+
+… all with much smaller memory
+footprint! (“end-to-end” means
+SimCLR here)
+Source: Chen et al., 2020
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 79
+
+May 17, 2022
+
+Instance vs. Sequence Contrastive Learning
+
+Source: van den Oord et al., 2018
+
+Instance-level contrastive learning:
+
+Sequence-level contrastive learning:
+
+contrastive learning based on
+positive & negative instances.
+Examples: SimCLR, MoCo
+
+contrastive learning based on
+sequential / temporal orders.
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Example: Contrastive Predictive Coding (CPC)
+
+Lecture 14 - 80
+
+May 17, 2022
+
+Contrastive Predictive Coding (CPC)
+Contrastive: contrast between
+“right” and “wrong” sequences
+using contrastive learning.
+Predictive: the model has to
+predict future patterns given the
+current context.
+positive
+context
+
+Coding: the model learns useful
+feature vectors, or “code”, for
+downstream tasks, similar to other
+self-supervised methods.
+
+negative
+Figure source
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Source: van den Oord et al., 2018,
+
+Lecture 14 - 81
+
+May 17, 2022
+
+Contrastive Predictive Coding (CPC)
+1. Encode all samples in a sequence
+into vectors zt = genc(xt )
+
+positive
+context
+negative
+Figure source
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Source: van den Oord et al., 2018,
+
+Lecture 14 - 82
+
+May 17, 2022
+
+Contrastive Predictive Coding (CPC)
+1. Encode all samples in a sequence
+into vectors zt = genc(xt )
+2. Summarize context (e.g., half of a
+sequence) into a context code ct using
+an auto-regressive model (gar). The
+original paper uses GRU-RNN here.
+
+positive
+context
+negative
+Figure source
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Source: van den Oord et al., 2018,
+
+Lecture 14 - 83
+
+May 17, 2022
+
+Contrastive Predictive Coding (CPC)
+1. Encode all samples in a sequence
+into vectors zt = genc(xt )
+2. Summarize context (e.g., half of a
+sequence) into a context code ct using
+an auto-regressive model (gar)
+3. Compute InfoNCE loss between the
+context ct and future code zt+k using
+the following time-dependent score
+function:
+positive
+context
+
+, where Wk is a trainable matrix.
+negative
+
+Figure source
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Source: van den Oord et al., 2018,
+
+Lecture 14 - 84
+
+May 17, 2022
+
+CPC example: modeling audio sequences
+
+Source: van den Oord et al., 2018,
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 85
+
+May 17, 2022
+
+CPC example: modeling audio sequences
+
+Linear classification on trained
+representations (LibriSpeech dataset)
+Source: van den Oord et al., 2018,
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 86
+
+May 17, 2022
+
+CPC example: modeling visual context
+Idea: split image into patches, model rows of patches from top to bottom
+as a sequence. I.e., use top rows as context to predict bottom rows.
+
+Source: van den Oord et al., 2018,
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 87
+
+May 17, 2022
+
+CPC example: modeling visual context
+●
+●
+
+Compares favorably with other pretext
+task-based self-supervised learning method.
+Doesn’t do as well compared to newer
+instance-based contrastive learning
+methods on image feature learning.
+
+Source: van den Oord et al., 2018,
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 88
+
+May 17, 2022
+
+Summary: Contrastive Representation Learning
+A general formulation for contrastive learning:
+
+InfoNCE loss: N-way classification among positive and negative samples
+
+Commonly known as the InfoNCE loss (van den Oord et al., 2018)
+A lower bound on the mutual information between f(x) and f(x+)
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 89
+
+May 17, 2022
+
+Summary: Contrastive Representation Learning
+SimCLR: a simple framework for contrastive
+representation learning
+● Key ideas: non-linear projection head to
+allow flexible representation learning
+● Simple to implement, effective in learning
+visual representation
+● Requires large training batch size to be
+effective; large memory footprint
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 90
+
+May 17, 2022
+
+Summary: Contrastive Representation Learning
+MoCo (v1, v2): contrastive learning using
+momentum sample encoder
+● Decouples negative sample size from
+minibatch size; allows large batch training
+without TPU
+● MoCo-v2 combines the key ideas from
+SimCLR, i.e., nonlinear projection head,
+strong data augmentation, with momentum
+contrastive learning
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 91
+
+May 17, 2022
+
+Summary: Contrastive Representation Learning
+CPC: sequence-level contrastive learning
+● Contrast “right” sequence with “wrong”
+sequence.
+● InfoNCE loss with a time-dependent score
+function.
+● Can be applied to a variety of learning
+problems, but not as effective in learning
+image representations compared to
+instance-level methods.
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 92
+
+May 17, 2022
+
+Other examples
+Contrastive learning between image and natural language sentences
+
+CLIP (Contrastive Language–Image Pre-training) Radford et al., 2021
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 93
+
+May 17, 2022
+
+Other examples
+Contrastive learning on pixel-wise feature descriptors
+
+Dense Object Net, Florence et al., 2018
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 94
+
+May 17, 2022
+
+Other examples
+
+Dense Object Net, Florence et al., 2018
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 95
+
+May 17, 2022
+
+Other examples
+
+Dense Object Net, Florence et al., 2018
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 96
+
+May 17, 2022
+
+Next time: Low-Level Vision
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 97
+
+May 17, 2022
+
+Today’s Agenda
+Pretext tasks from image transformations
+- Rotation, inpainting, rearrangement, coloring
+Contrastive representation learning
+- Intuition and formulation
+- Instance contrastive learning: SimCLR and MOCO
+- Sequence contrastive learning: CPC
+Frontier:
+- Contrastive Language Image Pre-training (CLIP)
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 98
+
+May 17, 2022
+
+Frontier: Contrastive Language–Image
+Pre-training (CLIP)
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 99
+
+May 17, 2022
+
+Self-Supervised Learning
+General idea: pretend there is a part of the data you don’t know and train
+the neural network to predict that.
+
+Source: Lecun 2019 Keynote at ISSCC
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 100
+
+May 17, 2022
+
+“The Cake of Learning”
+
+downstream
+tasks
+feature
+extractor
+Learn good
+features through
+self-supervision
+
+Source: Lecun 2019 Keynote at ISSCC
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 101
+
+May 17, 2022
+
+Can we do better?
+
+SimCLR
+
+Momentum Contrast
+(MoCo)
+Source: Chen et al., 2020b
+
+Fei-Fei Li, Jiajun Wu, Ruohan Gao
+
+Lecture 14 - 102
+
+May 17, 2022
+
+

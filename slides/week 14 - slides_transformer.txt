@@ -1,0 +1,699 @@
+Vision Transformers
+Prof. Dr. Alexander Binder
+January 10, 2026
+
+links
+
+know where to look for
+⊙ http://d2l.ai/chapter attention-mechanisms-and-transformers/index.html
+⊙ https://web.eecs.umich.edu/∼justincj/slides/eecs498/WI2022/598 WI2022 lecture18.pdf
+⊙ a good video https://www.youtube.com/watch?v=vsqKGZT8Qn8
+⊙ video: https://www.youtube.com/watch?v=jzPbx9Y0vHg 50 mins
+⊙ for a slow explanation of the attention: https://www.youtube.com/watch?v=l4KitGnDXxo
+⊙ for a broader look, but less technical https://www.youtube.com/watch?v=XfpMkf4rD6E
+
+|2
+
+Key Papers
+
+⊙ the first Vision Transformer, hard to train: https://arxiv.org/abs/2010.11929
+⊙ DeiT - an improvement https://arxiv.org/abs/2012.12877
+⊙ Swin V1 - https://arxiv.org/abs/2103.14030
+⊙ Swin V2 - PostLN architecture https://arxiv.org/abs/2111.09883
+
+|3
+
+Takeaway points
+
+Takeaway points
+at the end of this lecture you should be able to:
+⊙ ...
+
+|4
+
+Outline
+
+1 ViT Architecture
+2 Position Encodings
+3 Feature compute block in ViT and others
+4 DEiT
+5 Swin Transformers
+6 What else?
+
+|5
+
+ViT architecture
+
+credit: https://arxiv.org/pdf/2010.11929.pdf
+
+|6
+
+ViT architecture
+
+|7
+
+⊙ the compute flow: min 5:20 at
+https://www.youtube.com/watch?v=vsqKGZT8Qn8
+⊙ processes a sequence in one step, outputs another sequence.
+⊙ input: vector of [class] token +N vectors: ([cls], f1 , . . . , fn )
+⊙ output: N + 1 vectors: y0 , . . . , yn
+credit: https://arxiv.org/pdf/2010.11929.pdf
+
+ViT architecture
+
+|8
+
+⊙ Divide image in patches of 32 × 32, Linearly project each patch,
+flatten the patch into a vector.
+Then: (224, 224, 3) image results in a sequence of 7 ∗ 7 patches
+of dimensionality 32 ∗ 32 ∗ 3 before linear projection.
+⊙ process each patch (of 7 ∗ 7) by a sequence of transformer
+decoders, in the beginning of the sequence add the [cls] token
+patch
+credit: https://arxiv.org/pdf/2010.11929.pdf
+
+⊙ collect feature from the output of the [cls] token patch for use
+with the classification head
+
+ViT architecture
+
+|9
+
+The [cls] token trick - as replacement for adaptive average pooling
+⊙ problem: one gets a feature vector for every inputted patch.
+Which one of them to use for classification ?
+⊙ one used only the feature vector of the [cls] token. During
+training backpropagation will ensure that it will accumulate via
+attention all information from all the image-patch-tokens !
+· Why? because only the feature vector from the [cls]
+token is connected to the classification head of the ViT.
+So, prediction information in the forward pass and
+gradients in the backward pass flow through this token.
+credit: https://arxiv.org/pdf/2010.11929.pdf
+
+see e.g. https://datascience.stackexchange.com/questions/
+90649/class-token-in-vit-and-bert
+https://datascience.stackexchange.com/questions/77044/
+bert-transformer-why-bert-transformer-uses-cls-token-for-classificatio
+
+Outline
+
+1 ViT Architecture
+2 Position Encodings
+3 Feature compute block in ViT and others
+4 DEiT
+5 Swin Transformers
+6 What else?
+
+| 10
+
+Position Encodings
+
+| 11
+
+min 18:14 in https://www.youtube.
+com/watch?v=vsqKGZT8Qn8
+
+v0
+In convolutions one combines neighboring pixels together. In
+attention computation, there is no information available about
+which feature vectors are close to each other.
+”Position-Invariance” of computed features.
+
+q0
+q1
+q2
+
+⊙ Goal: when training the linear layers for the similarity
+computation, allow the network to know about the position
+of a feature vector
+⊙ include information about position by adding (+) some
+position information to the feature by so called position
+encodings
+
+v1
+
+v2
+
+w00 w01 w02
+w10 w11 w12
+w20 w21 w22
+softmax
+
+q0
+q1
+q2
+
+s00 s01 s02
+s10 s11 s12
+s20 s21 s22
+k0
+
+k1
+
+k2
+
+Position Encodings
+
+| 12
+
+In convolutions one combines neighboring pixels
+together. In attention computation, there is no
+information available about which feature vectors are
+close to each other. ”Position-Invariance” of computed
+features.
+
+one example of absolute position encodings:
+the original text transformer in Vaswani et al.:
+(
+sin(10000−j/d t) j even
+ptj =
+cos(10000−j/d t) j odd
+
+⊙ Goal: when training the linear layers for the
+similarity computation, allow the network to know
+about the position of a feature vector
+
+t - index of element in a sequence, j - feature
+dimension index.
+
+⊙ include information about position by adding (+)
+some position information to the feature by so
+called position encodings
+
+⊙ original text transformer: Fixed pattern
+ptj to be added.
+https://machinelearningmastery.com/
+a-gentle-introduction-to-positional-encoding-i
+
+Position Encodings
+
+In convolutions one combines neighboring pixels
+together. In attention computation, there is no
+information available about which feature vectors are
+close to each other. ”Position-Invariance” of computed
+features.
+
+| 13
+
+ViT models:
+⊙ see self.pos_embedding in https://
+github.com/pytorch/vision/blob/main/
+torchvision/models/vision transformer.py
+
+⊙ Goal: when training the linear layers for the
+similarity computation, allow the network to know
+about the position of a feature vector
+
+⊙ trainable pattern, for each sequence
+element (= patch) one pattern to be
+added (x + p)
+
+⊙ include information about position by adding (+)
+some position information to the feature by so
+called position encodings
+
+⊙ see next slide for how its similarity to all
+other pattern looks after training
+
+position embedding in the ViT architecture
+
+⊙ position embedding as trainable patch vector: see Fig 7 its
+similarities in https://arxiv.org/pdf/2010.11929.pdf
+⊙ one vector for each patch.
+⊙ shown for 7x7 patches of size 32 (7 ∗ 32 = 224).
+⊙ shown are cosine similarities between embedding for i-th row
+and k-th column – and all other 7 ∗ 7 patterns. Seems to learn
+a relative position intersection of the two patches for the
+similarity
+credit: https://arxiv.org/pdf/2010.11929.pdf
+
+| 14
+
+Position Encodings
+
+In convolutions one combines neighboring pixels
+together. In attention computation, there is no
+information available about which feature vectors are
+close to each other. ”Position-Invariance” of computed
+features.
+⊙ Goal: when training the linear layers for the
+similarity computation, allow the network to know
+about the position of a feature vector
+⊙ include information about position by adding (+)
+some position information to the feature by so
+called position encodings
+
+| 15
+
+⊙ Swin-Transformer: bias term instead of
+pattern!
+√
+Att = Softmax (QK ⊤ / d + B)V
+note: QK ⊤ is a (M)2 × (M)2 -matrix
+indexed by (i, j), (i ′ , j ′ ).
+· (i, j) query patch location
+· (i ′ , j ′ ) key/value patch location
+⊙ The added value B[x , y , h] depends on
+the relative difference (i − i ′ , j − j ′ ) of
+positions.
+⊙ B[i − i ′ , j − j ′ , h] is a trainable bias term
+- see
+self.relative_position_bias_table
+in https://github.com/pytorch/vision/
+blob/main/torchvision/models/
+vision transformer.py
+
+Outline
+
+1 ViT Architecture
+2 Position Encodings
+3 Feature compute block in ViT and others
+4 DEiT
+5 Swin Transformers
+6 What else?
+
+| 16
+
+one transformer block
+
+| 17
+
+We will build a network as a sequence of so-called transformer decoder blocks.
+
+⊙ why MLP?
+feature.shape = (bsize, seqlen, dim) applies
+the simplest non-linearity onto attention
+feature which mixed content across tokens
+and captured context from other tokens
+⊙ layernorm can be applied before the
+attention/mlp blocks (pre-LN) or after
+(post-LN) or sandwiching each block
+(peri-LN)
+
+one transformer block
+
+| 18
+
+We will build a network as a sequence of so-called transformer decoder blocks.
+
+⊙ vision: 1 token = 1 image patch
+⊙ attention is computed for each token
+separately. Means compute for each image
+patch a weighted combination of other image
+patches.
+⊙ important: MLP is applied for each token
+separately. Does not mix tokens. Only
+attention combines image patches.
+
+Post-LN vs Pre-LN
+
+| 19
+
+https://arxiv.org/pdf/2002.04745
+⊙ post-LN requires a learning rate warmup for
+training
+
+Peri-LN
+
+| 20
+
+Peri-LN https://arxiv.org/html/2502.02732v1
+⊙ 2x LN: before and right after each Attention
+and MLP block
+
+Difference to Text transformers?
+
+⊙ Vision Transformers for classification do not aim at sequential generation. They
+
+accumulate information at the last layer in the sequence position for the [CLS] token.
+⊙ Position Embeddings in Vision Transformers might be different: trainable patterns with
+
+absolute indices or trainable bias terms depending on relative position differences.
+⊙ linear learning rate warmup is common!!
+· The first K epochs do not use the actual learning rate, but for k < K use: lr = η k+1
+K < η.
+
+| 21
+
+Outline
+
+1 ViT Architecture
+2 Position Encodings
+3 Feature compute block in ViT and others
+4 DEiT
+5 Swin Transformers
+6 What else?
+
+| 22
+
+A disadvantage of ViT
+
+ViT is worse when trained from scratch on ImageNet-1k ... than Efficientnets!
+naively trained ViT needs the much larger ImageNet-21k (14 Mill Images) to perform
+comparably to strong CNNs such as efficientnets trained on ImageNet-1k (1.3 Mill Images) .
+A Solution: DEiT by Touvron et al. https://arxiv.org/abs/2012.12877
+
+| 23
+
+DeIT
+
+Touvron et al. https://arxiv.org/abs/2012.12877
+⊙ goal: training of ViT on the normal ImageNet-1K (meaning of data-efficient) to achieve
+comparable performance to CNNs trained on ImageNet-1K
+⊙ observation(!): training using hard predicted labels from a CNN as teacher is better than using
+the imagenet labels (Table 3) and than using transformer teachers (Table 2)
+⊙ solution: train with a sum of two losses: CE with imagenet labels, CE with hard teacher labels.
+For CE with hard teacher label add a [distillation] token, similar to the [cls] token.
+⊙ [distillation] token: collect outputs for CE for the hard teacher labels, trainable patch.
+⊙ predict using average of both outputs (Table 3) called class embedding and distillation embedding
+
+| 24
+
+DeIT
+
+| 25
+
+Touvron et al. https://arxiv.org/abs/2012.12877
+⊙ training of ViT on the normal ImageNet-1K (meaning of data-efficient) to achieve comparable
+performance to CNNs trained on ImageNet-1K
+⊙ observation: training using hard predicted labels from a CNN as teacher is better than using the
+imagenet labels (Table 3) and than using transformer teachers (Table 2)
+⊙ train with a sum of two losses: CE with imagenet labels, CE with hard teacher labels. For CE
+with hard teacher label add a [distillation] token, similar to the [cls] token.
+⊙ more tricks:
+· Two stage training: at first on 224, then on 336 resolution. teacher has same resolution as
+student.
+· train with more data augmentation (Table 9)
+
+Outline
+
+1 ViT Architecture
+2 Position Encodings
+3 Feature compute block in ViT and others
+4 DEiT
+5 Swin Transformers
+6 What else?
+
+| 26
+
+Swin Transformer
+
+| 27
+
+https://medium.com/nerd-for-tech/
+paper-summary-swin-transformer-hierarchical-vision-transformer-using-shifted-windows-a6c09c34c79
+Liu et al. https://arxiv.org/pdf/2103.14030.pdf
+https://arxiv.org/pdf/2111.09883.pdf
+
+Swin Transformer
+
+Compare CNNs vs ViT transformer:
+⊙ e.g. slide 89 in
+
+https://web.eecs.umich.edu/∼justincj/slides/eecs498/WI2022/598 WI2022 lecture18.pdf
+⊙ CNNs are hierarchical: later layers have lower resolution and more channels
+⊙ ViT is stacked but everywhere equal resolution and channel counts
+⊙ have seen that for object detection and segmentation using feature maps of different
+
+resolutions is a good idea
+
+| 28
+
+Swin Transformer
+
+Liu et al. https://arxiv.org/pdf/2103.14030.pdf
+Two bigger ideas in Swin Transformer:
+⊙ Patch merging
+⊙ Shifted windows for multihead Self-attention computation
+
+| 29
+
+Swin Transformer: Patch merging
+
+| 30
+
+e.g. slide 93 in
+https://web.eecs.umich.edu/∼justincj/slides/eecs498/WI2022/598 WI2022 lecture18.pdf
+⊙ Start: divide image in patches of size (4, 4),
+got h/4 × w /4 many patches of dim 48
+⊙ output of first transformer decoder: a feature
+map of size (C , H/4, W /4)
+⊙ next: Patch merging: merge neighboring
+patches in a (2, 2) neighborhood.
+⊙ result: next transformer decoder processes a
+feature map of size (C , H/8, W /8)
+
+credit: https://arxiv.org/pdf/2103.14030.pdf
+
+⊙ internally increase number of channels by
+doubling. output result will be
+(2C , H/8, W /8)
+⊙ happens at the start of every but the first
+swin transformer block
+
+Swin Transformer: Patch merging
+
+| 31
+
+e.g. slide 93 in
+https://web.eecs.umich.edu/∼justincj/slides/eecs498/WI2022/598 WI2022 lecture18.pdf
+
+⊙ Start: divide image in patches of size (4, 4),
+got h/4 × w /4 many patches of dim 48
+⊙ output of first transformer decoder: a feature
+map of size (C , H/4, W /4)
+
+credit: https://arxiv.org/pdf/2103.14030.pdf
+
+Swin Transformer: Patch merging
+
+| 32
+
+e.g. slide 96 in
+https://web.eecs.umich.edu/∼justincj/slides/eecs498/WI2022/598 WI2022 lecture18.pdf
+⊙ output of first transformer decoder: a feature
+map of size (C , H/4, W /4)
+⊙ next: Patch merging: merge neighboring
+patches in a (2, 2) neighborhood.
+⊙ result: next transformer decoder processes a
+feature map of size (C , H/8, W /8).
+New Patch size: (8,8)
+
+credit: https://arxiv.org/pdf/2103.14030.pdf
+
+⊙ internally increase number of channels by
+doubling. output feature map will be
+(2C , H/8, W /8)
+
+Swin Transformer: Patch merging
+
+| 33
+
+e.g. slide 96 in
+https://web.eecs.umich.edu/∼justincj/slides/eecs498/WI2022/598 WI2022 lecture18.pdf
+⊙ output of first transformer decoder: a feature
+map of size (C , H/4, W /4)
+⊙ next: Patch merging: merge neighboring
+patches in a (2, 2) neighborhood.
+
+credit: https://arxiv.org/pdf/2103.14030.pdf
+
+⊙ next transformer decoder processes a feature
+map of half spatial size, doubled number of
+channels
+
+Swin Transformer: Patch merging
+e.g. slide 96 in
+https://web.eecs.umich.edu/∼justincj/slides/eecs498/WI2022/598 WI2022 lecture18.pdf
+
+credit: https://arxiv.org/pdf/2103.14030.pdf
+
+⊙ patch merging followed by a number of swin transformer blocks
+⊙ observation: number of swin transformer blocks is always even
+
+| 34
+
+Swin Transformer: Windowed attention
+
+credit: https://arxiv.org/pdf/2103.14030.pdf
+
+if self-attention would be computed directly:
+⊙ (224,224) image has 562 patches of size (4,4) at index locations given by (56, 56) positions. In
+the self-attention this is 564 ≈ 9.8 Mill entries.
+
+| 35
+
+Swin Transformer: Windowed attention
+
+| 36
+
+e.g. slide 101 in
+https://web.eecs.umich.edu/∼justincj/slides/eecs498/WI2022/598 WI2022 lecture18.pdf
+
+credit: https://arxiv.org/pdf/2103.14030.pdf
+
+⊙ in a grid of (K , L) tokens, the self-attention matrix is
+of size nheads K 2 L2 .
+⊙ Solution: divide image into windows. Each window
+has M × M tokens. Here: (4, 4)
+⊙ perform self-attention only for the patches within a
+window
+
+Swin Transformer: Windowed attention
+
+| 37
+
+e.g. slide 101 in
+https://web.eecs.umich.edu/∼justincj/slides/eecs498/WI2022/598 WI2022 lecture18.pdf
+
+credit: https://arxiv.org/pdf/2103.14030.pdf
+
+⊙ in a grid of (K , L) tokens, the self-attention matrix is
+of size nheads K 2 L2 .
+⊙ Solution: Divide image into windows. Each window
+has M × M tokens. Here: (4, 4)
+⊙ perform self-attention only for the patches within a
+window
+⊙ next problem: how to let regions interact beyond a
+window ?
+credit: https://arxiv.org/pdf/2103.14030.pdf
+
+Swin Transformer: Shifted Windowed attention
+e.g. slide 104 in
+https://web.eecs.umich.edu/∼justincj/slides/eecs498/WI2022/598 WI2022 lecture18.pdf
+
+credit: https://arxiv.org/pdf/2103.14030.pdf
+
+⊙ next problem: how to let regions interact beyond a
+window ?
+⊙ solution: shift the windows used to perform
+self-attention between patches in every second block
+credit: https://arxiv.org/pdf/2103.14030.pdf
+
+| 38
+
+Outline
+
+1 ViT Architecture
+2 Position Encodings
+3 Feature compute block in ViT and others
+4 DEiT
+5 Swin Transformers
+6 What else?
+
+| 39
+
+Swin Transformer v2
+
+| 40
+
+Liu et al. https://arxiv.org/pdf/2111.09883.pdf
+⊙ some architectural changes (the similarity is
+normalized, post-LN architecture)
+⊙ trained on images up to (1536, 1536) (if you got the
+A100s ;) )
+
+credit: https://arxiv.org/pdf/2111.09883.pdf
+
+Swin Transformer v2
+position encodings
+
+https://en.wikipedia.org/wiki/Iron Cross
+
+| 41
+
+Registers for vision transformers
+
+ICLR 2024 Outstanding paper award https://openreview.net/forum?id=2dnO3LLiJ1
+⊙ simple improvement idea: add some trainable tokens at the patch embedding level as memory
+scratchpad
+⊙ prevents misuse of image patch tokens for that purpose resulting in broken attention maps
+
+| 42
+
+Object Detection?
+
+Object Detection?
+https://github.com/SwinTransformer/Swin-Transformer-Object-Detection
+Carion et al. https://arxiv.org/abs/2005.12872 DETR
+for an overview see Figure 2 in https://arxiv.org/abs/2005.12872
+
+| 43
+
+Object Detection?
+Carion et al. https://arxiv.org/abs/2005.12872 DETR
+for an overview see Figure 2 in https://arxiv.org/abs/2005.12872
+
+⊙ CNN backbone before transformer (different from Swin)
+⊙ encoder-decoder with cross-attention between these two
+
+| 44
+
+Object Detection?
+Carion et al. https://arxiv.org/abs/2005.12872 DETR
+for an overview see Figure 2 in https://arxiv.org/abs/2005.12872
+
+⊙ CNN backbone before transformer (different from Swin)
+⊙ no anchor boxes, direct training for prediction of box coordinates and class/background label from
+every decoder head - triggered by trainable [object query] token as input
+
+| 45
+
+Object Detection?
+Carion et al. https://arxiv.org/abs/2005.12872 DETR
+for an overview see Figure 2 in https://arxiv.org/abs/2005.12872
+
+⊙ no anchor boxes, direct training for prediction of box coordinates and class/background label from
+every decoder head - triggered by trainable [object query] token as input
+⊙ ignore prediction at inference if non-background-class-probability is too low for a decoder head
+
+| 46
+
+Object Detection?
+Carion et al. https://arxiv.org/abs/2005.12872 DETR
+for an overview see Figure 2 in https://arxiv.org/abs/2005.12872
+
+⊙ training: object-detection-style bipartite matching between ground-truth and predicted boxes – cf.
+Section 3.1 (allow for more predicted heads than ground truth boxes)
+
+| 47
+
+Object Detection?
+
+| 48
+
+Semantic Segmentation with a different formulation: MaskFormer Cheng et
+al. https://arxiv.org/pdf/2107.06278 – Fig.2 in the paper!
+⊙ start on top of a FPN-based segmentation network consisting of feature encoder, and feature
+decoder which generates high-res feature maps
+⊙ at this point one could simply add a per-pixel loss for obtaining a valid, transformer-free
+segmentation model :)
+⊙ use a DETR-style encoder-decoder to prediction N mask embedding features, one for each query
+token (similar as in DETR), and class-probability vectors for each mask, again one for each query
+token
+⊙ matrix multiply each mask-embedding with the high res feature map to obtain a pixel-wise
+probability for the i-th mask mi being active at pixel (h, w ):
+X
+mi [h, w ] = σ(
+maskembed[d, i] ∗ featuremap[d, h, w ]) ∈ [0, 1]
+d∈dembed
+
+Object Detection?
+
+Semantic Segmentation with a different formulation: MaskFormer Cheng et
+al. https://arxiv.org/pdf/2107.06278 – Fig.2 in the paper!
+The model takes N query tokens as input, and predicts for every (h, w ) the probability mi [h, w ] that
+the i-th mask is active in this pixel, and the class probability vector pi (c) (including background class)
+for the i-th mask which is a property of the mask, and not of pixels.
+
+| 49
+
+for fun
+
+Here a IGNobel-worthy prediction problem
+https://www.mdpi.com/2076-3417/13/8/4976
+
+| 50
+
+

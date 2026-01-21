@@ -1,0 +1,1070 @@
+Intro to DL4MSc: RLHF
+Alexander Binder
+January 18, 2026
+
+Outline
+
+1 The high level plan + recap
+2 Reinforcement Learning for Human Feedback
+3 Direct Preference Optimization (DPO)
+4 KTO
+5 Some notes on safety alignment
+
+|2
+
+The high level plan
+
+Data Preparation:
+- Tokenization
+- Encoding
+- Decoding
+- Dataset class
+- Minibatch Sampling
+
+|3
+
+Model Inference
+Mechanism
+
+- Load weights
+- Evaluate Base
+Performance
+
+Load weights
+- Evaluate Task
+Performance
+
+examples of
+inputs and
+outputs
+
+Few-Shot
+Generation
+Foundational
+(Large)
+Language Model
+
+NLP:
+Transformer
+architecture
+
+Arch:
+- Embedding Layer
+- Attention Layer
+- Decoder Transformer Block
+
+Pretraining
+on Large Corpus
+
+Fine-tuned
+model
+
+Finetuning:
+- for Classication
+Finetuning:
+- for Instruction
+following
+
+Direct Task
+Execution
+
+RetrievalAugmented
+Generation
+
+external
+knowledge
+base
+
+one transformer block
+
+|4
+
+We will build a network as a sequence of so-called transformer decoder blocks.
+
+⊙ important: MLP is applied for each token
+separately
+⊙ why MLP?
+feature.shape = (bsize, seqlen, dim) applies
+the simplest non-linearity onto attention
+feature which mixed content across tokens
+and captured context from other tokens
+⊙ layernorm can be applied before the
+attention/mlp blocks (pre-LN) or after
+(post-LN) or sandwiching each block
+(peri-LN)
+
+Post-LN vs Pre-LN
+
+|5
+
+https://arxiv.org/pdf/2002.04745
+⊙ post-LN requires a learning rate warmup for
+training
+
+Peri-LN
+
+|6
+
+Peri-LN https://arxiv.org/html/2502.02732v1
+⊙ 2x LN: before and right after each Attention
+and MLP block
+
+The whole decoder transformer model
+
+|7
+
+IGnobel
+sample next token
+y.shape=(bsize, 1, n_vocab)
+x.shape=(bsize, seqlen, dim1)
+
+logits for next
+output
+token
+nn.Linear
+Layernorm
+
+position Embedding
+token Embedding
+
+transformer blocks
+tokens
+
+input sentence:
+Alex is the next
+
+K times
+blocks
+
+shape=(bsize, seqlen, dim2)
+transformer blocks
+
+tokenizer
+
+Decoder for sequential generation
+
+transformer blocks
+
+Problem description
+
+Takeaways
+⊙ be able to explain the components of an MDP, the policy distribution, the Value and Q
+function
+⊙ be able to explain the motivation of using RLHF/DPO/KTO versus supervised finetuning
+⊙ be able to give a high-level explanation for the three steps of RLHF without formulas
+⊙ be able to recite the KL-divergence formula
+⊙ DPO: be able to explain its usage of a neg-log sigmoid and to mention its reliance on
+log-ratios of policies
+⊙ be able to name a few jailbreaking strategies
+
+|8
+
+Problem description
+
+for extra reading on RL (no exam) https://lilianweng.github.io/posts/2018-02-19-rl-overview/
+
+|9
+
+Outline
+
+| 10
+
+1 The high level plan + recap
+2 Reinforcement Learning for Human Feedback
+
+A quick excursion to the basic setup of reinforcement learning
+The actual RLHF
+3 Direct Preference Optimization (DPO)
+4 KTO
+5 Some notes on safety alignment
+
+Problem statement
+⊙ You have an LLM which is optimized (pretrained) to predict the next token with the lowest loss,
+not necessarily to be helpful! In other words, its predictions can be good and syntactically correct
+while being:
+· Rude
+· Unhelpful
+· Unsafe
+· Misleading
+Thus, LLMs need INSTRUCTIONS
+
+| 11
+
+Problem statement
+
+⊙ You want an LLM to finetune to follow instructions
+⊙ usually: provide feedback while:
+· avoid making bad answers
+· sound politely
+· to refuse to answer some stuff (guardrails) e.g. Inan et al. https://arxiv.org/pdf/2312.06674
+⊙ Legal/cultural norms differ:
+Example: Vaping is a seriously taken jailable offense in Singapore!
+https://www.bbc.com/news/articles/cz60z98nzx7o
+Another example: permitted names of God for public facilities in Saudi-Arabia
+https://www.saudigazette.com.sa/article/657886 Traditionally, 99 are considered:
+https://en.wikipedia.org/wiki/Names of God in Islam
+
+| 12
+
+Problem statement
+
+quote:
+predicting the next token on a webpage from the internet ... is different from the objective ”follow the
+user’s instructions helpfully and safely”
+
+| 13
+
+Problem statement
+
+step 1: initial data collection for getting human feedback
+⊙ collect a data set set of prompts xi , and at least two answers yi,k per prompt: (xi , yi,0 , . . . , yi,K −1 )
+⊙ ask a human to rank the different answers yi,0 , . . . , yi,K −1 per prompt xi (the human feedback)
+
+| 14
+
+Problem statement
+
+What to do for step 2 ?
+⊙ initial idea: supervised finetuning !
+· problem: Finetuning would ignore preference rankings for the answers. It can train to follow
+the desired answer.
+It does not enforce that some possible answers are undesirable / unacceptable.
+⊙ this lecture: RLHF and DPO to incorporate such preference rankings. The former is based on
+reinforcement learning
+
+| 15
+
+A quick excursion to the basic setup of reinforcement learning
+
+the basic setup of reinforcement learning
+
+Agent interacting with environment https://gymnasium.farama.org/
+https://ale.farama.org/environments/complete list/
+⊙ state space: space of all possible states of the world (e.g. pinball: position, speed, acceleration of
+the ball, current score, state of all flips/levers, number of remaining balls)
+⊙ action space: space of all possible actions of the agents
+⊙ reward: a score for the agent to guide its actions. Higher is better.
+· assume, we have discrete time steps t = 0, 1, 2, . . . and the agent does in state st the action
+at and the world state changes to st+1 , then rt = r (st , at , st+1 )
+https://spinningup.openai.com/en/latest/spinningup/rl intro.html
+
+| 17
+
+the basic setup of reinforcement learning
+
+state space of the lunar lander ?
+https://gymnasium.farama.org/
+
+| 18
+
+the basic setup of reinforcement learning
+
+| 19
+
+A simple model, with finite state space and simple transitions:
+
+A
+B
+C
+
+F
+
+E
+H
+⊙ shown are states, possible state transitions
+⊙ an action a in this example means to move from one state to another
+⊙ also shown are some rewards for state transitions
+
+Markov decision process
+
+Markov decision process (MDP)
+Markov decision process (MDP) - a model of a reinforcement learning setup is defined as a
+4-tuple (S, A, P, R)
+⊙ state space: S
+⊙ action space: A
+⊙ reward R:
+· have discrete time steps t = 0, 1, 2, . . .. If the agent does in state st the action at
+and the world state changes to st+1 , then rt = r (st , at , st+1 )
+⊙ P - world transition model: P(st+1 |st , at ). Assumption: It is time-independent
+Markovian property = memorylessness: the world transition model depends only on the last state and
+action, not on previous states and actions from the past. One could imagine a more general model
+P(st+1 |st , at , st−1 , at−1 , . . . , s0 , a0 )
+
+| 20
+
+Markov decision process
+
+the agent has an internal program guiding its actions, the policy π
+the policy π in and MDP
+⊙ the policy πt (a|s) - probability to execute action a when in state s
+It is probabilistic in practice to encourage exploration of the environment ( which can lead to an
+update of the policy as a result. Very often a policy consists of x% random choice during learning.
+
+| 21
+
+Markov decision process
+
+| 22
+
+What is the signal used to learn a good policy ? What is the ”loss”-function ?
+⊙ goal: maximize long term reward
+however do not use just the sum of observed rewards G− =
+
+PT
+
+t=0 rt
+
+reason:
+⊙ cannot model infinite long sequential chains T → ∞ (infinite rewards even with suboptimal
+choices) - lack of convergence makes theoretical results almost impossible
+
+Markov decision process
+
+| 23
+
+the agent has an internal program guiding its actions, the policy π
+⊙ the policy πt (a|s) - probability to execute action a when in state s
+What is the signal used to learn a good policy ? What is the ”loss”-function
+⊙ goal: maximize the discounted reward with discount factor γ
+
+G=
+
+T
+X
+
+γ t rt , γ ∈ (0, 1)
+
+t=0
+
+⊙ theoretical goal: maximize the expectation of that, when guided by the policy
+Eat ∼π(a|s=st ) [
+
+T
+X
+t=0
+
+γ t rt ]
+
+Markov decision process
+
+| 24
+
+⊙ theoretical goal: maximize the expectation of that, when guided by the policy
+Eat ∼π(a|s=st ) [
+
+T
+X
+
+γ t rt ]
+
+t=0
+
+⊙ measures the expectation of the discounted reward when one would choose actions according to
+the policy
+⊙ this expectation can be approximated by: the average over all realizations of actions, drawn
+according to the policy
+· each realization is a sequence of states and actions s0 , a0 , s1 , a1 , s2 , . . .
+
+Markov decision process
+
+| 25
+
+the agent has an internal program guiding its actions, the policy π
+⊙ the policy πt (a|s) - probability to execute action a when in state s
+⊙ goal: maximize the discounted reward with discount factor γ
+theoretical goal: maximize the expectation of that over multiple runs, when guided by the policy
+Eat ∼π(a|st ) [
+
+T
+X
+
+γ t rt ]
+
+t=0
+
+Why people use that ?
+⊙ models rewards in sequential decision making
+⊙ discount factor γ: converges for bounded rewards
+⊙ down-weights reward from early choices. Focuses on getting high rewards on the long-term / for
+later steps
+
+Value, Q-functions and advantage
+
+| 26
+
+the value function in an MDP
+The value in state s is the expected γ-discounted reward when one starts in state s0 = s and
+then takes all actions according to the policy: a0 ∼ π(a|s0 = s), a1 ∼ π(a|s1 ), a2 ∼ π(a|s2 ), . . .
+Vπ (s) = Eat ∼π(a|st ) [
+
+T
+X
+
+γ t rt |s0 = s]
+
+t=0
+
+⊙ given a policy, which is the best state to start in ?
+⊙ also: given a policy, which is the most desirable state to go to ?
+
+Value, Q-functions and advantage
+
+| 27
+
+the Q-function in an MDP
+The Q-function in state s and action a is the expected γ-discounted reward when one starts
+in state s0 = s, and for the first action a0 chooses it to be a and after that takes all actions
+according to the policy: a1 ∼ π(a|s1 ), a2 ∼ π(a|s2 ), a3 ∼ π(a|s3 ), . . .
+Qπ (s, a) = Eat ∼π(a|st ),t>0 [
+
+T
+X
+
+γ t rt |s0 = s, a0 = a]
+
+t=0
+
+⊙ given a policy, and a state, which action should I chooce ?
+
+Value, Q-functions and advantage
+
+The Advantage-function in state s and action a is this:
+Aπ (s, a) = Qπ (s, a) − Vπ (s)
+The difference between the expected reward when choosing a as the first action in state s and the
+expected rewards when one draws actions from the policy π.
+This is used in algorithms to learn a better policy.
+⊙ One can clearly decide what action to take if one could compute A
+⊙ (problem: estimate it from a finite number of sequences is an approximation to the expectation)
+⊙ it is not so clear how to change π to obtain a higher Q
+
+| 28
+
+policy as a function or neural network
+
+⊙ it is not so clear how to change π to obtain a higher Q
+⊙ assume for simplicity to have a finite number of actions a
+⊙ assume that the policy π(a|s) is realized as a function fθ (·) with trainable parameters θ (e.g. fθ (·)
+could be a neural network)
+· input to the network being the state s: s 7→ fθ (s)
+· the output head of the network has as many outputs as possible actions
+· output is a softmax over all actions a: π(a|s) = fθ (s)[a]
+⊙ now: optimizing the policy = changing the network parameters, e.g. by gradient descent
+
+| 29
+
+no exam: policy gradient
+
+| 30
+
+This is the most basic algorithm. It is not used as such. For a better algorithm check TRPO,
+Schulman et al. https://arxiv.org/pdf/1502.05477
+⊙ want to optimize the network parameters. Which cost function ??
+J(θ) = Eat ∼π(a|s=st ) [
+
+T
+X
+
+γ t rt |s0 =?]
+
+t=0
+
+⊙ how to compute its gradient ? The policy gradient theorem establishes the gradient as:
+∇θ J(θ) = ∇θ Eat ∼π(a|s=st ) [
+
+T
+X
+
+γ t rt |s0 =?]
+
+t=0
+
+= Eat ∼π(a|s=st ) [∇θ (ln πθ (a|s))Qπ (s, a)]
+The proof needs a stationary distribution d(s) of a markov chain over states s, and to write J(θ)
+as an expectation, that is a sum of Values in all states weighted by the d(s).
+
+no exam: policy gradient
+
+| 31
+
+The expectation can be approximated by many simulated sequences of state-action-pairs. Q can be
+approximated by the observed discounted rewards
+
+e.g. θk+1 = θk + η∇θ J(θk )
+sequence x = (s0,x , a0,x , r0,x , s1,x , a1,x , r1,x , . . . , sT ,x , aT ,x , rT ,x , )
+1 X
+∇θ J(θ) ≈
+B(x ),
+N sequence x
+B(x ) =
+
+T
+X
+t=0
+
+∇θ (ln πθ (at,x |st,x ))
+
+T
+X
+u=t
+
+γ u−t ru,x
+
+The actual RLHF
+
+current state: got this from RL
+
+⊙ we can view a policy πθ (a|s) as a function depending on trainable parameters θ
+⊙ we have an objective J(θ) to maximize (which depends on πθ (a|s))
+⊙ we can approximate ∇θ J(θ) using methods derived from the policy gradient theorem
+
+| 33
+
+The actual RLHF
+
+step 1: initial data collection for getting human feedback
+⊙ collect a data set set of prompts, and at least two answers per prompt. (xi , yi,0 , . . . , yi,K −1 )
+⊙ ask a human to rank the different answers yi,0 , . . . , yi,K −1 per prompt xi (the human feedback)
+What is missing to apply reinforcement learning ? The reward from these.
+
+| 34
+
+Problem statement
+step 2: train a reward function Ouyang et al. https://arxiv.org/pdf/2203.02155
+
+| 35
+
+RLHF step 2
+
+step 2: train a reward function Ouyang et al. https://arxiv.org/pdf/2203.02155
+⊙ use the LLM to be trained, add a head on the last embedding layer for the first or last token for
+outputting the predicted reward r (x , y ) depending on the prompt x and the model generated
+response y
+⊙ consider now one prompt and all generated answers (xi , yi,0 , . . . , yi,K −1 )
+
+⊙ for one given prompt xi create a minibatch from all K2 pairs of yi,k , yi,l
+⊙ for each pair yi,k , yi,l we know which response was higher rated by humans r̂ (yi,+ ) > r̂ (yi,− )
+
+| 36
+
+RLHF step 2
+
+| 37
+
+step 2: train a reward function Ouyang et al. https://arxiv.org/pdf/2203.02155
+⊙ use the LLM to be trained, add a head on the last embedding layer for the first or last token for
+outputting the predicted reward r (x , y ) depending on the prompt x and the model generated
+response y
+⊙ for each pair of two answers yi,k , yi,l we know which response was higher rated by humans
+r̂ (yi,+ ) > r̂ (yi,− )
+⊙ use as loss:
+X
+all pairs (yi,+ ,yi,− ) for xi
+
+− log σ(r (xi , yi,+ ) − r (xi , yi,− )), σ(z) =
+
+1
+1 + e −z
+
+⊙ The above notation labels automatically the higher ranked part of a pair as yi,+ and the lower
+ranked part of a pair as yi,−
+Loss will be low, if for every pair (yi,+ , yi,− ) we get for the prediction r (xi , yi,+ ) ≫ r (xi , yi,− ), following
+the human-labeled preference(!)
+
+RLHF step 3
+
+| 38
+
+step 3: use policy-gradient-derived methods (eg TRPO) to train the model using the model-internal
+reward function from step 2 and a separate dataset of labeled/ranked LLM generations, Ouyang et
+al. https://arxiv.org/pdf/2203.02155.
+Need to map LLM terms into RL terms:
+⊙ An action a corresponds to a LLM generated response. A world state s corresponds to a user
+input prompt x
+⊙ the LLM thus can be viewed as a policy: πθ (a|s = x ) = fθ (x ) where fθ is the LLM which
+generates a response a to user input prompt x .
+⊙ let r (x , a) = rfθ0 (x , a) be the reward model using the original network with parameters θ0 from
+the state before applying the RLHF.
+One could directly now optimize by maximizing an estimator of the following expected reward:
+R− (θ) = Ex ∼D,a∼πθ (a|s=x )=fθ (x ) [r (x , a)]
+
+RLHF step 3
+
+| 39
+
+step 3: use policy-gradient-derived methods (eg TRPO) to train the model using the model-internal
+reward function from step 2 and a separate dataset of labeled/ranked LLM generations, Ouyang et
+al. https://arxiv.org/pdf/2203.02155.
+One could directly now optimize by maximizing an estimator of the following expected reward:
+R− (θ) = Ex ∼D,a∼πθ (a|s=x )=fθ (x ) [r (x , a)]
+This means:
+⊙ sample a user prompt x , sample a LLM response a from your current model fθ . Use the reward
+head with original parameters θ0 (and thus fθ0 ) to score a reward r (x , a).
+⊙ use an RL algorithm to modify the current trainable parameters θ of fθ . This usually computes a
+gradient with respect to fθ using the so-called policy gradient approach in reinforcement learning.
+Problem: this will overfit badly. Needs a regularization.
+
+RLHF step 3
+
+| 40
+
+step 3: use policy-gradient-derived methods (eg TRPO) to train the model using the model-internal
+reward function from step 2 and a separate dataset of labeled/ranked LLM generations, Ouyang et
+al. https://arxiv.org/pdf/2203.02155.
+Problem: above protocol will overfit badly. Needs a regularization.
+⊙ idea: keep fθ close to the original model fθ0 .
+⊙ consider the policies as probability distributions πθ , πθ0
+⊙ can use KL-divergence as a divergence measure between two probability distributions
+⊙ in short use
+
+
+πθ
+)
+R(θ) = Ex ∼D,a∼πθ (a|s=x )=fθ (x ) r (x , a) − β log(
+πθ 0
+Maximizing this gives a penalty if the log ratio log( ππθθ ) would be large.
+0
+
+RLHF step 3
+
+| 41
+
+step 3: use policy-gradient-derived methods (eg TRPO) to train the model using the model-internal
+reward function from step 2 and a separate dataset of labeled/ranked LLM generations, Ouyang et
+al. https://arxiv.org/pdf/2203.02155.
+Problem: above protocol will overfit badly. Needs a regularization.
+⊙ idea: keep fθ close to the original model fθ0 .
+⊙ consider the policies as probability distributions πθ , πθ0
+⊙ can use KL-divergence as a divergence measure between two probability distributions
+⊙ in short use
+
+
+πθ
+)
+R(θ) = Ex ∼D,a∼πθ (a|s=x )=fθ (x ) r (x , a) − β log(
+πθ 0
+Maximizing this is done with respect to trainable parameters θ of πθ (a|s = x ) = fθ (x )
+
+KL-divergence
+
+| 42
+
+lets define it for the discrete case. Suppose P, Q are defined on a set of inputs z
+
+ 
+
+
+X
+P(x )
+P(x )
+= Ex ∼P log
+DKL (P||Q) =
+P(x ) log
+Q(x )
+Q(x )
+x
+This is the expected log-ratio between two probability distributions. Expectation is taken with respect
+to the probability distribution that is on top in the logarithm.
+Properties:
+DKL (P||Q) ≥ 0
+DKL (P||Q) = 0 if ∀x : p(x ) = q(x )
+The latter holds in the discrete case. For the continuous case it holds up to sets of measure zero.
+It is not a metric. It is neither symmetric, nor does it satisfy a triangle inequality.
+
+JS-divergence
+
+| 43
+
+A symmetrized version is the Jensen-Shannon-divergence: Suppose P, Q are defined on a set of inputs
+z
+1
+(P + Q)
+2
+1
+1
+JSD(P||Q) = DKL (P||M) + DKL (Q||M)
+2
+2
+Then: 0 ≤ JSD(P||Q) ≤ logb (2)
+1
+Then: 0 ≤ JSD(P||Q) ≤ logb (2) ∥P − Q∥1
+2
+M=
+
+b is the base of the logarithm used in the definition of DKL .
+
+KL-divergence
+
+| 44
+
+lets define it for the discrete case. Suppose P, Q are defined on a set of inputs z
+
+ 
+
+
+X
+P(x )
+P(x )
+= Ex ∼P log
+DKL (P||Q) =
+P(x ) log
+Q(x )
+Q(x )
+x
+This is the expected log-ratio between two probability distributions. Expectation is taken with respect
+to the probability distribution that is on top in the logarithm.
+Properties:
+DKL (P||Q) ≥ 0
+DKL (P||Q) = 0 if ∀x : p(x ) = q(x )
+The latter holds in the discrete case. For the continuous case it holds up to sets of measure zero.
+It is not a metric. It is neither symmetric, nor does it satisfy a triangle inequality.
+
+RLHF step 3
+
+| 45
+
+step 3: use RL tools to train the model using the model-internal reward function from step 2 and a
+separate dataset of labeled/ranked LLM generations, Ouyang et al. https://arxiv.org/pdf/2203.02155.
+
+
+
+πθ
+)
+max R(θ) = Ex ∼D,a∼πθ (a|s=x )=fθ (x ) r (x , a) − β log(
+θ
+πθ 0
+= Ex ∼D,a∼πθ (a|s=x )=fθ (x ) [r (x , a)] − βEx ∼D [Ea∼πθ (a|s=x ) [log(
+
+πθ
+)]]
+πθ 0
+
+= Ex ∼D,a∼πθ (a|s=x )=fθ (x ) [r (x , a)] − βEx ∼D [DKL (πθ ||πθ0 )]
+⊙ often a clipped PPO is used, see Schulman et al. https://arxiv.org/abs/1707.06347,
+which uses an estimation of the advantage function A
+
+RLHF is ugly
+
+⊙ two stage procedure means it is expensive
+⊙ training a reward, then using RL for learning from the model-internal reward is very prone to
+overfitting.
+⊙ often unstable in training, need to try out lots of hyperparameters. hard to generalize across
+models.
+⊙ generally RL training is outperformed by a large margin, whenever one can find a differentiable
+formulation. Example: network architecture search https://arxiv.org/pdf/1806.09055
+https://openaccess.thecvf.com/content ICCV 2019/papers/Chen Progressive Differentiable
+Architecture Search Bridging the Depth Gap Between Search ICCV 2019 paper.pdf but see also
+playing doom: https://arxiv.org/pdf/1611.01779. Gradients on losses guide often better than
+rewards. Rewards allow for more general training, though.
+Alternative: DPO, KTO (next slides)
+
+| 46
+
+RLHF is ugly
+
+What RLHF does not guarantee:
+⊙ Does not prevent hallucinations
+⊙ Does not add new factual knowledge
+⊙ Does not make answers up-to-date
+Why?
+⊙ Reward models learn human preferences, not ground truth
+⊙ Humans often prefer confident answers, fluent explanations, and plausible stories even at the cost
+of being wrong!
+How do you align LLMs to knowledge, avoid hallucinations, and be up-to-date? by sth like a RAG!
+
+| 47
+
+Recap
+⊙ RLHF is conceptually pwoerful but is computationally expensive, requires reward models, and
+has many parameters.
+⊙ Simpler solutions/alternatives (to better align preferences/not truths):
+· DPO: no reward model, simpler training, and fully differentiable!
+· KTO: Needs only good/bad labels, useful when rankings are hard
+
+| 48
+
+Outline
+
+1 The high level plan + recap
+2 Reinforcement Learning for Human Feedback
+3 Direct Preference Optimization (DPO)
+4 KTO
+5 Some notes on safety alignment
+
+| 49
+
+DPO
+
+DPO Rafailov et al. https://arxiv.org/pdf/2305.18290
+⊙ get rid of the intermediate step 2 of training an auxiliary reward function.
+
+| 50
+
+DPO
+
+| 51
+
+DPO Rafailov et al. https://arxiv.org/pdf/2305.18290
+Suppose one has a pair (x , y+ ) and (x , y− ) where y+ should receive a higher reward r (x , y ). We model
+the reward as an output of a neural network. That is we want
+r (x , y+ ) ≫ r (x , y− )
+This can be ensured by using a neg-log of a sigmoid of their difference as loss during training:
+L = − log σ(r (x , y+ ) − r (x , y− ))
+1
+σ(z) =
+1 + e −z
+The underlying probability model
+P(y+ ≻ y− |x ) = σ(r (x , y+ ) − r (x , y− ))
+is called the Bradley-Terry-model
+next step: plug in an optimal reward r (x , y ) function
+
+DPO
+
+| 52
+
+DPO Rafailov et al. https://arxiv.org/pdf/2305.18290
+next step: plug in an optimal reward r (x , y ) function
+We had for RHLF the objective function:
+max Ex ∼D,y ∼πθ (y |x ) [rϕ (x , y )] − βDKL (πθ (y |x )||πref (y |x ))
+πθ
+
+This is known to have a has a theoretically optimal solution, which is however uncomputable:
+
+
+1
+1
+π∗ (y |x ) =
+πref (y |x ) exp
+r (x , y )
+Z (x )
+β
+
+
+X
+1
+Z (x ) =
+πref (y |x ) exp
+r (x , y )
+β
+y
+It is uncomputable, because we do not know Z (x ) - cannot sample all possible answer prompts y .
+⊙ idea: solve π∗ (y |x ) for r (x , y ), plug this into the Bradley-Terry model. The latter is a difference.
+log Z (x ) terms will cancel out!
+
+DPO
+
+| 53
+
+DPO Rafailov et al. https://arxiv.org/pdf/2305.18290
+next step: plug in an optimal reward r (x , y ) function
+
+π∗ (y |x )
++ log βZ (x )
+πref (y |x )
+P(y+ ≻ y− |x ) = σ(r (x , y+ ) − r (x , y− ))
+
+
+π∗ (y+ |x )
+π∗ (y− |x )
+⇒ P(y+ ≻ y− |x ) = σ β log
+− β log
+πref (y+ |x )
+πref (y− |x )
+r (x , y ) = β log
+
+You want to find the optimal π∗ , so replace it by a trainable πθ in the loss:
+
+
+πθ (y+ |x )
+πθ (y− |x )
+− β log
+min L = − log σ β log
+θ
+πref (y+ |x )
+πref (y− |x )
+
+DPO
+
+| 54
+
+DPO Rafailov et al. https://arxiv.org/pdf/2305.18290
+next step: plug in an optimal reward r (x , y ) function
+
+P(y+ ≻ y− |x ) = σ(r (x , y+ ) − r (x , y− ))
+
+
+π∗ (y− |x )
+π∗ (y+ |x )
+− β log
+⇒ P(y+ ≻ y− |x ) = σ β log
+πref (y+ |x )
+πref (y− |x )
+
+
+πθ (y− |x )
+πθ (y+ |x )
+⇒ min L = − log σ β log
+− β log
+θ
+πref (y+ |x )
+πref (y− |x )
+Use this as differentiable loss function. πref = πθ0 is the original model.
+⊙ sample input prompts x . Sample pairs of human-ranked outputs y+ , y− .
+⊙ train with the above loss
+
+Outline
+
+1 The high level plan + recap
+2 Reinforcement Learning for Human Feedback
+3 Direct Preference Optimization (DPO)
+4 KTO
+5 Some notes on safety alignment
+
+| 55
+
+KTO
+
+| 56
+
+KTO (Kahneman-Tversky optimization) Ethayarajh et al. https://arxiv.org/pdf/2402.01306
+⊙ most suitable if one has a partition of responses y into desirable and undesirable (good vs bad)
+responses. Needs no rankings of multiple responses
+⊙ not a mathematical derivation. Takes an approach, based on humans assigning values to
+outcomes of gambling games originally proposed by Kahneman and Tversky for a look at those
+loss terms.
+⊙ we have Y+ desirable responses, Y− undesirables ones.
+⊙ different loss function:
+πtheta (y |x )
+πref (y |x )
+z0 = DKL (πtheta (y ′ |x )||πref (y ′ |x ))
+
+r (x , y ) = log
+
+v (x , y ) = λ+ σ(β(r (x , y ) − z0 )) if y ∼ Y+
+v (x , y ) = λ− σ(β(r (x , y ) − z0 )(−1)) if y ∼ Y−
+L = −Ex ∼D,y ∼Y+ ∪Y− [v ]
+where v is the human-study-motivated value function
+
+KTO
+
+human-motivated value function??
+⊙ Kahneman and Tversky seem to have found empirically with human studies on monetary gambles,
+where z0 is a baseline value:
+(
+(z − z0 )α if z ≥ z0
+v (z) =
+−λ(z0 − z)α if z < z0
+⊙ notably λ > 1 and 0 < α < 1, a function which is for gains increasing but concave.
+(Elon Musk, α = +10 if z ≥ z0 ? )
+⊙ use of the sigmoid σ gives a function which is concave on gains and convex on losses
+
+| 57
+
+Outline
+
+1 The high level plan + recap
+2 Reinforcement Learning for Human Feedback
+3 Direct Preference Optimization (DPO)
+4 KTO
+5 Some notes on safety alignment
+
+| 58
+
+Some notes on safety alignment
+
+There is no perfect safety:
+A recent paper on breaking guardrails for multiple models:
+Andriushchenko et al. ICLR 2025, https://arxiv.org/pdf/2404.02151. In particular see Sections 3.1 and
+3.2.
+But also sections 4.1,4.2,4.3.
+
+| 59
+
+Some notes on safety alignment
+Notable attack strategies:
+⊙ a base template: forbid certain words used in rejection. Dissuade ethical concerns by giving
+reasons why the situation is not dangerous.
+⊙ scam it like a human victim: tell the agent to be helpful, or to imagine to be in a harmless
+situation (you are a cyber security researcher, a psychological professional). Or fake emergency
+situations where you need this answer to save someone from harm.
+⊙ Added suffix. Optimize by search over the suffix, see Algorithm 1 in Zou et
+al. https://arxiv.org/pdf/2307.15043 on how to do that
+⊙ self-transfer
+⊙ use of in context learning: provide examples of successfully giving harmful replies!
+⊙ Prefilling attack: prefill answers with sentences indicating the start of a harmful response (one
+can do that when one has access to the model internals). This was also shown in Zou et
+al. https://arxiv.org/pdf/2307.15043.
+⊙ guess the guardrailing strategy (as in R2D2) and adapt around it
+
+| 60
+
+Some notes on safety alignment
+
+Notable attack strategies II:
+for open-weight models:
+⊙ finetune on examples of giving harmful replies: Qi et al. ICLR2024,
+https://arxiv.org/pdf/2310.03693
+
+| 61
+
+Some notes on safety alignment
+
+Be aware of two principles when building defenses:
+⊙ The attacker is patient: Can go for many repeated attempts.
+⊙ The attacker is adaptive: the attacker can adapt to your defenses after guessing them.
+
+| 62
+
+Some notes on safety alignment
+
+There is no perfect safety:
+Qi et al. ICLR2024, https://arxiv.org/pdf/2310.03693
+⊙ fine-tuning can break model safety unintendedly (!!) or on purpose
+
+| 63
+
+Some notes on safety alignment
+
+There is no perfect safety. Even less so in longer conversations.
+Qi et al. https://openreview.net/forum?id=6Mxhg9PtDE, ICLR 2025 - see page 2
+⊙ Figure 1: difference in KL-Divergence on harmful subjects between aligned and unaligned models
+is centered on the first tokens.
+⊙ Defense: Section 3: One can get a better alignment by training with set of examples of type
+(start of a harmful response. Then a refusal reply.) to be more robust against prefilling attacks
+
+| 64
+
+Some notes on safety alignment
+
+There is no perfect safety. Even less so in longer conversations.
+Qi et al. https://openreview.net/forum?id=6Mxhg9PtDE, ICLR 2025
+⊙ Defense: Section 4, eq(3): a finetuning objective with higher weights on later tokens - shows
+improved robustness to loss of alignment during finetuning
+
+| 65
+
+Some notes on safety alignment
+
+Attacks:
+⊙ open-weight models: perturb in the embedding layer space Yuan et
+al. https://arxiv.org/pdf/2509.06338 when encountering tokens of dangerous words
+⊙ see section 4 for the threat model, sections 5.1, 5.2 for the algorithm. Can be more efficient when
+one has access to the model as a whole.
+
+| 66
+
+Some notes on safety alignment
+
+Defense: A simple approach to training separate external guardrail classifiers:
+Inan et al. https://arxiv.org/pdf/2312.06674
+
+| 67
+
+Temporary page!
+
+LATEX was unable to guess the total number of pages correctly. As there was some
+unprocessed data that should have been added to the final page this extra page has been
+added to receive it.
+If you rerun the document (without altering it) this surplus page will go away, because LATE
+now knows how many pages to expect for this document.
+
+

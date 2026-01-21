@@ -1,0 +1,434 @@
+Multimodal Self-supervised Pretraining
+Prof. Alexander Binder
+January 14, 2026
+
+Problem description
+
+We have seen self-supervised pretraining in NLP and in Vision.
+Next: multimodal approaches
+
+|2
+
+Problem description
+
+Takeaways
+⊙ be able to explain the model and loss part used in CLIP pretraining
+⊙ be able to explain zero-shot classification
+⊙ be able to explain the model and loss part used in Dino.txt pretraining
+⊙ be able to explain how image and text is combined in the LLaVa model
+
+|3
+
+Problem description
+
+Question
+⊙ As an alternative to separate pretraining in vision and Can we pretrain a joint
+vision-language model ? If so, with what kind of (data, losses)?
+⊙ How will the performance be compared to supervised classification pretraining ?
+Today:
+⊙ multimodal foundational models: pretraining using (image,text)-pairs, where the text is processed
+into a feature vector using NLP networks.
+
+|4
+
+Outline
+
+1 CLIP
+2 Zero-shot Classification
+3 Dinov2 txt
+4 LLaVa
+
+|5
+
+CLIP the mother
+
+CLIP Radford et al. https://arxiv.org/abs/2103.00020
+Contrastive Language Image Pretraining
+
+|6
+
+CLIP
+⊙ pretrain a vision and a NLP model jointly
+⊙ have pairs Ik , Tk of image Ik and corresponding text Tk
+
+|7
+
+CLIP
+⊙ similarity to Simclr/MoCo, but now with two trained models
+
+|8
+
+CLIP
+
+⊙ pretrain a vision and a NLP model
+jointly
+⊙ have pairs Ik , Tk of image Ik and
+corresponding text Tk
+
+|9
+
+⊙ Ij · Tj is similarity of positive pair
+⊙ Loss, first idea:
+P
+L = − j log softmax (Ij · Tj , Ij · Tk , Ik · Tj )[Ij · Tj ]
+| {z } | {z }
+j̸=k,neg k̸=j,neg
+
+⊙ question: over what to normalize the softmax ?
+· negatives can be Ij · Tk running over text examples
+Tk
+· negatives can be Ik · Tj running over image
+examples Ik
+
+CLIP
+
+⊙ pretrain a vision and a NLP model
+jointly
+⊙ have pairs Ik , Tk of image Ik and
+corresponding text Tk
+
+| 10
+
+⊙ Ij · Tj is similarity of positive pair
+⊙ Loss, final formulation:
+P
+L = − j log softmax (Ij · Tj , {Ij · Tk }k=... )[Ij · Tj ]
+|
+{z
+}
+j̸=k,neg
+
+−
+
+P
+
+j log softmax (Ij · Tj , {Ik · Tj }k=... )[Ij · Tj ]
+
+|
+
+{z
+
+k̸=j,neg
+
+}
+
+⊙ question: over what to normalize the softmax ?
+· one softmax using negatives Ij · Tk iterating over
+all text examples Tk
+· one softmax using negatives Ik · Tj iterating over
+all image examples Ik
+
+CLIP
+
+| 11
+
+⊙ pretrain a vision and a NLP model
+jointly
+⊙ have pairs Ik , Tk of image Ik and
+corresponding text Tk
+observations:
+⊙ contrastive objective trains better than using the NLP to
+pretrain the exact words of a text
+
+CLIP
+
+| 12
+
+⊙ pretrain a vision and a NLP model
+jointly
+⊙ have pairs Ik , Tk of image Ik and
+corresponding text Tk
+⊙ Dataset construction: 400 Mill. Img-text pairs. For a
+better explanation (no-exam stuff) of the procedure, see
+the MetaCLIP paper https://arxiv.org/pdf/2309.16671.
+
+CLIP
+
+OpenCLIP https://github.com/mlfoundations/open clip has pretrained weights
+You will not train it yourself:
+The largest ResNet model, RN50x64, took 18 days to train on 592 V100 GPUs while the largest Vision
+Transformer took 12 days on 256 V100 GPUs.
+We use a very large minibatch size of 32,768. Mixed-precision (Micikevicius et al., 2017) was used to
+ac- celerate training and save memory. To save additional mem- ory, gradient checkpointing (Griewank
+& Walther, 2000; Chen et al., 2016), half-precision Adam statistics (Dhariwal et al., 2020), and
+half-precision stochastically rounded text encoder weights were used
+
+| 13
+
+Outline
+
+1 CLIP
+2 Zero-shot Classification
+3 Dinov2 txt
+4 LLaVa
+
+| 14
+
+CLIP
+
+| 15
+
+Zero-shot Classification:
+Create a model to classify on an unseen dataset without training on examples of that dataset.
+Measure of generalization to new datasets.
+
+CLIP
+
+| 16
+
+use CLIP embeddings to create a classifier on an unseen set
+of labels:
+⊙ take image x to classify, compute its embedding feature
+vector fI (x )
+⊙ represent the set of labels as a set of textual class names
+{z0 , . . . , zC −1 }
+⊙ compute its embedding feature vector for each text ft (zi )
+⊙ predict by highest similarity between image feature and
+class name feature vector:
+c∗ (x ) = argmaxk fI (x ) · ft (zk )
+
+CLIP
+
+⊙ zero-shot is a generalization measure,
+⊙ zero-shot is also a simple baseline
+⊙ it does not replace fine-tuning on data
+
+| 17
+
+CLIP
+
+⊙ zero-shot is a generalization measure, however ... finetuning is still better on many datasets
+⊙ next: what is CLIP good for ? ... as a pretraining init!
+
+| 18
+
+CLIP
+next: what is CLIP good for ? ... as a pretraining init!
+
+| 19
+
+CLIP
+next: what is CLIP good for ? ... as a pretraining init!
+
+| 20
+
+CLIP
+next: what is CLIP good for ? ... as a pretraining init!
+
+| 21
+
+SigLiP
+
+| 22
+
+SigLiP Zhai et al. https://arxiv.org/pdf/2303.15343
+⊙ replace log-softmax by a log-sigmoid with a sign.
+|B| |B|
+
+1 XX
+1
+L=
+− log
+|B| i=1
+1 + e zij (−txi ·yi +b)
+k=1
+
+⊙ sign zij is +1 for a positive pair, −1 for a negative pair
+· classification problem: classify positive vs negative pairs in pretraining
+⊙ advantage: better parallelizable across devices because one needs no normalization over all
+negatives (as required in the softmax).
+
+SigLiP
+SigLiP Zhai et al. https://arxiv.org/pdf/2303.15343
+⊙ advantage: better parallelizable across devices because one needs no normalization over all
+negatives (as required in the softmax).
+
+Losses for negatives can be computed in independent small blocks!
+
+| 23
+
+SigLiP
+SigLiP Zhai et al. https://arxiv.org/pdf/2303.15343
+⊙ batchsize is in K - thousands
+
+| 24
+
+SigLiP
+SigLiP Zhai et al. https://arxiv.org/pdf/2303.15343
+⊙ when using a pretrained image encoder, and finetuning the vision decoder, while training the text
+encoder from scratch, disable weight decay on the image encoder
+⊙ finetuning always works https://www.youtube.com/shorts/DjSN1VMHwLc
+
+| 25
+
+SigLiP
+
+SigLiP Zhai et al. https://arxiv.org/pdf/2303.15343
+⊙ Zero-shot Results: Table 3 in the paper
+⊙ see also Section 4.7
+
+| 26
+
+Outline
+
+1 CLIP
+2 Zero-shot Classification
+3 Dinov2 txt
+4 LLaVa
+
+| 27
+
+Dinov2 txt
+
+Goals:
+⊙ pretraining of a text encoder, together with an aligned vision encoder
+⊙ using less compute than CLIP
+⊙ starting from a pretrained self-supervised Dinov2
+⊙ aim also at high quality local patch features (for object detection and segmentation), not only
+feature over the [CLS] token
+
+| 28
+
+Dinov2 txt
+Approach I : the models
+⊙ take a frozen dinov2 image encoder ϕ(x ) = [c, f0 , . . . , fk−1 ], c is [CLS]
+′
+]
+⊙ add on top 2 trainable transformer blocks ψ([c, f0 , . . . , fk−1 ]) = [c ′ , f0′ , . . . , fk−1
+
+⊙ use an average pool a(·) over the patch features to obtain the global representation:
+′
+g = [c ′ , a(f0′ , . . . , fk−1
+)]
+
+⊙ use a text encoder tq = ft (q)
+⊙ use a contrastive loss as in CLIP
+
+| 29
+
+Dinov2 txt
+
+Approach II : the data
+⊙ text curation: generate a set of query terms, then select a set of image-text pairs according to
+matching of the query terms with the texts from the image-text pairs. Follows a selection similar
+to CLIP, see the MetaCLIP paper https://arxiv.org/pdf/2309.16671.
+⊙ image curation:
+· problem: long-tailed distribution. A few classes of images take a large percentage, a larger
+number of other classes of images have very few samples.
+· solution: hierarchical k-means of images (using features), that is: cluster data into clusters,
+then cluster the clusters
+· finally: sample from every lowest level cluster some images
+
+| 30
+
+Dinov2 txt
+
+Approach II : the data
+
+| 31
+
+Dinov2 txt - segmentation
+
+page 6, left in the paper arxiv.org/pdf/2412.16334v1:
+
+| 32
+
+Dinov2 txt - segmentation
+page 6, left in the paper arxiv.org/pdf/2412.16334v1:
+
+High-resolution inference. A typical segmentation proto- col, popularized by TCL [12], consists of
+applying a sliding window strategy and aggregating the segmentation results in a single prediction map.
+We extend this strategy to a high-resolution windowing procedure in which we sample crops of various
+sizes (1%, 10%, 100% of the total area) in a dense sliding window manner, and add noise to the coordinates, such that the crops correspond to non-rectangular quadrilaterals. We distort the crops into
+squares, extract features, then project the features back onto the dense pixel grid with interpolation,
+and average all contributions. We cluster features using k-means with k=32, then run the zero- shot
+classifier on the centroids. For our results using this procedure, each pixel is visited on average 40
+times, for a total of approximately 800 crops processed by the vision model in 10 seconds on an A100
+GPU. This approach show- cases the features at finer scales, and improving the proce- dure is a
+direction for future work. We provide results in Table 6 (last row) and visualization in Figure 4.
+
+| 33
+
+Dinov2 txt - segmentation
+
+| 34
+
+Dinov2 txt - zeroshot
+
+| 35
+
+Dinov2 txt - compute
+
+| 36
+
+Outline
+
+1 CLIP
+2 Zero-shot Classification
+3 Dinov2 txt
+4 LLaVa
+
+| 37
+
+LLaVa
+Liu et al. https://arxiv.org/pdf/2304.08485 an example of a simple multimodal LLM.
+⊙ Ask a specific question to an image. LLM replies.
+⊙ Or: let the LLM describe an image
+
+| 38
+
+LLaVa
+
+technical contributions:
+⊙ use GPT-4 to create an instruction dataset based on existing image captions and object locations
+⊙ simple way of fusing Image features and an LLM
+⊙ two-stage training of the projection layer of the vision-encoder, together with the LLM: creating
+an answer is autoregressive modeling with a decoder.
+
+| 39
+
+LLaVa
+⊙ simple way of fusing Image features and an LLM
+
+| 40
+
+LLaVa
+
+⊙ uses CLIP as vision encoder
+⊙ takes patches, puts them into a sequence, projects them onto the embedding dim of the LLM
+⊙ LLM is an autoregressive model: predicts the next token
+
+| 41
+
+LLaVa
+
+Challenge lies in creating an image-text instruction dataset!
+⊙ start off an image-caption dataset (CC3M). phase 1 pretraining: use a set of rephrased variants of
+”describe the image” as instruction to train to reproduce the captions
+⊙ phase 2 training: use a dataset where GPT-4 created replies to a set of questions. Questions are
+of Conversation, Description and ”reasoning questions” types.
+⊙ image encoder is frozen, finetune the one projection layer, and the LLM
+
+| 42
+
+LLaVa
+
+| 43
+
+LLM as a judge
+⊙ goal: find a way to rate answers and compare different LLMs without humans in the loop and
+assuming GPT-4 as authority
+⊙ get two replies from two different LLMs. Let a third LLM (GPT-4) rate them on a scale and
+provide explanations. Can be used to compute an ELO or win rates.
+... might be okay for some tasks
+
+”Once men turned their thinking over to machines in the hope that this would set them free. But that
+only permitted other men with machines to enslave them.”
+
+LLaVa
+
+See Limitation and the ScienceQA discussion
+
+| 44
+
+

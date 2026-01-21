@@ -1,0 +1,726 @@
+Intro to DL4MSc: Segmentation
+Alexander Binder
+August 18, 2025
+
+Links
+
+Slides adapted from Dhananjay Tomar
+know where to look for
+⊙ https://d2l.ai/chapter computer-vision/semantic-segmentation-and-dataset.html
+⊙ https://d2l.ai/chapter computer-vision/transposed-conv.html
+⊙ https://d2l.ai/chapter computer-vision/fcn.html
+
+|2
+
+High level content
+
+know what
+⊙ types of segmentation
+⊙ performance measures for semantic segmentation
+⊙ architectural design patterns for segmentation
+
+|3
+
+Types of Segmentation Problems
+
+|4
+
+Semantic Segmentation:
+⊙ for each pixel:
+Object Class labels,
+Background class
+labels
+Instance Segmentation:
+⊙ Object Instance
+predictions / labels
+
+Orig Image
+
+Semantic Segmentation
+
+Instance Segmentation
+
+Panoptic Segmentation
+
+⊙ for each pixel: label
+of instance or
+background
+Panoptic Segmentation:
+⊙ Semantic
+Segmentation AND
+⊙ Instance
+Segmentation
+
+Semantic Segmentation
+⊙ Classify every pixel in an image
+⊙ Differentiate between classes. Also: Background class
+⊙ Do not differentiate between multiple instances of the same class
+
+img credit: Zhao et al 2017 https://arxiv.org/pdf/1704.08545.pdf
+demo video: https://www.youtube.com/watch?v=qWl9idsCuLQ
+
+|5
+
+Semantic Segmentation
+
+too simple approaches:
+⊙ sliding window classification of center pixel
+⊙ neural net with full resolution feature maps
+better approaches:
+⊙ ensure large size receptive fields:
+⊙ Use information from early high resolution layers to capture finer details (boundary of the
+segmentation mask).
+
+|6
+
+too simple approach 1: sliding window
+
+|7
+
+img credit: https://web.eecs.umich.edu/∼justincj/slides/eecs498/498 FA2019 lecture16.pdf
+
+example for this approach: Ciresan et al., 2012:
+https://proceedings.neurips.cc/paper/2012/file/
+459a4ddcb586f24efd9395aa7662bc7c-Paper.pdf
+
+Disadvantages: lacks global context, very expensive
+(pixels shared among patches processed repeatedly)
+
+too simple approach 2: full resolution feature maps
+
+img credit: https://web.eecs.umich.edu/∼justincj/slides/eecs498/498 FA2019 lecture16.pdf
+
+Disadvantages: scales poorly
+resource-eating for large images (or low receptive field if shallow), cannot use pretrained nets for init
+
+|8
+
+Outline
+
+1 Performance measures in Semantic Segmentation
+2 Architecture design in Semantic Segmentation
+3 The set of U-Net architectures
+4 DeepLab architectures
+5 Instance/Panoptic Segmentation
+
+|9
+
+Performance measures in Semantic Segmentation
+
+Semantic Segmentation:
+⊙ IoU (aka Jaccard index)
+⊙ F1 score
+⊙ Pixel Accuracy
+
+| 10
+
+Performance measures in Semantic Segmentation
+
+Semantic Segmentation:
+⊙ IoU (aka Jaccard index) per class
+⊙ Shape differs from boxes, but IoU can be calculated for any shape
+⊙ mostly reported
+⊙ binary problem and 1 single IoU measure: when the positive class matters alone
+⊙ mIoU: IoU averaged over all classes in a multi-class setting (multi-label?) - when all classes matter
+
+| 11
+
+Performance measures in Semantic Segmentation
+
+Semantic Segmentation:
+⊙ F1 score
+·
+·
+·
+·
+
+harmonic mean of precision and recall F 1 = 1 Prec −11+ 1 Rec −1
+2
+2
+special case of p-means for p = −1, see:
+P
+n−1
+general harmonic mean: M (−1) (s0 , . . . , sn−1 ) = ( n1 i=0 |si |−1 )−1
+P
+n−1
+general p-mean: M (p) (s0 , . . . , sn−1 ) = ( n1 i=0 |si |p )1/p
+
+⊙ properties ?
+· TN has no influence on its value! useful if only performance on class 1 is important, and if
+TN rates do not matter.
+· example: when one wants to find cancer tissue and do not care about the prediction quality
+on the other tissue.
+⊙ multiclass extension as average over classes like in mIoU possible
+
+| 12
+
+Performance measures in Semantic Segmentation
+
+| 13
+
+Semantic Segmentation:
+⊙ F1 score
+1
+· harmonic mean of precision and recall F 1 = 1
+Prec −1 + 1 Rec −1
+2
+
+2
+
+⊙ properties (2) ?
+· very low performance in one of the measures leads to strong penalization of the score:
+1
+
+2
+
+1
+
+2
+
+lim
+= 0 (→
+)
+Prec→0 1 Prec −1 + 1 Rec −1
+∞ + Rec −1
+2
+2
+lim
+= 0 (→
+)
+Rec→0 1 Prec −1 + 1 Rec −1
+Prec −1 + ∞
+2
+2
+F1 = 1
+
+1
+
+−1 + 1 Rec −1
+2 Prec
+2
+
+≤ min(
+
+2
+Prec −1 + 1
+
+,
+
+2
+Rec −1 + 1
+
+)
+
+e.g. if the precision is never larger than 0.2, then F1 is upper bounded by 26 no matter what the
+recall would be (compare for an arithmetic mean).
+
+Performance measures in Semantic Segmentation
+
+Semantic Segmentation:
+⊙ Pixel Accuracy
+H,W
+
+1 X
+1[f (xij ) == yij ]
+HW i,j=1
+⊙ average of accuracy over all pixels
+⊙ useful if performance on class 0 or negative class matters, too: high TN improves Pixel accuracy.
+⊙ example: if class 0 matters, too. More symmetric importance of positives and negatives like pixels
+of two colors in a product on a conveyor belt, or red and green chillis in grape sorting or a mix of
+gold and silver ore.
+
+| 14
+
+Training in Semantic Semantic Segmentation
+
+Semantic Segmentation:
+⊙ sum/average of classification losses over all pixels
+⊙ for example neg log of probability for the ground truth class in each pixel
+
+| 15
+
+Outline
+
+| 16
+
+1 Performance measures in Semantic Segmentation
+2 Architecture design in Semantic Segmentation
+
+Upsampling in Segmentation
+More on Architectural concepts in Segmentation
+3 The set of U-Net architectures
+4 DeepLab architectures
+5 Instance/Panoptic Segmentation
+
+too simple approach 1: sliding window
+
+| 17
+
+img credit: https://web.eecs.umich.edu/∼justincj/slides/eecs498/498 FA2019 lecture16.pdf
+
+example for this approach: Ciresan et al., 2012:
+https://proceedings.neurips.cc/paper/2012/file/
+459a4ddcb586f24efd9395aa7662bc7c-Paper.pdf
+
+Disadvantages: lacks global context, very expensive
+(pixels shared among patches processed repeatedly)
+
+too simple approach 2: full resolution feature maps
+
+img credit: https://web.eecs.umich.edu/∼justincj/slides/eecs498/498 FA2019 lecture16.pdf
+
+Disadvantages: scales poorly
+resource-eating for large images (or low receptive field if shallow), cannot use pretrained nets for init
+
+| 18
+
+Architectural concepts in semantic segmentation
+
+better approaches:
+⊙ ensure large size receptive fields:
+· downsample feature maps using conv/pooling with stride
+· dilated convolutions
+- problem: with large receptive field comes low res in feature maps
+- need to get back to image-level resolution
+
+⊙ Use information from early high resolution layers to capture finer details (boundary of the
+segmentation mask).
+· upsampling (NN-upsampling, bilinear upsampling, fractionally strided convolution)
+· fusion with early feature maps (U-Net, feature pyramids)
+
+| 19
+
+Architectural concepts in semantic segmentation: how to downsample?
+
+img credit: Noh et al, https://arxiv.org/pdf/1505.04366
+
+⊙ Global context: Information from the entire image to predict a pixel.
+⊙ Getting context has two common solutions
+· Downsample feature maps using max/sum/avg pooling or convolutions with stride > 1.
+· later in this lecture: Dilated convolutions
+⊙ for upsampling (”unpooling”) see below
+
+| 20
+
+Architectural concepts: how to upsample/ get back to hi-res?
+
+img credit: Noh et al, https://arxiv.org/pdf/1505.04366
+
+⊙ How to upsample? 3 common solutions
+· max unpooling
+· nearest neighbor upsampling, bilinear upsampling
+· fractionally strided convolution
+
+| 21
+
+Architectural concepts: how to upsample?
+
+| 22
+
+img credit: Noh et al, https://arxiv.org/pdf/1505.04366
+
+max-unpooling Disadvantages:
+⊙ not learnable how to
+upsample
+⊙ 0 might be a bad fill
+value
+⊙ will need some
+convolution layers on top
+to make something
+smoother/useful from it
+
+Architectural concepts: how to upsample?
+
+| 23
+
+img credit: Badrinarayanan et al, https://arxiv.org/pdf/1511.00561.pdf
+
+NN-upsampling
+Disadvantages:
+⊙ not learnable how to
+upsample
+⊙ will need some
+convolution layers on top
+to make something
+smoother/useful from it
+
+Architectural concepts: how to upsample?
+NN-upsampling also used in FPN for segmentation: https://arxiv.org/pdf/1612.03144
+
+img credit:Lin et al, https://arxiv.org/pdf/1612.03144
+
+| 24
+
+Architectural concepts: how to upsample?
+
+| 25
+
+bilinear interpolation:
+
+(0,0)
+
+(1,0)
+
+(0,1)
+
+(1,1)
+
+⊙ Let us use a rectangle spanned by normalized
+coordinates (0, 0) and (1, 1).
+⊙ we have values at the corners f (0, 0), f (0, 1), f (1, 0),
+f (1, 1)
+⊙ we have a point (xn , yn ) in the rectangle spanned by
+[0, 1] × [0, 1] such that
+⊙ Then xn ∈ [0, 1] and yn ∈ [0, 1]
+
+interpolate along x : fˆ[x ]y =0 = (1 − x )f (0, 0) + x f (1, 0)
+fˆ[x ]y =1 = (1 − x )f (0, 1) + x f (1, 1)
+interpolate along y : fˆ[x , y ] = (1 − y )fˆ[x ]y =0 + y fˆ[x ]y =1
+
+Architectural concepts: how to upsample?
+
+| 26
+
+bilinear interpolation:
+
+(0,0)
+
+(1,0)
+
+(0,1)
+
+(1,1)
+
+⊙ Let us use a rectangle spanned by normalized
+coordinates (0, 0) and (1, 1).
+⊙ we have values at the corners f (0, 0), f (0, 1), f (1, 0),
+f (1, 1)
+⊙ we have a point (xn , yn ) in the rectangle spanned by
+[0, 1] × [0, 1] such that
+⊙ Then xn ∈ [0, 1] and yn ∈ [0, 1]
+combine both interpolations along x and along y:
+fˆ[x , y ] = (1 − x )(1 − y ) f (0, 0) + (1 − x )y f (0, 1) + x (1 − y ) f (1, 0) + xy f (1, 1)
+⊙ coord = 0 receives 1 − coord, coord = 1 receives coord, where coord ∈ {x , y }
+- bcs must have weight = 1 at its fringe value ;)
+
+Architectural concepts: how to upsample?
+
+bilinear interpolation:
+⊙ next step: map unnormalized coordinates (x , y ) in a grid between (xmin , ymin ),(xmax , ymax ) to
+normalized coordinates (xn , yn ):
+xmin 7−→ xn = 0, xmax 7−→ xn = 1, linearly
+x − xmin
+xn =
+xmax − xmin
+ymin 7−→ yn = 0, ymax 7−→ yn = 1, linearly
+y − ymin
+yn =
+ymax − ymin
+
+⊙ Then continue as above with (xn , yn )
+
+| 27
+
+Architectural concepts: how to upsample?
+
+Fractionally strided convolution / transposed convolution: See Fig 14.10.1
+https://d2l.ai/chapter computer-vision/transposed-conv.html
+⊙ does not compute an inner product
+⊙ computes a multiplication of a real number and a kernel. Adds the kernel-shaped result into the
+output
+⊙ combines upsampling and convolution-type weights, trainable
+class ConvTranspose2d in PyTorch
+https://pytorch.org/docs/stable/generated/torch.nn.ConvTranspose2d.html
+
+| 28
+
+Architectural concepts: how to upsample?
+
+We can upsample feature maps approximately
+
+| 29
+
+Architectural concepts: fusing different feature map resolutions and usage of
+global context
+| 30
+
+Two problems:
+⊙ Incorporating different feature map resolutions using Upsampling, Concatenations and
+Convolutions: Example U-Net
+⊙ incorporating global context: Atrous Convolutions, Example: DeepLabV3+
+
+Outline
+
+1 Performance measures in Semantic Segmentation
+2 Architecture design in Semantic Segmentation
+3 The set of U-Net architectures
+4 DeepLab architectures
+5 Instance/Panoptic Segmentation
+
+| 31
+
+Incorporating different feature map levels
+
+Problem: How to fetch precise boundary locations ? Will be difficult if one uses only low-resolution
+feature maps close to the output of a classification network
+⊙ feature maps close to the output of a classification network encode information about high-level
+concepts, at low spatial resolution
+⊙ feature maps close to the input of a classification network encode information about low-level
+concepts (like textures, small parts), at high spatial resolution
+· one solution is to use FPN. Below show another common one: U-Net type architectures
+
+| 32
+
+Incorporating different feature map levels
+Ronneberger et al. https://arxiv.org/pdf/1505.04597
+
+img source https://arxiv.org/pdf/1505.04597
+
+many variants like attention-U-Net, residual U-net, etc https:
+//code.likeagirl.io/u-net-vs-residual-u-net-vs-attention-u-net-vs-attention-residual-u-net-899b57c5698
+
+| 33
+
+Incorporating different feature map levels
+Ronneberger et al. https://arxiv.org/pdf/1505.04597
+
+img source https://arxiv.org/pdf/1505.04597
+
+⊙ (Concat+ convolution) learns to weight addition of
+· the copied channels from close to the input
+· the upsampled channels
+
+| 34
+
+Outline
+
+1 Performance measures in Semantic Segmentation
+2 Architecture design in Semantic Segmentation
+3 The set of U-Net architectures
+4 DeepLab architectures
+5 Instance/Panoptic Segmentation
+
+| 35
+
+Global Context. Example: Deeplabv3+
+
+| 36
+
+⊙ Standard convolution is a special case of atrous convolution
+with dilation rate r = 1
+⊙ r > 1: read every r-th pixel in the input for computing the
+inner product with a given kernel
+
+img credit: Chen et al. https://arxiv.org/pdf/1802.02611
+
+⊙ Atrous convolution with r > 1 allows to capture larger
+spatial context
+⊙ DeepLabv3+ (next slide) applies atrous convolutions with
+different rates in parallel on the last feature map and
+concatenates them before upsampling and making
+pixel-level predictions.
+
+Global Context. Example: Deeplabv3+
+
+img credit: Chen et al. https://arxiv.org/pdf/1802.02611
+
+| 37
+
+Outline
+
+1 Performance measures in Semantic Segmentation
+2 Architecture design in Semantic Segmentation
+3 The set of U-Net architectures
+4 DeepLab architectures
+5 Instance/Panoptic Segmentation
+
+| 38
+
+Instance Segmentation
+
+| 39
+
+Instance Segmentation:
+⊙ Object Instance predictions / labels
+⊙ for each pixel: label of instance
+∈ [1, . . . , Omax ] or background label
+(e.g. 0)
+
+Instance Segmentation
+
+| 40
+
+How to measure performance ?
+⊙ panoptic segmentation: mask AP / mask mAP
+⊙ difference to AP/ mAP used in object detection?
+https://github.com/rafaelpadilla/Object-Detection-Metrics
+
+Performance measures in Instance Segmentation
+
+Instance Segmentation:
+⊙ have multiple segmented instances, similar to multiple boxes in object detection! Shape differs
+from boxes, but IoU can be calculated for any shape.
+⊙ Average Precision for a single class
+⊙ mAP as mean of Average Precisions over all classes of interest
+⊙ for segmentation: adjust IoU threshold if the object is very thin / has low ratio of volume to
+minimal enclosing convex shape like https://en.wikipedia.org/wiki/Box jellyfish or
+https://en.wikipedia.org/wiki/Salp#/media/File:Sea Salp Chain.jpg or
+https://www.mineralienatlas.de/lexikon/index.php/MineralData?mineral=Millerit
+
+| 41
+
+Instance Segmentation
+
+| 42
+
+How to measure performance ?
+⊙ pure instance segmentation without class
+labels: mean IoU over all instance labels
+⊙ caveat! instance labels are orderless,
+undetermined up to permutation of label
+values.
+⊙ Have to evaluate best match / or check all
+permutations
+
+Instance Segmentation
+
+| 43
+
+How to measure performance ?
+⊙ panoptic segmentation: mask AP / mask mAP
+⊙ difference to AP/ mAP used in object detection?
+https://github.com/rafaelpadilla/Object-Detection-Metrics
+· step 1 – use IoU threshold to determine TP and FP: compute
+IoU not between bounding boxes (gt vs predicted) but
+between ground truth instance segmentation mask and
+predicted instance mask
+· step 1 – IoU between ground truth instance segmentation
+mask and predicted instance masks
+· step 2 – varying class confidence threshold, as before
+credit: https://arxiv.org/pdf/1703.06870
+
+Instance Segmentation
+
+| 44
+
+How to predict ?
+⊙ Example paper: mask R-CNN
+https://arxiv.org/pdf/1703.06870
+
+credit: https://arxiv.org/pdf/1703.06870
+
+Instance Segmentation
+
+How to predict ? Example paper: mask R-CNN
+https://arxiv.org/pdf/1703.06870
+
+| 45
+
+⊙ start with a 2-stage object detection system
+⊙ Fig 1: stage 1 predict ROIs
+⊙ for each ROI: predict object bounding boxes
+as before
+⊙ for each ROI: predict something on a
+”synthetic” m × m grid
+⊙ predict for each (i, j) ∈ grid(m × m) a class
+label: background (0) ?
+... or class label of the instance ?
+
+credit: https://arxiv.org/pdf/1703.06870
+
+Instance Segmentation
+
+How to predict ? Example paper: mask R-CNN
+https://arxiv.org/pdf/1703.06870
+
+| 46
+
+⊙ start with a 2-stage object detection system
+⊙ Fig 1: stage 1 predict ROIs
+⊙ for each ROI: predict object bounding boxes
+as before
+⊙ for each ROI: predict something on a
+”synthetic” m × m grid
+
+credit: https://arxiv.org/pdf/1703.06870
+
+⊙ predict for each (i, j) ∈ grid(m × m) a class
+label: background (0) ?
+... or class label of the instance ?
+
+Instance Segmentation
+
+| 47
+
+⊙ start with a 2-stage object detection system
+How to predict ? Example paper: mask R-CNN
+https://arxiv.org/pdf/1703.06870
+
+⊙ Fig 1: stage 1 predict ROIs
+⊙ for each ROI: predict object bounding boxes
+as before
+⊙ for each ROI: predict something on a
+”synthetic” m × m grid
+⊙ ”synthetic” m × m grid: each
+(i, j) ∈ grid(m × m) is not 1 pixel in the
+image.
+
+credit: https://arxiv.org/pdf/1703.06870
+
+· Depends on size of the bounding box
+(centerbox ,h , centerbox ,w , hbox , wbox ):
+· each grid point (i, j) has size:
+hbox /m, wbox /m
+
+Instance Segmentation
+
+| 48
+
+⊙ start with a 2-stage object detection system
+How to predict ? Example paper: mask R-CNN
+https://arxiv.org/pdf/1703.06870
+
+⊙ for each ROI: predict object bounding boxes
+as before
+⊙ for each ROI: predict on a ”synthetic” m × m
+grid
+⊙ ”synthetic” m × m grid: each
+(i, j) ∈ grid(m × m) is not 1 pixel in the
+image.
+
+credit: https://arxiv.org/pdf/1703.06870
+
+· each grid point (i, j) has size:
+hbox /m, wbox /m
+· ROIAlign computes the feature for a
+synthetic pixel using bilinear
+interpolation over a feature map:
+https://erdem.pl/2020/02/
+understanding-region-of-interest-part-2-ro-i-a
+
+Instance Segmentation
+
+How to train ? Example paper: mask R-CNN
+https://arxiv.org/pdf/1703.06870
+
+| 49
+
+⊙ usual object detection loss Lcls + Lbox
+⊙ if Lbox is added, then add Lmask
+⊙ Lmask is a binary cross-entropy loss, summed
+for each of the (i, j) ∈ grid(m × m) synthetic
+pixels
+
+credit: https://arxiv.org/pdf/1703.06870
+
+Loss = Lcls + Lbox + Lmask
+credit: https://arxiv.org/pdf/1703.06870
+
+Instance Segmentation
+
+1h lecture for watching at home:
+https://www.youtube.com/watch?v=9AyMR4IhSWQ
+
+| 50
+
+

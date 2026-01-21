@@ -1,0 +1,1234 @@
+What you will see today
+
+more theory:
+⊙ recap: the inner product and its properties
+⊙ logistic sigmoid to map unbounded outputs onto [0, 1] with an interpretation as probability
+⊙ cross-entropy loss
+⊙ connection between the cross-entropy loss and the principle of maximum likelihood
+
+|1
+
+Outline
+
+|2
+
+1 Important Intermezzo: the inner product
+2 Classification by logistic regression
+3 Binary cross-entropy and Maximum Likelihood
+4
+
+Softmax and Cross-entropy loss for multiple classes
+
+Inner product properties I
+
+|3
+
+u·v =
+
+d−1
+X
+
+ud vd ∈ R
+
+k=0
+
+has the following properties:
+⊙ maps two real vectors u, v onto a real number u · v
+⊙ linear in the first argument (u)
+a ∈ R, (au) · v = a(u · v )
+(u {1} + u {2} ) · v = u {1} · v + u {2} · v
+or in short:
+(a1 u {1} + a2 u {2} ) · v = a1 (u {1} · v ) + a2 (u {2} · v )
+⊙ linear in the second argument (v )
+
+Inner product properties II
+
+|4
+
+u·v =
+
+d−1
+X
+
+ud vd ∈ R
+
+k=0
+
+has the following properties:
+Symmetry: u · v = v · u
+v ̸= 0 ⇒ v · v > 0
+0·u =0
+where 0 is the Null vector. For example in R3 this is the element (0, 0, 0)
+
+Inner product properties III
+
+|5
+
+u·v =
+
+d−1
+X
+
+ud vd ∈ R
+
+k=0
+
+has the following properties:
+⊙ it defines a norm ∥v ∥ is a norm, that is a notion of the length of a vector v :
+v · v = ∥v ∥2
+
+Inner product properties IV
+
+|6
+
+u·v =
+
+d−1
+X
+
+ud vd ∈ R
+
+k=0
+
+has the following properties:
+⊙ it defines an angle between two vectors:
+u·v
+= cos(∠(u, v ))
+(u · u)1/2 (v · v )1/2
+· the angle can be measured in any dimensions
+· in higher dimensions, the angle is measured
+in the 2-dim plane spanned by u, v :
+L(u, v ) = {a0 u + a1 v , a0 ∈ R, a1 ∈ R}
+
+Inner product properties V
+
+|7
+
+u·v =
+
+d−1
+X
+
+ud vd ∈ R
+
+k=0
+
+⊙ u · v defines an angle between two vectors:
+u·v
+(u · u)1/2 (v · v )1/2
+
+= cos(∠(u, v ))
+
+⊙ for two vectors u, v of unit length (∥u∥2 = 1) the
+inner product
+·
+·
+·
+·
+
+lies in [−1, +1]
+u · v = 1 if u = v
+gets close to 1 if their angle is close to zero,
+gets close to 0 if their angle is close to
+π/2 ∼ 90 deg,
+· u · v = −1 if u = −v
+
+Inner product properties VI
+
+u·v =
+
+d−1
+X
+
+u d vd ∈ R
+
+k=0
+
+⊙ u · v defines an angle between two vectors:
+u·v
+= cos(∠(u, v ))
+(u · u)1/2 (v · v )1/2
+Interpretation of the inner product
+for two vectors u, v of unit length (∥u∥2 = 1) the inner product computes a similarity measure
+between u and v based on their angle!
+
+|8
+
+Classification
+
+Interpretation of the inner product
+for two vectors u, v of unit length (∥u∥2 = 1) the inner product computes a similarity measure
+between u and v based on their angle!
+next step:
+⊙ now we can use u · v to define a simple classifier:
+
+|9
+
+Classification
+
+| 10
+
+f (x ) = w · x + b
+s(x ) = sign(f (x )) ∈ {−1, +1}
+Mechanism:
+⊙ f (x ) is large if the angle ∠(w , x ) is close to zero,
+⊙ it assigns large values to x with ∠(w , x ) close to zero,
+Simplest neural network:
+⊙ x = (x0 , x1 , . . . , xd−1 )⊤ ∈ Rd - input vector.
+⊙ f (x ) output of the only weight layer
+⊙ with weight vector w = (w0 , w1 , . . . , wd−1 , b) ∈ Rd
+⊙ y = sign(z) - activation function on top of f (x )
+
+Outline
+
+| 11
+
+1 Important Intermezzo: the inner product
+2 Classification by logistic regression
+3 Binary cross-entropy and Maximum Likelihood
+4
+
+Softmax and Cross-entropy loss for multiple classes
+
+Towards logistic regression
+
+Next steps: There is lots to derive from this simple case f (x ) = w · x + b
+⊙ derive an activation function with nice properties ( → logistic sigmoid)
+⊙ derive a loss for this case (→ Binary cross entropy loss)
+⊙ extend this to more than 2 classes as outputs ( → softmax)
+⊙ derive a loss function for more than 2 classes as outputs (→ Cross entropy loss)
+
+| 12
+
+Derivation of logistic regression
+
+Goal of classification: For every input sample x ∈ X , correctly predict which class y it belongs.
+⊙ For 2-class classification, y ∈ {−1, +1} or y ∈ {0, 1}.
+First attempt: Apply a linear mapping and classify according to the sign of the output:
+f (x ) = w · x + b, s(x ) = sign(f (x )) ∈ {−1, +1}
+While f (x ) has unbounded values, s(x ) is either −1 or 1, but:
+⊙ if f (x ) ≈ 0, we should be uncertain about the prediction.
+⊙ if f (x ) ≫ 0, we should be confident about the prediction 1.
+⊙ if f (x ) ≪ 0, we should be confident about the prediction −1.
+Goal: encode this uncertainty
+
+| 13
+
+Derivation of logistic regression
+
+Goal of classification: For every input sample x ∈ X , correctly predict which class y it belongs.
+⊙ For 2-class classification, y ∈ {−1, +1} or y ∈ {0, 1}.
+First attempt: Apply a linear mapping and classify according to the sign of the output:
+f (x ) = w · x + b, s(x ) = sign(f (x )) ∈ {−1, +1}
+While f (x ) has unbounded values, s(x ) is either −1 or 1, but:
+⊙ if f (x ) ≈ 0, we should be uncertain about the prediction.
+⊙ if f (x ) ≫ 0, we should be confident about the prediction 1.
+⊙ if f (x ) ≪ 0, we should be confident about the prediction −1.
+Goal: encode this uncertainty
+
+| 13
+
+Derivation of logistic regression
+
+Goal of classification: For every input sample x ∈ X , correctly predict which class y it belongs.
+⊙ For 2-class classification, y ∈ {−1, +1} or y ∈ {0, 1}.
+First attempt: Apply a linear mapping and classify according to the sign of the output:
+f (x ) = w · x + b, s(x ) = sign(f (x )) ∈ {−1, +1}
+While f (x ) has unbounded values, s(x ) is either −1 or 1, but:
+⊙ if f (x ) ≈ 0, we should be uncertain about the prediction.
+⊙ if f (x ) ≫ 0, we should be confident about the prediction 1.
+⊙ if f (x ) ≪ 0, we should be confident about the prediction −1.
+Goal: encode this uncertainty
+
+| 13
+
+Derivation of logistic regression
+
+Goal of classification: For every input sample x ∈ X , correctly predict which class y it belongs.
+⊙ For 2-class classification, y ∈ {−1, +1} or y ∈ {0, 1}.
+First attempt: Apply a linear mapping and classify according to the sign of the output:
+f (x ) = w · x + b, s(x ) = sign(f (x )) ∈ {−1, +1}
+While f (x ) has unbounded values, s(x ) is either −1 or 1, but:
+⊙ if f (x ) ≈ 0, we should be uncertain about the prediction.
+⊙ if f (x ) ≫ 0, we should be confident about the prediction 1.
+⊙ if f (x ) ≪ 0, we should be confident about the prediction −1.
+Goal: encode this uncertainty
+
+| 13
+
+Derivation of logistic regression
+
+Goal of classification: For every input sample x ∈ X , correctly predict which class y it belongs.
+⊙ For 2-class classification, y ∈ {−1, +1} or y ∈ {0, 1}.
+First attempt: Apply a linear mapping and classify according to the sign of the output:
+f (x ) = w · x + b, s(x ) = sign(f (x )) ∈ {−1, +1}
+While f (x ) has unbounded values, s(x ) is either −1 or 1, but:
+⊙ if f (x ) ≈ 0, we should be uncertain about the prediction.
+⊙ if f (x ) ≫ 0, we should be confident about the prediction 1.
+⊙ if f (x ) ≪ 0, we should be confident about the prediction −1.
+Goal: encode this uncertainty
+
+| 13
+
+Derivation of logistic regression
+
+How can we encode the uncertainty into a mapping from (−∞, +∞) onto [0, 1]? We would like to
+map using a function s(·):
+⊙ f (x ) ≈ 0 to s(f (x )) ≈ 0.5.
+⊙ f (x ) ≫ 0 to s(f (x )) ≈ 1, in particular let limu→+∞ s(u) = 1
+⊙ f (x ) ≪ 0 to s(f (x )) ≈ 0, in particular let limu→−∞ s(u) = 0
+This would allow us to interpret s(u) as a probability over inputs u.
+There are many possible choices for the function s(u).
+
+| 14
+
+Derivation of logistic regression
+
+How can we encode the uncertainty into a mapping from (−∞, +∞) onto [0, 1]? We would like to
+map using a function s(·):
+⊙ f (x ) ≈ 0 to s(f (x )) ≈ 0.5.
+⊙ f (x ) ≫ 0 to s(f (x )) ≈ 1, in particular let limu→+∞ s(u) = 1
+⊙ f (x ) ≪ 0 to s(f (x )) ≈ 0, in particular let limu→−∞ s(u) = 0
+This would allow us to interpret s(u) as a probability over inputs u.
+There are many possible choices for the function s(u).
+
+| 14
+
+Derivation of logistic regression
+
+How can we encode the uncertainty into a mapping from (−∞, +∞) onto [0, 1]? We would like to
+map using a function s(·):
+⊙ f (x ) ≈ 0 to s(f (x )) ≈ 0.5.
+⊙ f (x ) ≫ 0 to s(f (x )) ≈ 1, in particular let limu→+∞ s(u) = 1
+⊙ f (x ) ≪ 0 to s(f (x )) ≈ 0, in particular let limu→−∞ s(u) = 0
+This would allow us to interpret s(u) as a probability over inputs u.
+There are many possible choices for the function s(u).
+
+| 14
+
+Derivation of logistic regression
+
+There are many possible choices for the function s(u).
+
+| 15
+
+Derivation of logistic regression: Probit regression
+We could e.g. use the cumulative distribution function (CDF) of any probability distribution
+function (PDF) with a median of 0.
+⊙ The normal (Gaussian) distribution is used in probit (from probability and unit)
+regression.
+
+| 16
+
+Logistic regression
+
+| 17
+
+We will use a simpler function called the logistic sigmoid function:
+Definition: Logistic sigmoid function
+s(u) =
+
+1
+exp(u)
+1
+exp(u)
+=
+=
+1 + exp(u)
+exp(−u) + 1 exp(u)
+exp(−u) + 1
+
+How does the logistic sigmoid function
+look like?
+Let’s plot it for different scaling factors
+c > 0:
+s(c u) =
+
+exp(cu)
+1
+=
+1 + exp(cu)
+exp(−cu) + 1
+
+Logistic regression
+
+| 18
+
+Definition: Logistic sigmoid function
+s(u) =
+
+1
+exp(u)
+1
+exp(u)
+=
+=
+1 + exp(u)
+exp(−u) + 1 exp(u)
+exp(−u) + 1
+
+Note that:
+1
+1
+=
+= 0.5
+exp(−0) + 1
+1+1
+1
+1
+=
+=1
+lim s(u) = lim
+u→∞
+u→∞ exp(−u) + 1
+0+1
+exp(u)
+0
+lim s(u) = lim
+=
+=0
+u→−∞
+u→−∞ 1 + exp(u)
+1+0
+s(0) =
+
+Logistic regression
+
+| 19
+
+Definition: Logistic regression model
+Assume we have an affine mapping fw ,b (x ) = w · x + b. Plugging it into the logistic sigmoid
+function s(u) provides a logistic regression model:
+s(fw ,b (x )) =
+
+exp(w · x + b)
+1
+=
+1 + exp(w · x + b)
+exp(−w · x − b) + 1
+
+For 2-class classification problems, the output s(fw ,b (x )) ∈ [0, 1] is the predicted probability that
+sample x has class label y = 1, that is, P(Y = 1|X = x ).
+
+Logistic regression
+
+| 20
+
+Interpretation of Logistic regression model outputs
+
+s(fw ,b (x )) =
+
+exp(w · x + b)
+1
+=
+1 + exp(w · x + b)
+exp(−w · x − b) + 1
+
+is a model for P(Y = 1|X = x ) in the classification prediction.
+Indeed, for every input x we have that s(fw ,b (x )) ∈ (0, 1). So it can be considered as a probability
+value.
+Since we have only two classes, it must hold:
+P(Y = 1|X = x ) + P(Y = 0|X = x ) = 1
+P(Y = 0|X = x ) = 1 − P(Y = 1|X = x ) = 1 − s(fw ,b (x ))
+and we can use s(fw ,b (x )) to express the probability for the other class P(Y = 0|X = x ).
+
+Binary cross-entropy loss function
+
+next step:
+⊙ derive a loss function which can be used for the logistic regression prediction model!
+
+| 21
+
+Binary cross-entropy loss function
+
+Binary cross entropy loss for a single output
+Let us consider classification with 2 classes with labels {0, 1}, and let s(x ) be a model for
+P(Y = 1|X = x ) . Then the binary cross entropy loss for a pair of prediction and label (s(x ), y )
+is given as
+e(x , y ) = −y ln(s(x )) − (1 − y ) ln(1 − s(x ))
+This looks complicated but it has a simple interpretation:
+⊙ y = 1 ⇒ e = − ln(s(x )) ...! the neg-log-probability P(Y = 1|X = x ) of the ground truth class
+y =1
+⊙ y = 0 ⇒ e = − ln(1 − s(x )) ...! the neg-log-probability P(Y = 0|X = x ) of the ground truth
+class y = 0
+
+| 22
+
+Binary cross-entropy loss function
+
+Binary cross entropy loss for a single output
+Let us consider classification with 2 classes with labels {0, 1}, and let s(x ) be a model for
+P(Y = 1|X = x ) . Then the binary cross entropy loss for a pair of prediction and label (s(x ), y )
+is given as
+e(x , y ) = − ln(P(Y = 1|X = x ))1[y == 1] − ln(P(Y = 0|X = x ))1[y == 0]
+
+| 23
+
+Derivation of the cross-entropy loss function
+
+Binary cross entropy loss for a single output
+Let us consider classification with 2 classes with labels {0, 1}, and let s(x ) be a model for
+P(Y = 1|X = x ) . Then the binary cross entropy loss for a pair of prediction and label (s(x ), y )
+is given as
+e = −y ln(s(x )) − (1 − y ) ln(1 − s(x ))
+This is the neg-logarithm of the probability P(Y = y |X = x ) for the ground truth label class y
+where s(x ) = P(Y = 1|X = x ) – if one uses 0-1-labels.
+(for a given pair (x , y ) of feature x and its label y )
+Next: Why is the neg-logarithm of the probability of the ground-truth class a good loss function?
+
+| 24
+
+Why is the neg-logarithm of the probability of the ground-truth class a good
+loss function?
+| 25
+
+Next: Why is the neg-logarithm of the probability of the ground-truth class a good loss function?
+Desirable properties for a loss function:
+⊙ it should have low loss if the prediction is close to the ground truth
+⊙ it should have high loss if the prediction is far from the ground truth
+⊙ if one wants to use gradient-based optimization, it should be almost everywhere differentiable
+
+Why is the neg-logarithm of the probability of the ground-truth class a good
+loss function?
+| 26
+Suppose y = 1. Then the optimal prediction is P(Y = 1|X = x ) = 1.
+⊙ If we had he optimal prediction is P(Y = 1|X = x ) = 1, then the loss is − ln(1) = 0. Zero loss
+⊙ If we had the least desirable prediction P(Y = 1|X = x ) = 0, then the loss is
+limx →0,x >0 − ln(x ) = ∞.
+The neg logarithm looks like this:
+7
+6
+5
+4
+3
+2
+1
+0
+0.0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1.0
+
+Why is the neg-logarithm of the probability of the ground-truth class a good
+loss function?
+| 27
+The neg logarithm looks like this:
+7
+6
+5
+4
+3
+2
+1
+0
+0.0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1.0
+
+⊙ So if y = 1, then too low predicted probabilities s(x ) close to zero get a large loss.
+⊙ Similarly if y = 0, then too high probabilities s(x ) ≈ 1 close to one get a large loss (because then
+1 − s(x ) ≈ 0 is close to zero again, thus its neg log will be high)
+
+summary
+
+Takeaway:
+⊙ the neg log probability prediction for the ground truth class is a reasonable loss function for
+classification problems.
+⊙ we have a classification model, which returns probabilities
+⊙ we have a loss to train it (not said how to use it)
+Next:
+⊙ show that this loss has a derivation from a principle.
+
+| 28
+
+Outline
+
+| 29
+
+1 Important Intermezzo: the inner product
+2 Classification by logistic regression
+3 Binary cross-entropy and Maximum Likelihood
+4
+
+Softmax and Cross-entropy loss for multiple classes
+
+Derivation of cross-entropy loss
+
+Next:
+⊙ show that this loss has a derivation from a principle.
+Steps:
+(1) define a probability model P(Y |X = x ) for the prediction on a single input sample x
+(2) define a probability model P(Y0 , Y1 , Y2 , . . . |X0 = x0 , X1 = x1 , X2 = x2 , . . .) for predictions on a
+set of samples x0 , x1 , x2 , . . .
+(3) employ the principle of maximum likelihood to select parameters for the probability model
+(4) use a log-space transformation
+
+| 30
+
+Derivation of cross-entropy loss, step (1)
+
+(a probability model P(Y |X = x ))
+⊙ The logistic output s(fw ,b (x )) ∈ [0, 1] can be interpreted as the probability P({Y = 1|X = x }) of
+observing label Y = 1, predicted by the model.
+⊙ then:
+P(Y = 0|X = x ) = 1 − P(Y = 1|X = x ) = 1 − s(fw ,b (x ))
+y ∈ {0, 1} : P(Y = y |X = x ) = sy + (1 − s)(1 − y )
+y ∈ {0, 1} : P(Y = y |X = x ) = s y (1 − s)1−y
+
+both are valid expressions for P(Y = y |X = x )
+⊙ we will use y ∈ {0, 1} : P(Y = y |X = x ) = s y (1 − s)1−y ( compat. w. log-transform)
+
+| 31
+
+Derivation of cross-entropy loss, step (2)
+
+| 32
+
+⊙ define a model for P(Y0 , Y1 , Y2 , . . . |X0 = x0 , X1 = x1 , X2 = x2 , . . .) by multiplying all probabilities
+P({Yk |Xk = xk }) together:
+P(Y0 , Y1 , . . . , Yn−1 |X0 = x0 , X1 = x1 , . . . , Xn−1 = xn−1 ) =
+P({Y0 |X0 = x0 })P({Y1 |X1 = x1 }) · . . . · P({Yn−1 |Xn−1 = xn−1 })
+=
+
+n−1
+Y
+
+P({Yk |Xk = xk })
+
+k=0
+
+⊙ why does this make sense?
+· note: The set of all values for (Y0 , Y1 , . . . , Yn−1 ) are all sequences (11010 . . . 1) of length n.
+| {z }
+· example values for n = 3 are (0, 0, 0), (1, 0, 1), (0, 1, 1)
+· Expressed by math: {0, 1}n
+
+len=n
+
+Derivation of cross-entropy loss, step (2)
+
+| 33
+
+P(Y0 , Y1 , . . . , Yn−1 |X0 = x0 , X1 = x1 , . . . , Xn−1 = xn−1 ) =
+=
+
+n−1
+Y
+
+P({Yk |Xk = xk })
+
+k=0
+
+⊙ this is a probability over all possible values of Y0 , Y1 , . . . , Yn−1 :
+Q
+· P({Yk |Xk = xk }) ∈ [0, 1] ⇒ 0 ≤ n−1
+k=0 P({Yk |Xk = xk }) ≤ 1
+· it sums up to = 1 over all possible values:
+n−1
+Y
+
+X
+
+P({Yk |Xk = xk })
+
+Y0 ∈{0,1},Y1 ∈{0,1},...,Yn−1 ∈{0,1} k=0
+
+=
+
+X
+
+X
+
+Y0 ∈{0,1} Y1 ∈{0,1}
+
+...
+
+X
+
+n−1
+Y
+
+Yn−1 ∈{0,1} k=0
+
+P({Yk |Xk = xk }) = 1
+
+Derivation of cross-entropy loss, step (2)
+
+n−1
+Y
+
+X
+
+| 34
+
+P({Yk |Xk = xk })
+
+Y0 ∈{0,1},Y1 ∈{0,1},...,Yn−1 ∈{0,1} k=0
+
+=
+
+X
+
+X
+
+...
+
+Y0 ∈{0,1} Y1 ∈{0,1}
+
+=
+
+X
+
+X
+
+Y0 ∈{0,1} Y1 ∈{0,1}
+
+X
+
+n−1
+Y
+
+P({Yk |Xk = xk })
+
+Yn−1 ∈{0,1} k=0
+
+...
+
+X
+Yn−1 ∈{0,1}
+
+P({Y0 |X0 = x0 })
+
+n−1
+Y
+
+P({Yk |Xk = xk })
+
+k=1
+
+P(Y0 | . . .) is a constant for summations over Y1 , Y2 , . . . , Yn−1
+
+DDerivation of cross-entropy loss, step (2)
+
+| 35
+
+The trick of pulling out a constant:
+XX
+Y1
+
+⇒
+
+Y2
+
+XXX
+Y0
+
+Y1
+
+c(Y0 )t(Y1 , Y2 ) = c(Y0 )
+
+Y2
+
+XX
+Y1
+
+c(Y0 )t(Y1 , Y2 ) =
+
+X
+Y0
+
+c(Y0 )
+
+t(Y1 , Y2 )
+
+Y2
+
+XX
+Y1
+
+Y2
+
+t(Y1 , Y2 )
+
+Derivation of cross-entropy loss, step (2)
+
+| 36
+
+n−1
+Y
+
+X
+
+P({Yk |Xk = xk })
+
+Y0 ∈{0,1},Y1 ∈{0,1},...,Yn−1 ∈{0,1} k=0
+
+X
+
+=
+
+X
+
+...
+
+Y0 ∈{0,1} Y1 ∈{0,1}
+
+X
+
+P({Y0 |X0 = x0 })
+
+Yn−1 ∈{0,1}
+
+n−1
+Y
+
+P({Yk |Xk = xk })
+
+k=1
+
+P(Y0 | . . .) is a constant for summations over Y1 , Y2 , . . . , Yn−1
+X
+
+=
+
+Y0 ∈{0,1}
+
+=1
+
+X
+
+P({Y0 |X0 = x0 })
+
+X
+Y1 ∈{0,1}
+
+Y1 ∈{0,1}
+
+X
+
+...
+
+n−1
+Y
+
+Yn−1 ∈{0,1} k=1
+
+n-1 times iterate: =1 · . . . · 1 = 1
+
+...
+
+X
+
+n−1
+Y
+
+Yn−1 ∈{0,1} k=1
+
+P({Yk |Xk = xk })
+
+P({Yk |Xk = xk })
+
+Derivation of cross-entropy loss, step (2)
+
+| 37
+
+⊙ Result: We have shown that
+P(Y0 , Y1 , . . . , Yn−1 |X0 = x0 , X1 = x1 , . . . , Xn−1 = xn−1 ) =
+=
+
+n−1
+Y
+
+P({Yk |Xk = xk })
+
+k=0
+
+defines a probability distribution over the set {0, 1}n of all values for the sequence
+(Y0 , Y1 , . . . , Yn−1 )
+
+Derivation of cross-entropy loss, step (3)
+⊙ using our logistic regression output s(fw ,b (x )) , we have defined a probability model for
+
+observing values y0 , y1 , . . . , yn−1
+P(Y0 , Y1 , . . . , Yn−1 |X0 = x0 , X1 = x1 , . . . , Xn−1 = xn−1 , w , b)
+⊙ we would like to find suitable values for the model parameters w and b.
+
+⊙ the simplest thought is to choose (w , b) is such that the probability to observe the data
+
+which we have y0 , . . . , yn−1 ∈ {0, 1} is maximized.
+⊙ This is called the principle of maximal likelihood
+
+(wähle die Parameter derart, dass die Plausibilität der Beobachtung der gegebenen Daten
+maximiert wird)
+(w ∗ , b ∗ ) = argmax{(w ,b)} P(Y0 = y0 , Y1 = y1 , . . . , Yn−1 = yn−1 |w , b)
+
+| 38
+
+Derivation of cross-entropy loss, step (3)
+⊙ using our logistic regression output s(fw ,b (x )) , we have defined a probability model for
+
+observing values y0 , y1 , . . . , yn−1
+P(Y0 , Y1 , . . . , Yn−1 |X0 = x0 , X1 = x1 , . . . , Xn−1 = xn−1 , w , b)
+⊙ we would like to find suitable values for the model parameters w and b.
+
+⊙ the simplest thought is to choose (w , b) is such that the probability to observe the data
+
+which we have y0 , . . . , yn−1 ∈ {0, 1} is maximized.
+⊙ This is called the principle of maximal likelihood
+
+(wähle die Parameter derart, dass die Plausibilität der Beobachtung der gegebenen Daten
+maximiert wird)
+(w ∗ , b ∗ ) = argmax{(w ,b)} P(Y0 = y0 , Y1 = y1 , . . . , Yn−1 = yn−1 |w , b)
+
+| 38
+
+Derivation of cross-entropy loss, step (3)
+
+Maximum likelihood principle
+Given some data observations z0 , z1 , . . . , zn−1 , and a probability model
+P(Z0 = z0 , Z1 = z1 , . . . , Zn−1 = zn−1 |θ) which depends on some parameter θ, the Maximum
+likelihood principle says, that one can choose θ such that it maximizes the probability of observing
+the given data:
+θ∗ = argmaxall possible θ P(Z0 = z0 , Z1 = z1 , . . . , Zn−1 = zn−1 |θ)
+Choose the model parameters such that observing the given data samples becomes most likely.
+
+| 39
+
+Probability as a product and independence assumption
+
+One missing point:
+⊙ Why does it make sense to define a probability as a product of observations for single samples ?
+P(Y0 , Y1 , . . . , Yn−1 |X0 = x0 , X1 = x1 , . . . , Xn−1 = xn−1 ) =
+=
+
+n−1
+Y
+
+P({Yk |Xk = xk })
+
+k=0
+
+This makes sense if one can assume statistical independence (to be exact: conditional
+independence of Y given that one knows the X )
+
+| 40
+
+Maximum likelihood with independence assumption
+
+Give an example of data collection, where statistical independence is not fully satisfied?
+
+| 41
+
+Maximum likelihood with independence assumption
+
+Maximum likelihood principle with independence assumption
+Given n vectors/data points z0 , . . . , zn−1 , a probability model p(zi ; θ) and an assumption of
+independence of zi given θ, choose the parameters θ such that the probability of observing the
+data is maximized:
+θ∗ = argmaxθ p(z0 ; θ)p(z1 ; θ) . . . p(zn−1 ; θ)
+or θ∗ = argminθ
+
+n−1
+X
+
+− ln(p(zi ; θ))
+
+i=0
+
+Use as model for generating / simulating new data: p(x ; θ∗ )
+
+| 42
+
+Derivation of cross-entropy loss, step (4)
+
+Maximum likelihood with independence assumption:
+θ∗ = argmaxθ p(z0 ; θ)p(z1 ; θ) . . . p(zn−1 ; θ)
+for many distributions with exponentials it is easier to instead minimize the neg-log likelihood.
+
+
+∗
+θ = argminθ − ln p(z0 ; θ)p(z1 ; θ) . . . p(zn−1 ; θ)
+
+
+= argminθ − ln p(z0 ; θ) − ln p(z1 ; θ) − . . . − ln p(zn−1 ; θ)
+This gives the same solution.
+
+| 43
+
+Derivation of cross-entropy loss, step (4)
+Next step: apply this:
+
+argminθ
+
+
+− ln p(z0 ; θ) − ln p(z1 ; θ) − . . . − ln p(zn−1 ; θ)
+
+⊙ plug in our model: zi = (yi , zi ), P(zi ; θ) = P(Yi = yi |Xi = xi , w , b)
+⊙ use P(Yi = yi |Xi = xi , w , b) = s(xi )yi (1 − s(xi ))1−yi and
+ln(ab) = ln(a) + ln(b), ln(ac ) = c ln(a)
+− ln P(Yi = yi |Xi = xi , w , b) = − ln(s(xi )yi (1 − s(xi ))1−yi )
+= yi (− ln(s(xi ))) + (1 − yi )(− ln(1 − s(xi )))
+This is the binary cross entropy loss from above (compare!)
+e = −y ln(s(x )) − (1 − y ) ln(1 − s(x ))
+
+| 44
+
+Derivation of the cross-entropy loss function
+Take away:
+Binary cross entropy loss for a single output
+Let us consider classification with 2 classes with labels {0, 1}, and let s(x ) be a model for
+P(Y = 1|X = x ) . Then the binary cross entropy loss for a pair of prediction and label (s(x ), y )
+is given as
+X
+e = −y ln(s(x )) − (1 − y ) ln(1 − s(x )) =
+− ln P(Y = i|X = x )1[i = y ]
+i∈{0,1}
+
+⊙ This is the neg-logarithm of the probability P(Y = y |X = x ) for the ground truth label
+class y
+⊙ It can be derived from applying the maximum likelihood principle aiming at choosing
+parameters to maximize the probability to observe the ground truth labels yi
+
+| 45
+
+Outline
+
+| 46
+
+1 Important Intermezzo: the inner product
+2 Classification by logistic regression
+3 Binary cross-entropy and Maximum Likelihood
+4
+
+Softmax and Cross-entropy loss for multiple classes
+
+Derivation of the cross-entropy loss function
+
+⊙ Suppose we have C classes: y ∈ {0, . . . , C − 1} and
+⊙ we have a function P(Y = k|Xi = xi , θ) which returns probabilities for each label k
+⊙ the problem is Multi-class classification: the C classes are mutually exclusive.
+Multi-class classification
+⊙ class labels are mutually exclusive in the ground truth
+⊙ if the predictions modeled as probability P(Y = k|Xi = xi , θ), this requires that
+C
+−1
+X
+
+P(Y = k|Xi = xi , θ) = 1
+
+k=0
+
+⊙ note: one can model the absence of anything by a background class label
+
+| 47
+
+Derivation of the cross-entropy loss function
+
+| 48
+
+⊙ Suppose we have C classes: y ∈ {0, . . . , C − 1} and
+⊙ we have a function P(Y = k|Xi = xi , θ) which returns probabilities for each label k
+⊙ Lets represent the label y ∈ {0, . . . , C − 1} via a one-hot vector ye ∈ Rc :
+(
+1 if y = k
+ye[k] =
+0 else
+ye = (0, . . . , 0,
+
+1
+|{z}
+
+, 0, . . .)⊤
+
+at value of y
+
+Then P(Yi = yi |Xi = xi , θ) =
+
+QC −1
+
+yei [k]
+k=0 P(Y = k|Xi = xi , θ)
+
+Derivation of the cross-entropy loss function
+
+| 49
+
+⊙ Suppose we have C classes: y ∈ {0, . . . , C − 1} and
+⊙ we have a function P(Y = k|Xi = xi , θ) which returns probabilities for each label k
+⊙ Lets represent the label y ∈ {0, . . . , C − 1} via a one-hot vector ye ∈ Rc
+QC −1
+P(Y = k|X = x , θ)yei [k]
+Then P(Y = y |X = x , θ) =
+i
+
+i
+
+i
+
+i
+
+k=0
+
+i
+
+i
+
+... simply because for all k where yei [k] = 0 we have
+P(Y = k|Xi = xi , θ)yei [k] = P(Y = k|Xi = xi , θ)0 = 1
+... for the sole one k where yei [k] = 1 this returns:
+P(Y = k|Xi = xi , θ)yei [k] = P(Y = k|Xi = xi , θ)1 = P(Yi = yi |Xi = xi , θ)
+⇒
+
+CY
+−1
+k=0
+
+P(Y = k|Xi = xi , θ)yei [k] = P(Yi = yi |Xi = xi , θ)
+
+Derivation of the cross-entropy loss function
+We have have C classes: y ∈ {0, . . . , C − 1} and
+CY
+−1
+
+P(Y = k|Xi = xi , θ)yei [k] = P(Yi = yi |Xi = xi , θ)
+
+k=0
+
+now apply the same principle: we try to find θ∗ which is the minimizer of
+X
+− ln p(zi ; θ)
+θ∗ = argminθ
+i
+
+= argminθ
+
+X
+
+− ln P(Yi = yi |Xi = xi , θ)
+
+i
+
+= argminθ
+
+X
+
+− ln
+
+i
+
+= argminθ
+= argminθ
+
+− ln P(Y = k|Xi = xi , θ)yei [k]
+
+k=0
+
+−1
+X CX
+i
+
+P(Y = k|Xi = xi , θ)yei [k]
+
+k=0
+
+−1
+X CX
+i
+
+CY
+−1
+
+k=0
+
+−e
+yi [k] ln P(Y = k|Xi = xi , θ)
+
+| 50
+
+Derivation of the cross-entropy loss function
+We have have C classes: y ∈ {0, . . . , C − 1} and
+CY
+−1
+
+P(Y = k|Xi = xi , θ)yei [k] = P(Yi = yi |Xi = xi , θ)
+
+k=0
+∗
+
+we try to find θ which is the minimizer of
+−1
+X CX
+
+θ∗ = argminθ
+
+−e
+yi [k] ln P(Y = k|Xi = xi , θ)
+
+samples i k=0
+
+Multi-class cross entropy loss
+Let yei be the C -dimensional one-hot vector encoding labels in {0, . . . , C − 1}, and let P(Y =
+k|Xi = xi , θ) the probability for class k given input sample xi , then the cross-entropy loss for one
+sample (xi , yi ) is defined as:
+C
+−1
+X
+k=0
+
+−e
+yi [k] ln P(Y = k|Xi = xi , θ)
+
+| 51
+
+Derivation of the cross-entropy loss function
+
+Multi-class cross entropy loss
+Let yei be the C -dimensional one-hot vector encoding labels in {0, . . . , C − 1}, and let P(Y =
+k|Xi = xi , θ) the probability for class k given input sample xi , then the cross-entropy loss for one
+sample (xi , yi ) is defined as:
+C
+−1
+X
+
+−e
+yi [k] ln P(Y = k|Xi = xi , θ)
+
+k=0
+
+⊙ This is again the neg-log probability for the class of the ground-truth label
+· if the probability for the ground-truth class is = 1, we have − ln(1) = 0 for the loss
+
+| 52
+
+Takeaway for today:
+
+Takeaway for today:
+⊙ logistic regression: model which computes inner product +b with one output, then
+combines it with the logistic sigmoid
+⊙ a possible loss: binary cross entropy - the neg-log of the output probability for the ground
+truth class y for a given sample (x , y )
+⊙ neg-log (close to 0) = close to ∞, − ln(1.0) = 0
+⊙ binary cross entropy - derived from maximum likelihood principle to observe the ground
+truth labels
+⊙ logistic regression: 1-layer NN with sigmoid activation function
+The key you need to understand sigmoid activation and cross entropy loss, is how the exponential and
+the (neg) logarithm look like.
+
+| 53
+
+

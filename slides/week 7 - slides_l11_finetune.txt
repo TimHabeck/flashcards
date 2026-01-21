@@ -1,0 +1,1148 @@
+Finetuning / Transfer Learning + Multiclass vs Multilabel predictions
+in classification
+Alexander Binder
+August 18, 2025
+
+links
+
+know where to look for
+⊙ http://d2l.ai/chapter convolutional-modern/index.html
+
+|2
+
+Outline
+
+1 Finetuning
+2 Neural Net initialization if training from scratch
+3 Multi-Class and Multi-Label outputs in classification
+4 Losses for Multi-class vs Multilabel prediction problems
+5 2-class multi-class case: equivalence of two setups
+6 Out of exams topics
+
+|3
+
+...
+
+|4
+
+Takeaway for this lesson:
+⊙ finetuning can be used for models with different types of inputs and multiple forward
+streams, e.g. image and text – but always bottom up: from one of the inputs until the
+first layer where weights cannot be loaded anymore (bcs one changed the network design
+at this point to either a completely different layer, or due to shape mismatch). after one
+such blocker-layer, it makes no sense to load weights further above
+⊙ finetuning has three flavours with respect to what gets trained after weights were loaded:
+train all layers, train only the top layer, train only the k top-most layers
+
+...
+
+|5
+
+The main lesson for deep learning
+Do not train deep neural networks from scratch!a Always initialize the NN with weights
+from similar tasks trained on a very large dataset,
+a
+
+ML has always exceptions :) ... except your data is in the order of hundred thousands and more.
+
+While for some tasks with precise knowledge training from scratch works, 99% fine tuning of
+all layers is better than training from scratch.
+where to get and how ? torchvision.models
+https://pytorch.org/docs/stable/torchvision/models.html
+
+MNIST / Cifar-10 the seducers
+
+⊙ MNIST and CIFAR-10 work without finetuning – they are misleading.
+⊙ Note the simplicity of the tasks: images with 28 × 28, or 32 × 32 have limited variability
+
+and complexity compared to larger images! MNIST and CIFAR-10 are very useful for
+testing small ideas, but they are outliers within practically relevant deep learning tasks.
+
+|6
+
+how to do that ?
+
+Practice session: you will take a deep network (densenet or a mobilenet), initialize it with weights from
+a 1000 class imagenet task, and then retrain it for 102 flowers classes. Why one can re-use weights
+from 1000 object classes that are mostly things and animals for flowers? The low level filters likely will
+be very similar.
+⊙ What needs to be changed? The last layer: to the number of output classes in your problem
+instead of 1000.
+⊙ therefore: last layer will not use pretrained weights
+⊙ see Figure 14.2.1 in https://d2l.ai/d2l-en.pdf in Chapter 14
+
+|7
+
+...
+
+|8
+
+What parts here can profit from transfer learning?
+
+Kazemi and Elqursh https://arxiv.org/pdf/1704.03162.pdf
+
+Above shows a VQA-architecture with attention. An image is processed by a CNN. A question is
+processed by embeddings, then an LSTM. The features are fused and weighted by attention layers.
+Final prediction is made by FC-layers with classification over possible answers as output.
+
+...
+
+|9
+
+It makes no sense to load weights for a layer, when one skips loading weights for any layer
+below. why ?
+
+a neural net where finetuning makes NO sense –because we skip a layer early on.
+
+Why does fine tuning help?
+
+| 10
+
+⊙ Deep NNs: high dimensionality of their
+parameters. https://paddleclas.readthedocs.
+io/en/latest/models/ResNet and vd en.html .
+Training 10+ million parameters with 1000
+samples violates the golden rule. You will
+overfit for sure.
+
+Why does fine tuning help?
+
+| 11
+
+⊙ You can learn filters well only when you
+
+have enough training samples, often one
+needs 100k + +.
+⊙ Non-convex optimization problem:
+
+optimum depends on initialization.
+When having only a few thousand
+samples it is best to start from a good
+initialization – loading weights does that.
+But why it is a good initialization?
+
+Why does fine tuning help?
+
+But why it is a good initialization?
+⊙ empirical evidence: low-level features in deep networks learnt over wide and general tasks
+
+(e.g. Imagenet) can be reused for many other tasks, even with strange color distributions
+or geometrical tasks
+
+| 12
+
+Why does fine tuning help?
+
+⊙ A good initialization from finetuning will be destroyed when trained too long with too
+
+little samples.
+⊙ In practice backpropagating gradients changes the highest level weights faster (due to
+
+vanishing gradients), so that – at the beginning of training – the weights in the upper
+layers adapt faster towards what one wants to learn – and the overfitting by changing
+lower layer weights to bad optima sets in only later.
+
+| 13
+
+fine tuning: train only the top layer
+
+| 14
+
+A good initialization from finetuning will be
+destroyed when trained too long... ?
+⊙ Finetuning has a special case: when the
+number of training data is very small, then
+one may want to retrain only the top layers.
+⊙ Finetuning in the narrowest sense: only train
+the top-layer. Works best when the number of
+training samples is very small.
+Here an example when you retrain only the last
+layer as an extreme case of finetuning. This is
+often shown in tutorials
+
+fine tuning: train only the top layer
+
+⊙ training only top layers can be better for very small data sizes
+⊙ training all layers can be better for larger data sizes ... check on validation data
+⊙ if training only top-layers: without data augmentation can precompute bottom features
+
+for a speed up
+(but usually data augmentation improves test error! ... tradeoff speed vs performance)
+
+| 15
+
+Takeaway points
+
+Takeaway points
+at the end of this lecture you should be able to:
+⊙ When using deep neural nets, always start from pretrained weights.
+
+| 16
+
+Outline
+
+1 Finetuning
+2 Neural Net initialization if training from scratch
+3 Multi-Class and Multi-Label outputs in classification
+4 Losses for Multi-class vs Multilabel prediction problems
+5 2-class multi-class case: equivalence of two setups
+6 Out of exams topics
+
+| 17
+
+Neural Net initialization if training from scratch
+
+If you would not finetune, how to do it right then ?
+⊙ http://neuralnetworksanddeeplearning.com/chap3.html#weight initialization
+⊙ https://arxiv.org/pdf/1502.01852.pdf
+
+| 18
+
+Neural Net initialization if training from scratch
+
+| 19
+
+ReLU(x ) = max(0, x )
+need to initialize parameters w of a neural network. These are current guidelines:
+Initialization for ReLU networks
+⊙ set biases to zero b = 0
+⊙ initialize weights as random values for symmetry breaking
+⊙ conv layers: draw weights from a normal with standard deviation equal to σ =
+the number of inputs
+
+√
+
+2 √1n , n
+
+wd ∼ N(0, σ 2 )
+⊙ older Xavier-Glorot style initialization is considered obsolete for deep networks while it still works
+for shallow networks
+
+Neural Net initialization if training from scratch
+
+| 20
+
+PReLU(x ) = max(0, x ) + w ∗ min(0, x ), w is trainable
+Initialization for pReLU networks
+⊙ set biases to zero b = 0
+⊙ initialize weights as random values for symmetry breaking
+⊙ conv layers: draw weights from a normal with standard deviation equal to σ =
+where w is the negative slope, n the number of inputs
+wd ∼ N(0, σ 2 )
+
+q
+
+2 √1
+1+w 2 n
+
+Neural Net initialization: why random weights?
+
+If neurons in one layer and their input neurons receive the same weight, then their forward pass values
+might be the same and gradient updates might be the same.
+Then these neurons learns to encode the same thing.
+
+| 21
+
+Neural Net initialization: in PyTorch?
+
+https://pytorch.org/docs/stable/nn.init.html
+
+| 22
+
+Outline
+
+1 Finetuning
+2 Neural Net initialization if training from scratch
+3 Multi-Class and Multi-Label outputs in classification
+4 Losses for Multi-class vs Multilabel prediction problems
+5 2-class multi-class case: equivalence of two setups
+6 Out of exams topics
+
+| 23
+
+Motivation
+
+| 24
+
+Two types of classification problems:
+Multi-label
+Multi-class
+
+exactly one of cat or mouse
+none / cat / mouse / cat+mouse
+
+Motivation
+
+Multi-class vs Multi-label classification
+⊙ A classification problem is multi-class, if for every sample exactly one ground truth class is
+present. The ground truth can be represented by a one-hot label.
+⊙ A classification problem is multi-label, if for every sample zero to C ground truth classes
+can be present. The ground truth can be represented by either the zero vector or a sum of
+one-hot labels.
+⊙ Most benchmark datasets are multiclass
+⊙ Most real-life classification problems are multi-label1
+⊙ the difference affects how to compute probabilities for the output, how to measure error, how to
+define training loss
+
+1
+
+if one just needs to account for absence of anything, one can add a background class in multi-class setups
+
+| 25
+
+(Ground truth) Labels for multiclass and multilabel problems
+
+⊙ multiclass: i-th one-hot vector. exactly one entry is one, all others are zero.
+e (i) = (0, . . . , 0, |{z}
+1 , 0, . . . , 0)
+i
+
+(1, 0, 0, 0, 0), (0, 1, 0, 0, 0), (0, 0, 1, 0, 0), (0, 0, 0, 1, 0), (0, 0, 0, 0, 1)
+⊙ multilabel: valid multilabel ground truths: (zero or sum of one-hot)
+(0, 0, 0, 0, 0)
+(0, 1, 0, 0, 0)
+(0, 0, 1, 0, 1)
+(1, 1, 1, 1, 1)
+
+| 26
+
+Next steps:
+
+⊙ real-valued outputs for multi-class and multi-label
+⊙ probability outputs for multi-class and multi-label
+⊙ decision making for multi-class and multi-label probabilities
+⊙ loss functions for multi-class and multi-label
+
+| 27
+
+real-valued outputs for multi-class and multi-label
+Suppose we have C classes. Want to produce one output for each class.
+⊙ for an affine prediction over inputs x ∈ R(d,1) (x.shape= (d, 1)):
+f(x) = Wx + b, W.shape = (c, d), b.shape = (c, 1)
+⊙ sometimes, we want some non-linear model for prediction. Let us assume that that we did some
+non-linear feature extraction h(x)
+(e.g. h(x) = a pretrained resnet over an image x until the pooling layer)
+resulting in features with dimensionality = e, that is h(x).shape = (e, 1)
+⊙ for an affine prediction over some extracted features h(x) over x:
+f(x) = Wh(x) + b, W.shape = (c, e), b.shape = (c, 1)
+⊙ same for multiclass and multilabel
+Recap: matrix multiplication AB is defined if A.shape = (c, e) and B.shape = (e, k)
+
+| 28
+
+probability outputs for multi-class and multi-label
+
+⊙ multiclass: use softmax for the vector of all outputs
+⊙ multilabel: use one sigmoid for each output, but no softmax
+
+| 29
+
+Softmax for 2d inputs
+
+| 30
+
+Softmax for 2d inputs
+The function
+
+s(z0 , z1 ) =
+
+e z0
+e z1
+,
+e z0 + e z1 e z0 + e z1
+
+
+
+is the Softmax for 2-dim inputs.
+It maps any 2-dim-vector (z0 , z1 ) onto a vector of positive numbers which sum up to 1.
+
+e z0
+→ P(Y = 0|Z = (z0 , z1 ))
+e z0 + e z1
+z1
+e
+s1 (z0 , z1 ) = z0
+→ P(Y = 1|Z = (z0 , z1 ))
+e + e z1
+
+note: s0 (z0 , z1 ) =
+
+Softmax for arbitrary dimensional inputs
+
+| 31
+
+Softmax for general inputs
+The function
+
+s(z0 , z1 , z2 , . . . , zd−1 ) =
+=
+
+e z1
+e z0
+,
+,...,
+z
+z
+z
+z
+z
+e 0 + e 1 + . . . + e d−1 e 0 + e 1 + . . . + e zd−1
+!
+e z1
+e z2
+e zd−1
+e z0
+Pd−1 z , Pd−1 z , Pd−1 z , . . . , Pd−1 z
+k
+k
+k
+k
+k=0 e
+k=0 e
+k=0 e
+k=0 e
+
+
+
+is the Softmax for d-dimensional inputs.
+It maps any d-dim vector (z0 , z1 , z2 , . . . , zd−1 ) onto a vector s(z0 , z1 , z2 , . . . , zd−1 ) of positive
+numbers which sum up to 1.
+Note: its i-th output component is
+e zi
+si (z0 , z1 , z2 , . . . , zd−1 ) = Pd−1
+
+k=0 e
+
+zk
+
+a model for P(Y = i|Z = (z0 , z1 , z2 , . . . , zd−1 ))
+
+Softmax for arbitrary dimensional inputs
+
+Use case for softmax:
+⊙ multi-class problem, mutually exclusive labels
+⊙ needs to map any vector (v0 , . . . , vK −1 ) of length K on something which can be interpreted as
+discrete probability P(k) over K elements (non-neg, sums up to 1 over all K classes)
+Next: Why we are not using softmax for multi-label problems?
+
+| 32
+
+When is this a suitable prediction model?
+
+Consider the setup of two output functions f0 (x ), f1 (x ), with application of the softmax on top
+When is this a good prediction model? Y = 0 - fish, Y = 1 gold
+⊙ do we expect the presence of gold versus fish mutually exclusively ?
+⊙ do we expect the presence of both gold and fish ?
+⊙ do we expect the absence of both gold and fish ?
+
+| 33
+
+When is this a suitable prediction model?
+
+| 34
+
+Consider the setup of two output functions f0 (x ), f1 (x ), with application of the softmax on top
+When is this a good prediction model? Y = 0 - fish, Y = 1 gold
+⊙ do we expect the presence of gold versus fish mutually exclusively ?
+⊙ do we expect the presence of both gold and fish ?
+⊙ do we expect the absence of both gold and fish ?
+
+Note one thing: s(z0 , z1 ) =
+
+e z0
+e z1
+,
+z
+z
+z
+e 0 + e 1 e 0 + e z1
+
+
+
+z1
+
+If z0 ↗ ∞, then P(Y = 0|X = x ) ↗ 1 and P(Y = 1|X = x ) = e z0e+e z1 ↘ 0
+⊙ increasing the value for one input decreases the probability of the class of the other input
+
+When is this a suitable prediction model?
+Consider the setup of two output functions f0 (x ), f1 (x ), with application of the softmax on top
+⊙ can we predict the presence of gold versus fish mutually exclusively ? YES
+P(Y = 1|X = x ) + P(Y = 0|X = x ) = 1
+⊙ can we predict the presence of both gold and fish ? NO
+P(Y = 1|X = x ) + P(Y = 0|X = x ) = 1 - both Y = 0, Y = 1 cannot have high probability close
+to 1 at the same time.
+⊙ can we predict the absence of both gold and fish ? NO
+P(Y = 1|X = x ) + P(Y = 0|X = x ) = 1 - both cannot have low probability close to 0 at the
+same time.
+Above model makes sense to model the presence of two classes where one of them has to be
+present, while the other has to be absent
+
+| 35
+
+When is this a suitable prediction model?
+
+The multi-label case:
+What is if we have images that can show gold and fishes together or images without both of them ?
+How to model this ?
+
+| 36
+
+When is this a suitable prediction model?
+The multi-label case:
+What is if we have images that can show gold and fishes together or images without both of them ?
+How to model this ? Use one sigmoid for each output:
+f(x) = Wh(x) + b, W.shape = (c, e), b.shape = (c, 1)
+zi = fi (x) = W[i, :]h(x) + bi
+1
+pi (x) = σ(zi ) =
+1 + e −zi
+1
+= σ(fi (x)) =
+1 + e −fi (x)
+Properties: pi (x) ∈ (0, 1) but
+PC −1
+
+c=0 pc (x) ̸= 1 – no competition between probabilities of different classes !
+
+| 37
+
+When is this a suitable prediction model?
+The multi-label case: How to model this ? We assume that we extracted some features h(x)
+Use one sigmoid for each output:
+f(x) = Wh(x) + b, W.shape = (c, e), b.shape = (c, 1)
+zi = fi (x) = W[i, :]h(x) + bi
+1
+pi (x) = σ(zi ) =
+1 + e −zi
+1
+= σ(fi (x)) =
+1 + e −fi (x)
+Properties: pi (x) ∈ (0, 1) but
+C
+−1
+X
+
+pc (x) ̸= 1 – no competition between probabilities of different classes !
+
+c=0
+
+⊙ now all classes can be close to 0 or close to 1 at the same time !! (if h(x) ̸= 0)
+
+| 38
+
+When is this a suitable prediction model?
+
+| 39
+
+The multi-label case: We assume that we extracted some features h(x). Then use one sigmoid for each
+output:
+f(x) = Wh(x) + b, W.shape = (c, e), b.shape = (c, 1)
+zi = fi (x) = W[i, :]h(x) + bi
+1
+pi (x) = σ(zi ) =
+1 + e −zi
+1
+= σ(fi (x)) =
+1 + e −fi (x)
+Properties: pi (x) ∈ (0, 1) but
+C
+−1
+X
+
+pc (x) ̸= 1 – no competition between probabilities of different classes !
+
+c=0
+
+⊙ now all classes can be close to 0 or close to 1 at the same time !!
+set W [i, :] := −ch(x), then
+set W [i, :] := +ch(x), then
+
+lim pi (x) = 0
+
+c→+∞
+
+lim pi (x) = 1
+
+c→+∞
+
+When is this a suitable prediction model?
+
+set W [i, :] := +ch(x) then
+
+lim pi (x) = 1
+
+c→+∞
+
+1
+1
+1
+=
+=
+1 + e −fi (x)
+1 + e −ch(x)·h(x)−b
+1 + e −c∥h(x )∥2 −b
+1
+1
+1
+lim
+=
+=
+2
+−∞
+c→+∞ 1 + e −c∥h(x )∥ −b
+1+e
+1+0
+
+pi (x) = σ(fi (x)) =
+
+| 40
+
+probability outputs for multi-class and multi-label
+
+⊙ multiclass: use softmax for the vector of all outputs
+f(x) = Wh(x) + b, W.shape = (c, e), b.shape = (c, 1)
+pi (x) = si (f(x)) i-th component of softmax function → P(Y = i|X = x)
+· probabilities compete among each other, sum up over all classes to 1
+⊙ multilabel: use one sigmoid for each output, but no softmax
+f(x) = Wh(x) + b, W.shape = (c, e), b.shape = (c, 1)
+1
+pi (x) = σ(fi (x)) =
+→ P(Y = i|X = x)
+1 + e −fi (x)
+· probabilities are independent, can be all 1 or 0 at the same time
+
+| 41
+
+decision making for multi-class and multi-label probabilities
+
+!!!
+Advice: do not make hard decisions,
+better order samples according to predicted probabilities !!!
+... but if you have to ...
+⊙ multiclass:
+choose the one with the largest predicted probability
+class(x) = argmaxi∈C pi (x)
+⊙ multilabel:
+make an independent decision for every class (whether something is present or not):
+classi (x) = 1 if pi (x) > 0.5
+
+| 42
+
+Outline
+
+1 Finetuning
+2 Neural Net initialization if training from scratch
+3 Multi-Class and Multi-Label outputs in classification
+4 Losses for Multi-class vs Multilabel prediction problems
+5 2-class multi-class case: equivalence of two setups
+6 Out of exams topics
+
+| 43
+
+Losses for Multiclass classification with C classes
+
+| 44
+
+What do you want?
+
+Goals
+multi-class case:
+(c)
+
+⊙ low loss if the model output score fc (x ) for the (only) ground-truth class (c : yi
+high
+
+⊙ high loss if the model output score fc (x ) for the (only) ground-truth class is low
+
+= 1) is
+
+Losses for Multiclass classification with C classes
+
+Extend the cross entropy-loss idea to C classes by following the neg-log approach:
+⊙ let be xi , yi a labeled sample. yi = (0, 0, 0, 1, 0, 0, 0, 1) is a one-hot-vector with c-th component
+(c)
+being yi
+X
+(c)
+L(f (xi ), yi ) =
+−yi ln sc (xi )
+c
+(c)
+
+⊙ note: only one of the yi
+
+will be 1. This is again: neg-log probability of the ground truth class
+
+Now sum over all samples (indexed by i) in the training set
+
+| 45
+
+Losses for Multiclass classification with C classes
+
+L(f (xi ), yi ) =
+
+X
+
+(c)
+
+−yi
+
+ln sc (xi )
+
+c
+
+Multiclass crossentropy loss
+Multiclass crossentropy loss is usable for multi-class problems. If the labels are one-hot labels,
+then it is the neg log probability of the ground truth class.
+
+| 46
+
+Losses for Multilabel classification with C classes
+What do you want?
+
+⊙ you have to consider every output as a binary classification problem, and aggregate the losses
+over all c outputs ( ... sum it)
+Goals
+multi-label case:
+(c)
+
+⊙ low loss if the model output score fc (x ) for c : yi
+⊙
+
+= 1 is high
+
+(c)
+low loss if the model output score fc (x ) for c : yi = 0 is low
+(c)
+
+⊙ high loss if the model output score fc (x ) for c : yi
+⊙
+
+= 1 is low
+
+(c)
+high loss if the model output score fc (x ) for c : yi = 0 is high
+
+⊙ aggregate losses over all classes c
+
+| 47
+
+Losses for Multilabel classification with C classes
+
+| 48
+
+⊙ You have C independent sigmoid outputs sc (x ), for every of those C you use a binary
+cross-entropy loss , and sum over all classes
+⊙ let be xi , yi a labeled sample. yi = (1, 0, 0, 1, 0, 0, 0, 1) is a zero-1 vector with c-th component
+(c)
+being yi
+(c)
+
+⊙ yi is not a one-hot vector, all yi
+
+can be zero, or multiple 1s can be present
+
+⊙ the loss is: binary cross-entropy losses , summed over all classes
+
+L(f (xi ), yi ) =
+
+X
+
+(c)
+
+−yi
+
+(c)
+
+ln sc (xi ) − (1 − yi ) ln(1 − sc (xi ))
+
+c
+(c)
+
+⊙ note: yi can be 0 or 1, for every c. So it is c independent problems, for which you need c losses
+(c)
+(c)
+which cover the case of yi = 0 and yi = 1. Thats why both components in the sum.
+Now sum over all samples (indexed by i) in the training set
+
+Losses for Multilabel classification with C classes
+
+L(f (xi ), yi ) =
+
+X
+
+(c)
+
+−yi
+
+(c)
+
+ln sc (xi ) − (1 − yi ) ln(1 − sc (xi ))
+
+c
+
+class-summed binary crossentropy loss
+Class-summed binary crossentropy loss is usable for multi-label problems.
+If the labels are 0 or 1 for every class c, then
+(c)
+
+−yi
+
+(c)
+
+ln sc (xi ) − (1 − yi ) ln(1 − sc (xi ))
+
+is the neg-log probability for the binary classification problem associated with class c.
+(c)
+(yi = 0 means that the class c is not present in sample xi ,
+(c)
+yi = 1 means that the class c is present in sample xi )
+
+| 49
+
+Losses for classification with C classes
+
+You can use other losses than cross-entropy. The idea remains the same:
+⊙ for multilabel problems you have to sum c independent loss terms for binary classifications.
+⊙ for multiclass problems you need a loss term for a multi-class classification loss for c classes:
+· low loss if the model output score for the ground-truth class (c : yi(c) = 1) is high
+· high loss if the model output score for the ground-truth class is low
+
+| 50
+
+Losses for classification with C classes (out of quizzes)
+
+You can use other losses than cross-entropy. Example for another loss for multi-label predictions:
+⊙ suppose your outputs are real numbers, not probabilities
+fc (x ) = w (c) · x + b (c) ∈ (−∞, +∞)
+⊙ now use for each class the hinge loss
+(c)
+
+max(0, 1 − (2yi
+
+− 1)fc (xi ))
+
+⊙ then the total loss (over all classes c and samples i) would be:
+N−1
+
+C −1
+
+1 X 1 X
+(c)
+max(0, 1 − (2yi − 1)fc (xi ))
+N i=0 C c=0
+
+| 51
+
+Losses for classification with C classes (out of quizzes)
+
+You can use other losses than cross-entropy. Example for another loss for multi-label predictions:
+⊙ suppose your outputs are real numbers, not probabilities
+fc (x ) = w (c) · x + b (c) ∈ (−∞, +∞)
+⊙ now use for each class the hinge loss
+(c)
+
+max(0, 1 − (2yi
+
+− 1)fc (xi ))
+
+⊙ when this would have zero loss ?
+(c)
+
+⊙ case: yi
+
+=1
+
+· then (2yi(c) − 1) = +1, then the term is max(0, 1 − fc (xi ))
+· it has zero loss if fc (xi ) ≥ 1 (then 1− this is negative)
+
+| 52
+
+Losses for classification with C classes (out of quizzes)
+
+You can use other losses than cross-entropy. Example for another loss for multi-label predictions:
+⊙ suppose your outputs are real numbers, not probabilities
+fc (x ) = w (c) · x + b (c) ∈ (−∞, +∞)
+⊙ now use for each class the hinge loss
+(c)
+
+max(0, 1 − (2yi
+
+− 1)fc (xi ))
+
+⊙ when this would have zero loss ?
+(c)
+
+⊙ case: yi
+
+=0
+
+· then (2yi(c) − 1) = −1, then the term is max(0, 1 + fc (xi ))
+· it has zero loss if fc (xi ) ≤ −1 (then 1+ this is negative)
+
+| 53
+
+Losses for classification with C classes
+
+Multi-class case:
+⊙ prediction output: Softmax, competitive
+⊙ training loss: multi-class type, e.g. multi-class cross-entropy
+Multi-label case:
+⊙ prediction output: C sigmoids, independent
+⊙ training loss: C times binary type , aggregated, e.g. sum of C binary cross-entropy losses
+
+| 54
+
+Outline
+
+1 Finetuning
+2 Neural Net initialization if training from scratch
+3 Multi-Class and Multi-Label outputs in classification
+4 Losses for Multi-class vs Multilabel prediction problems
+5 2-class multi-class case: equivalence of two setups
+6 Out of exams topics
+
+| 55
+
+A single affine model
+
+| 56
+
+We have seen this model in lecture 1:
+f (x ) = w · x + b
+predicted label: q(x ) = 1[f (x ) ≥ 0]
+1
+s(x ) =
+1 + e (f (x ))
+How is this related to the case of the two models??
+
+Two linear models with Softmax for 2d inputs
+
+| 57
+
+We have seen this model in lecture 1:
+f (x ) = w · x + b
+predicted label: q(x ) = 1[f (x ) ≥ 0]
+1
+s(x ) =
+= P(Y = 1|X = x )
+1 + e (f (x ))
+How is this related to the case of the two models??
+f0 (x ) = w (0) · x + b (0)
+f1 (x ) = w (1) · x + b (1)
+predicted label: q(x ) = 1[f1 (x ) ≥ f0 (x )]
+si (x ) =
+
+e (fi (x ))
+e (f0 (x )) + e (f1 (x ))
+
+= P(Y = i|X = x )
+
+⊙ how this is connected to the logistic regression with a single output?
+⊙ when it is a good idea to use this model?
+⊙ what loss can we use in this case with two outputs ?
+
+Two linear models with Softmax for 2d inputs
+
+f0 (x ) = w (0) · x + b (0)
+f1 (x ) = w (1) · x + b (1)
+predicted label: q(x ) = 1[f1 (x ) ≥ f0 (x )] = P(Y = 1|X = x )
+
+si (x ) =
+
+e (fi (x ))
+= P(Y = i|X = x )
+e (f0 (x )) + e (f1 (x ))
+
+⊙ how this is connected to the logistic regression with a single output?
+We had before: linear model with sigmoid
+f (x ) = w · x + b
+1
+s(x ) =
+= P(Y = 1|X = x )
+1 + e (−f (x ))
+
+| 58
+
+Two linear models with Softmax for 2d inputs
+
+| 59
+
+f0 (x ) = w (0) · x + b (0)
+f1 (x ) = w (1) · x + b (1)
+predicted label: q(x ) = 1[f1 (x ) ≥ f0 (x )]
+si (x ) =
+
+e (fi (x ))
+= P(Y = i|X = x )
+e (f0 (x )) + e (f1 (x ))
+
+⊙ how this is connected to the logistic regression with a single output?
+⊙ take the above model and set f (x ) = f1 (x ) − f0 (x ) = (w (1) − w (0) ) · x + b (1) − b (0) , plug this into
+the logistic sigmoid:
+s(x ) =
+=
+
+1
+1 + e (−f (x ))
+
+=
+
+1
+1 + e (−(f1 (x )−f0 (x )))
+
+=
+
+1
+1 + e (f0 (x )−f1 (x ))
+
+=
+
+1
+
+e f1 (x )
+
+1 + e (f0 (x )−f1 (x )) e f1 (x )
+
+e (f1 (x ))
+= P(Y = 1|X = x ) for the case of two affine models and softmax
+e (f1 (x )) + e (f0 (x ))
+
+Two linear models with Softmax for 2d inputs
+
+⊙ set f (x ) = f1 (x ) − f0 (x ) = (w (1) − w (0) ) · x + b (1) − b (0) , plug this into the logistic sigmoid
+σ(z) = 1+e1 (z)
+(f1 (x ))
+
+⊙ you obtain e (f1 (xe)) +e (f0 (x )) = P(Y = 1|X = x ) - the softmax for the case of two models f0 (x ), f1 (x )
+Conclusion:
+You can convert both setups one into the other , and they will predict still the same.
+⊙ take two models f0 (x ), f1 (x ), plug their difference f1 (x ) − f0 (x ) into the logistic sigmoid. Then
+this will still predict the same value as the softmax for the case of two models f0 (x ), f1 (x )
+
+| 60
+
+Two linear models with Softmax for 2d inputs
+⊙ set f (x ) = f1 (x ) − f0 (x ) = (w (1) − w (0) ) · x + b (1) − b (0) , plug this into the logistic sigmoid
+σ(z) = 1+e1 (z)
+(f1 (x ))
+
+⊙ you obtain e (f1 (xe)) +e (f0 (x )) = P(Y = 1|X = x ) - the softmax for the case of two models f0 (x ), f1 (x )
+Conclusion:
+You can convert both setups one into the other , and they will predict still the same.
+⊙ take the setup with the one model f (x ) and the sigmoid,
+· set f1 (x ) = f (x ), f0 (x ) = 0, apply the softmax, then this predicts the same value as the
+sigmoid would do:
+e (f1 (x ))
+e (f (x ))
+e (f (x ))
+=
+=
+e (f1 (x )) + e (f0 (x ))
+e (f (x )) + e (0)
+e (f (x )) + 1
+Now divide below and above by e (f (x )) :
+e (f1 (x ))
+1
+= 1+e (−f
+(x )) . This is the sigmoid output
+e (f1 (x )) +e (f0 (x ))
+
+| 61
+
+Two linear models with Softmax for 2d inputs
+
+Conclusion:
+Both setups can be converted into each other
+Two setups:
+⊙ a single output function f (x ), apply the sigmoid on top
+⊙ two output functions f0 (x ), f1 (x ), apply the softmax on top
+You can convert both setups one into the other, and they will predict still the same.
+
+| 62
+
+Outline
+
+1 Finetuning
+2 Neural Net initialization if training from scratch
+3 Multi-Class and Multi-Label outputs in classification
+4 Losses for Multi-class vs Multilabel prediction problems
+5 2-class multi-class case: equivalence of two setups
+6 Out of exams topics
+
+| 63
+
+Neural Net initialization: choice of variance?
+
+How to arrive at drawing weights from a zero mean normal distribution with variance equal to n2 ?
+
+Motivation for the parameters
+The parameters are chosen so that
+⊙ variances of feature maps in the forward pass are approximately equal across layers.
+⊙ variances of gradient norms in the backward pass are approximately equal across layers.
+
+| 64
+
+Neural Net initialization: choice of variance?
+How to arrive at drawing weights from a zero mean normal distribution with variance equal to n2 ?
+Consider a linear neuron. x (l) are the inputs from a previous layer, which itself might be the outputs of a
+preceding relu on the layer y (l−1) which was computed before y (l) :
+(l)
+
+y
+
+(l)
+
+=
+
+n
+X
+
+(l) (l)
+
+wd xd + b
+
+d=1
+(l)
+
+xd = max(0, y (l−1) )
+The basic idea is: initialize wd such that the variance of outputs at initialization is preserved through layers:
+Var (y (1) ) = Var (y (2) ) = . . . = Var (y (l−1) ) = Var (y (l) )
+Furthermore we assume:
+
+⊙ wd will be drawn from a random distribution with zero mean E [wd ] = 0
+⊙ b = 0 at initialization
+⊙ xd is statistically independent of wd , thus E [f (xd )g(wd )] = E [f (xd )]E [g(wd )]
+
+| 65
+
+out of class: why people used Xavier initialization?
+
+| 66
+
+The old Xavier Glorot-style argument ignored the symmetry breaking by the relu, thus assumed
+E [x (l) ] = E [y (l−1) ] = 0
+(which makes sense for antisymmetric functions like the tanh). Furthermore it assumed var (x ) = var (y (l−1) ).
+Under such an assumption
+Var (wx ) = Var (w )E [x 2 ] = Var (w )var (x ) = Var (w )var (y (l−1) )
+Var (y (l) ) =
+
+Y
+
+Var (w l )n(l) Var (y (1) )
+
+
+
+l
+
+This results in a heuristic Std(w l ) =
+stacked too deeply.
+
+q
+
+1
+n(l)
+
+which however does not work well when the neural network is
+
+

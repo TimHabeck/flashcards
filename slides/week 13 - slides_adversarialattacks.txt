@@ -1,0 +1,1123 @@
+DL4MSc - Adversarial Attacks
+Alexander Binder
+December 8, 2025
+
+the idea
+
+|2
+
++ small,
+barely visible
+change
+
++
+= classi ed as indoor scene
+
+the idea
+
+|3
+
++ small,
+barely visible
+change
+
++
+= classi ed as indoor scene
+⊙ general vulnerability of all neural networks
+⊙ different from visual/audio deepfakes
+⊙ Use cases ?
+
+the idea
+
+|4
+
++ small,
+barely visible
+change
+
++
+
+⊙ general vulnerability of all neural networks
+⊙ applicable e.g. also to policies using vision
+https://arxiv.org/pdf/1702.02284,
+speech2text https://arxiv.org/abs/1801.01944
+
+= classi ed as indoor scene
+
+sources: above papers
+
+the idea
+
+|5
+
+source: https://openaccess.thecvf.com/content cvpr 2018/papers/Eykholt Robust Physical-World Attacks CVPR 2018 paper.pdf
+
+⊙ alternative: be visible but appear irrelevant
+⊙ jailbreaking in NLP, dataset poisoning for NLP: 4 lectures later
+
+Learning goals
+⊙ be able to explain how to use gradients for targeted and untargeted attacks
+⊙ be able to explain why adversarial attacks can be created
+⊙ be able to categorise adversarial attacks
+⊙ be able to explain the principles behind black box attacks
+⊙ be able to summarise the working principles of attack types shown in this lecture (except
+boundary attack)
+⊙ be able to explain two basic directions of defenses
+
+Outline
+
+|7
+
+1
+
+Simple creation of adversarial samples
+
+2
+
+Why can we run these attacks at all??
+
+3
+
+A basic taxonomy of attacks
+
+4
+
+gradient and gradient sign attacks against white boxes
+
+5
+
+Attacks against black boxes
+
+6
+
+Outline of defenses
+
+How a targeted attack can look like
+
+Goal: take an image, and create an image that looks very similar but has a totally nonsense prediction
+for it!
+⊙ inputs: a pretrained neural network for multi-class classification f (·), an input image x ,
+Goal of targeted adversarial attacks in classification
+⊙ Given: input image x predicts a class c 0 = argmaxc fc (x ), a target class a ̸= c 0 .
+⊙ Create a very similar image z, ∥z − x ∥ < ϵ (small difference) such that we predict a target
+class a ̸= c 0 .
+We want to have for z : a = argmaxc fc (z)
+
+|8
+
+How a targeted attack can look like
+⊙ for step t = 0 initialize z0 := x
+⊙ iterate in a while loop until a = argmaxc fc (zt ) – target class a has highest score:
+· compute gradient of f for the target class a with respect to the input data: ∇(zt ) fa (zt )
+· gradient ascent: apply it with a small stepsize η to the input
+zt+1 = zt + η∇(zt ) fa (zt )
+Notes:
+⊙ find a step size η small enough that differences are barely visible.
+⊙ best practice: fa (·) not softmax. Use the logits from the last linear layer before the softmax. Why?
+⊙ visualization plot the difference of the original image as loaded versus the modified image,
+compute the mean absolute difference
+This is a special form of attack: targeted towards a class, a whitebox one – means you have access to
+the classifier internals
+
+|9
+
+How a targeted attack can look like
+
+| 10
+
+with torch.no_grad():
+outputs = model(imorig)
+_, preds = torch.max(outputs.data, 1)
+print(outputs.data[0,preds[0].item()],preds.item(), cls[preds[0].item()])
+tobechanged = imorig.clone()
+tobechanged.requires_grad = True
+currentprediction = preds.item()
+while currentprediction!=targetclass:
+outputs = model(tobechanged)
+score= outputs[0,targetclass] #objective to be optimized
+score.backward()
+tmptensor= tobechanged.data + stepsize * tobechanged.grad #update in temporary variable
+unscaledimage = invert_normalize(tmptensor) #determine where it would get out of bounds
+tobechanged.grad[(unscaledimage<1./255.0)|(unscaledimage > 254./255.0)]=0
+tobechanged.data+=stepsize * tobechanged.grad
+tobechanged.grad.zero_()
+
+#set grad to zero where it would get out of bounds
+
+#apply gradient descent
+
+# erase used gradient
+
+outputs = model(tobechanged)
+# update prediction
+with torch.no_grad():
+_, preds = torch.max(outputs.data, 1)
+print('in iter',preds.item(), outputs.data[0,preds[0].item()].item(),outputs.data[0,targetclass].item(), cls[preds[0].item()])
+currentprediction = preds[0].item()
+
+How a targeted attack can look like
+
+| 11
+
+def loadimage2tensor(nm, resize=300, mean= [0.485, 0.456, 0.406] , std = [0.229, 0.224, 0.225])
+image = PIL.Image.open(nm).convert('RGB')
+image = transforms.Resize(resize)(image)
+image = transforms.ToTensor()(image)
+image = transforms.Normalize(mean, std)(image)
+print(image.size())
+return image
+
+How a targeted attack can look like
+
+Objective function can vary!
+⊙ e.g. cross-entropy loss to one-hot label of target class
+
+| 12
+
+Untargeted Attacks
+
+| 13
+
+Suppose you have an image x which is classified into class a and you want it to be
+misclassified. fc (·) is the prediction for class c
+Goal is to create an image ∥x − z∥ < ϵ such that:
+a =argmaxc fc (x ) is the orig pred.
+fa (z) < max fc (z)
+c̸=a
+
+where fc (·) are the logits from the last layer.
+Similar idea: compute the gradient and (1st variant) perform
+⊙ gradient descent on fa : zt+1 = zt − η∇(zt ) fa (zt )
+⊙ until misclassification: fa (z) < maxc̸=a fc (z)
+
+Untargeted attacks
+
+Goal: take an image, and create an image that looks very similar but has a totally nonsense prediction
+for it!
+⊙ inputs: a pretrained neural network for multi-class classification f (·), an input image x ,
+General goal of adversarial attacks in classification
+⊙ Given: input image x predicts a class c 0 = argmaxc fc (x ).
+⊙ Create a very similar image z, ∥z − x ∥ < ϵ (small difference) such that we predict any
+other class a, a ̸= c 0 .
+We want to have for z : c 0 ̸= argmaxc fc (z)
+
+| 14
+
+Untargeted attacks
+
+| 15
+
+Suppose you have an image x which is classified into class a and you want it to be
+misclassified:
+where a =argmaxc fc (x )
+fa (z) < max fc (z)
+c̸=a
+
+∥x − z∥ < ϵ
+Compute the gradient, perform a step in a direction
+⊙ which minimizes the score for fa and maximizes the score for another class c ̸= a for
+
+example:
+gt = argmaxc̸=a ∇fc (zt )
+zt+1 = zt − η ???
+
+...
+
+| 16
+
+Suppose you have an image x which is classified into class a and you want it to be
+misclassified.
+Compute the gradient, perform a step in a direction
+⊙ which minimizes the score for fa and maximizes the score for another class c ̸= a for
+
+example:
+gt = argmaxc̸=a ∇fc (zt )
+zt+1 = zt − η(∇fa (zt ) − ∇fgt (zt ))
+
+Outline
+
+| 17
+
+1
+
+Simple creation of adversarial samples
+
+2
+
+Why can we run these attacks at all??
+
+3
+
+A basic taxonomy of attacks
+
+4
+
+gradient and gradient sign attacks against white boxes
+
+5
+
+Attacks against black boxes
+
+6
+
+Outline of defenses
+
+...
+
+| 18
+
+The decision boundaries as in the typical ML class is shown in above graphic.
+This naive view of
+⊙ smooth boundaries,
+⊙ with spaces densely occupied in by training data
+
+between
+is totally wrong!!
+Boundaries in deep learning problems are different!
+The most important wrong assumption: the whole space
+was densely filled with training examples during training.
+
+The reality of decision boundaries
+The reality: see Fig3 in: https://arxiv.org/pdf/1802.08760.pdf as example. In many regions
+heavily fragmented decision regions
+
+| 19
+
+The reality of decision boundaries
+
+| 20
+
+but why?
+
+data distribution in high dimensional spaces
+We take images, and process them in a neural network. Layer by layer activations get computed. If a
+layer has K neurons, then the space of all possible activation vectors is a K -dimensional vector space:
+
+| 21
+
+data distribution in high dimensional spaces
+
+| 22
+
+⊙ neural networks map inputs into a high dimensional space. A large fraction of the training data is
+mapped around a low-dimensional manifold of the feature space – because similar images should
+end up close to each other
+⊙ Outside of the zone of high training data density - the decision boundaries (blueish colors in the
+fig below) are poorly defined. There is hardly any data around to define them!
+
+x
+the high density data region (thin zone):
+meaningful decision boundaries
+
+x
+
+x
+
+x
+x
+
+x x
+x
+
+o
+o
+
+o
+o
+
+o
+
+o o
+o o
+o
+o
+
+o
+
+Manifolds informally
+What are manifolds? curves are 1-dim manifolds, a curved 2-dim hyperplane, like a torus,
+would be a 2-dim manifold.
+
+Higher order manifolds cannot be drawn trivially, but defined mathematically:
+The set of points x ∈ Rd which are roots to a set of c differentiable functions
+{x ∈ Rd : f1 (x ) = 0, . . . , fc (x ) = 0}, are a d − c-dimensional manifold.
+
+| 23
+
+An intuition about the distribution of data in a high dimensions
+
+⊙ for high-dimensional representations, large parts of the feature space have low training
+data density (”outlier regions”), while most of training data is mapped onto some
+lower-dimensional subspace
+⊙ Many directions in a high-dim feature space s.t. a step with small stepsize< ϵ, leads to
+low training data density zones
+⊙ in zones with low training data densities – the decision boundaries of several classes can
+lie very close together (bcs they were never specified by learning from training labels!!).
+⊙ Therefore: in zones with low training data densities – a series of small steps can lead to
+big changes in predicted labels
+
+| 24
+
+Manifolds informally
+
+What is the consequence?
+takeaway
+⊙ data in feature maps is not uniformly distributed in the space of all possible values
+
+of the feature map
+⊙ most samples are mapped onto thin regions around lower-dimensional spaces
+⊙ The decision boundaries in outlier regions are not (well-) specified by training
+⊙ adversarial attacks exploit this and create samples in outlier regions
+
+| 25
+
+Outline
+
+| 26
+
+1
+
+Simple creation of adversarial samples
+
+2
+
+Why can we run these attacks at all??
+
+3
+
+A basic taxonomy of attacks
+
+4
+
+gradient and gradient sign attacks against white boxes
+
+5
+
+Attacks against black boxes
+
+6
+
+Outline of defenses
+
+one way to classify attacks
+
+targeted vs untargeted attacks
+⊙ targeted: sample x to be classified into a certain fixed class.
+⊙ untargeted: sample x to be misclassified relative to its originally predicted label.
+
+| 27
+
+another way to classify attacks
+
+white box vs black box
+⊙ Black box: one has access to the outputs of prediction models only.
+⊙ White box attacks: one has access to all details of the prediction model as a whole.
+⊙ Grey box attacks: anything in between, e.g. attacker has access to some layers
+
+(federated learning), or to training data used.
+White box is a strong assumption.
+Can be realistic if one can guess ... (e.g. github of collaborators)!!
+
+| 28
+
+another way to classify attacks
+
+Most white box attacks follow the same idea: compute a gradient of some sort.
+⊙ compute a gradient of the training loss function with one hot labels for the predicted
+
+class (gradient descent), or for a target class (gradient ascent)
+⊙ OR compute a gradient of the logits of the neural network (softmax saturates like a
+
+sigmoid), again for the ground truth class or for the target class
+
+| 29
+
+some problems to adress when creating attacks
+
+Your result is possibly not a valid image for three reasons:
+A Images after ToTensor () should be in [0, 1], for some pixels it can be violated after the gradient
+updates.
+B After optimization, our values for subpixels are floats . When saved, the image subpixel values get
+rescaled to [0, ..., 255] and rounded to the integers in that range. PIL usually expects inputs as
+integers in {0, . . . , 255}. The rounding of floats to uint8 before saving an image may
+change the prediction and destroy an adversarial sample!!
+you need to validate that your saved samples are still adversarial.
+C Image saving might introduce additional biases, e.g. changes in subpixel values due to lossy
+compression, for example when saving as jpg. Save images as png without lossy compression
+solves this.
+
+| 30
+
+some problems to adress when creating attacks
+Possible solutions for A and B:
+Fix for the out of bounds problem is to perform a gradient descent in a suitable subspace (if we use
+descent). Store in a temporary variable how the input zt+1 would look like after an update:
+tmp = zt − ϵ∇(zt ) f (zt )
+Find now all those dimensions of the input sample where the resulting image would be out of bounds:
+Bad = {d : tmpd ∗ std + mean < 0 or tmpd ∗ std + mean > 1}
+In practice I like a safety margin. Then set the gradient to zero on this set Bad of pixels, and apply it
+to update the current x for the next step.
+Bad = {d : tmpd ∗ std + mean ̸∈ [2/255, 253/255]}
+∂f
+hd := ( (d) (zt ) if d ̸∈ Bad, 0 else)
+∂z
+zt+1 = zt − ϵh
+
+| 31
+
+some problems to adress when creating attacks
+
+Assume we use a gradient descent:
+tmp = zt − ϵ∇(zt ) f (zt )
+Bad = {d : tmpd ∗ std + mean ̸∈ [2/255, 253/255]}
+∂f
+hd := ( (d) (zt ) if d ̸∈ Bad, 0 else)
+∂z
+zt+1 = zt − ϵh
+Question:
+⊙ Why with this modified gradient h the objective function cannot increase ? It will either
+
+decrease or stay constant.
+
+| 32
+
+some problems to adress when creating attacks
+
+A fix for the discretization problem is harder.
+⊙ One idea: at first optimize until target class has the highest score. Test for termination, whether
+the image after discretization still fools the net. If not, continue to optimize.
+
+| 33
+
+Universal adversarial attacks
+
+So far we had to compute one perturbation for every input.
+There are perturbations which can hinder predictions for large sets of input images! However one
+cannot control anymore to what target class.
+Universal adversarial attack: one perturbation which can be applied to many input samples, and which
+has a chance to cause misclassifications of a large percentage of them. 1
+Success rates are 75% − 90% (and can be likely better if one would cluster the space and compute a
+mix of perturbations) Moosavi-Dezfooli et al. CVPR 2017: https://arxiv.org/pdf/1610.08401.pdf,
+Hayes et al. https://arxiv.org/abs/1708.05207.
+
+1
+
+directed?undirected?
+
+| 34
+
+Universal adversarial attacks (out of exams)
+
+| 35
+
+The algorithm is unpleasantly simple.
+Understanding what an Universal
+Adversarial Perturbation is, is exam
+stuff.
+
+Outline
+
+| 36
+
+1
+
+Simple creation of adversarial samples
+
+2
+
+Why can we run these attacks at all??
+
+3
+
+A basic taxonomy of attacks
+
+4
+
+gradient and gradient sign attacks against white boxes
+
+5
+
+Attacks against black boxes
+
+6
+
+Outline of defenses
+
+targeted Iterative gradient:
+
+| 37
+
+key idea for graded knowledge
+simple gradient for a fixed target class c: white box, targeted. Iterate until class c is
+predicted.
+xn+1 = xn + ϵ
+
+∂fc
+(xn )
+∂x
+
+This is gradient ascent towards target class.
+Use logits, not softmax.
+The softmax will be problematic if fc (x ) is close to one, because then gradients are near zero,
+while in earlier stages with larger gradients one needs much smaller step sizes.
+
+untargeted Iterative gradient:
+
+| 38
+
+key idea for graded knowledge
+white box, untargeted. Iterate until prediction switches from the original class either
+c 0 = argmaxc fc (x0 )
+∂f 0
+xn+1 = xn − ϵ c (xn )
+∂x
+This is gradient descent away from the originally predicted class.
+or c ∗ = argminc fc (xn )
+∂fc ∗
+xn+1 = xn + ϵ
+(xn )
+∂x
+This is gradient ascent towards the least probable class.
+Use logits, not softmax.
+
+Projected gradient descent (PGD)
+
+⊙ untargeted Iterative gradient with one added restriction: keeping of the current result xt
+
+close by ϵ with respect to the original sample x0 .
+⊙ projection onto ϵ-radius balls around the original sample x0 with respect to well
+
+known-norms ℓ2 , ℓ∞ are common and easy to solve.
+⊙ Example: the projection on the ϵ-ball around x0 : {x : ∥x − x0 ∥ ≤ ϵ} is easy with the
+
+euclidean norm:
+πBϵ (x0 ),∥·∥2 (xt ) = x0 + ϵ(xt − x0 )
+
+| 39
+
+Projected gradient descent (PGD)
+
+| 40
+
+⊙ projection in general depends on a set S and a norm ∥ · ∥. It is the nearest point from
+
+that set under a norm.
+πS,∥·∥ (xt ) = inf ∥xt − x ∥
+x ∈S
+
+Projection onto an arbitrary set can be very difficult to solve!
+
+Projected gradient descent (PGD)
+
+either c ∗ = argmaxc fc (x0 )
+∂fc ∗
+(xn )
+with x̃n+1 = xn − ϵ
+∂x
+or c 0 ∈ C \ {c ∗ }
+∂f 0
+with x̃n+1 = xn + ϵ c (xn )
+∂x
+project: xn+1 = πBϵ (x0 ),∥·∥? (x̃n+1 )
+? stands for: it depends on what norm one wants to use. Again: either-or can be combined
+by adding those gradient updates.
+
+| 41
+
+Projected gradient descent (PGD)
+ℓ2 -clipping to a maximal deviation of ϵ > 0 around x0 :
+
+πBϵ (x0 ),∥·∥2 (xt ) = x0 + ϵ(xt − x0 )
+for the ℓ∞ -norm: ∥v ∥∞ = maxd |vd |: (not for quizzes)
+ℓ∞ -clipping to a maximal deviation of ϵ > 0 around x0 :
+clipto(ϵ) clips the changes of an image in every subpixel to at most ϵ difference to the
+original image x0 . The operations are applied to every dimension d:
+clip∗ (ϵ)(xd ) = max(0, (x0 )d − ϵ, xd )
+clipto(ϵ)(xd ) = min(255, (x0 )d + ϵ, clip∗ (γ)(xd ))
+πBϵ (x0 ),∥·∥∞ (x ) = (clipto(ϵ)(xd ), d = 1, . . .)
+
+| 42
+
+Fast gradient sign:
+
+| 43
+
+https://arxiv.org/pdf/1412.6572.pdf:
+L(c, f (xn )) is the loss of predictor f for the class label c. In case of cross-entropy loss
+L(c, f (x )) = − log p(Y = c|X = x )
+key idea for graded knowledge
+Let c ∗ be the predicted class label. Then the fast gradient sign is based on the sign of the
+gradient of the training loss:
+xn+1 = xn + ϵsign(
+
+∂L(c ∗ , f )
+(xn ))
+∂x
+
+Idea: This maximizes the loss between the prediction on xn and its true label. ϵ chosen so large
+that 1 iteration is sufficient.
+
+Fast gradient sign:
+
+Why sign ? Figure 1 in https://arxiv.org/pdf/1611.02770.pdf on a complex dataset,
+ImageNet, suggests that fast sign is not good actually - but fast.
+One possible advantage: distorting the gradient by taking the sign may help to avoid getting
+stuck in local extrema, thus increasing attack success rates at the cost of sometimes
+decreased quality.
+This is white box, untargeted. Fast – bcs one aims at usually at 1 iteration, but often coarse
+images as results.
+⊙ pro: fast
+⊙ con: coarse images
+⊙ attack success rate can get low
+
+| 44
+
+Iterative gradient sign:
+
+| 45
+
+https://arxiv.org/pdf/1607.02533.pdf
+We assume that we use the training loss for class c and predictor f in sample xn : L(c, f )(xn )
+Variant 1: Let c ∗ be the predicted class label for the original sample x0 := x , and we
+maximize the loss to it
+xn+1 = clipto(γ)(xn + ϵsign(
+
+∂L(c ∗ , f )
+(xn )))
+∂x
+
+– walk in the direction that increases the loss between original class label and predictions. clip
+changes to γ relative to original image.
+
+Iterative gradient sign:
+
+| 46
+
+Variant 2:
+xn+1 = clipto(γ)(xn − ϵsign(
+
+∂L(c ∗ (xn ), f )
+(xn )))
+∂x
+
+where c ∗ (xn ) = argminc p(Y = c|X = xn ) is the least likely prediction class of image xn in
+the current iteration – walk in the direction of the least likely class – converges faster than
+variant 1, see Fig2 in https://arxiv.org/pdf/1607.02533.pdf. This method works on
+non-trivial datasets!
+Note the sign difference between variant 1 and variant 2. This is white box, untargeted.
+
+Gradient-based attacks
+
+You compute the gradient with respect to your input sample, not with respect to trainable
+parameters.
+
+| 47
+
+Carlini-Wagner Attack
+Carlini & Wagner: https://arxiv.org/pdf/1608.04644.pdf,
+https://arxiv.org/pdf/1705.07263.pdf This is white box, targeted.
+
+key idea for graded knowledge
+⊙ Goal: synth an image x which is close to a target image x0 and which is classified
+
+as target class t
+⊙ optimize an objective of two components,
+⊙ first component ∥x − x0 ∥2 makes synth an image x which is close to a target
+
+image x0
+⊙ second component measures whether target class has highest score already
+⊙ white box, targeted
+
+| 48
+
+Carlini-Wagner Attack (targeted)
+
+| 49
+
+Given a target class t, and let fc (x ) be the logits output of a classifier for class c (not the softmax!).
+Solve the following optimization problem
+min ∥x − x0 ∥2 + c max(d(x ), 0)
+x
+
+d(x ) = max fc (x ) − ft (x )
+c̸=t
+
+Why this objective?
+⊙ understand: d(x ) > 0 means: ft (x ) < maxc̸=t fc (x ), which means that the prediction has not
+reached the target class t yet.
+⊙ cap d(x ) at zero, so that one does not minimize the objective by making the prediction of ft (x )
+very large (d(x ) very negative) while wandering far away from the start image x0 .
+Important: it uses logits (the output of the last layer), not the softmax probabilities. Advantage: no
+problems with softmax saturation, no protection by defensive distillation. But: one cannot always
+access the logits!
+
+Carlini-Wagner Attack (targeted)
+
+| 50
+
+Given a target class t, and let fc (x ) be the logits output of a classifier for class c (not the softmax!).
+Solve the following optimization problem
+min ∥x − x0 ∥2 + c max(d(x ), 0)
+x
+
+d(x ) = max fc (x ) − ft (x )
+c̸=t
+
+Why this objective?
+⊙ ∥x − x0 ∥2 makes synth an image x which is close to a target image x0
+Important: it uses logits (the output of the last layer), not the softmax probabilities. Advantage: no
+problems with softmax saturation, no protection by defensive distillation. But: one cannot always
+access the logits!
+
+Carlini-Wagner Attack (untargeted)
+
+| 51
+
+Let c be the currently predicted class. Thus fc (x ) > maxt̸=c ft (x ).
+Goal: max ft (x ) > fc (x ) ⇔ 0 > fc (x ) − max ft (x )
+t̸=c
+
+t̸=c
+
+Let ft (x ) be the logits output of a classifier for class t (not the softmax!). Solve the following
+optimization problem
+min ∥x − x0 ∥2 + c max(d(x ), −η), η > 0
+x
+
+d(x ) = fc (x ) − max ft (x )
+t̸=c
+
+Why this objective?
+⊙ ∥x − x0 ∥2 makes synth an image x which is close to a target image x0
+Important: it uses logits (the output of the last layer), not the softmax probabilities. Advantage: no
+problems with softmax saturation, no protection by defensive distillation. But: one cannot always
+access the logits!
+
+Outline
+
+| 52
+
+1
+
+Simple creation of adversarial samples
+
+2
+
+Why can we run these attacks at all??
+
+3
+
+A basic taxonomy of attacks
+
+4
+
+gradient and gradient sign attacks against white boxes
+
+5
+
+Attacks against black boxes
+
+6
+
+Outline of defenses
+
+overcoming black boxes
+
+Generally make use of (x , f (x )), where f (x ) is the output of the blackbox. Two ideas.
+⊙ surrogate attacks: train an approximation to f (=the surrogate) and attack the surrogate
+
+(hope: attacks from surrogate would generalize to the actual target networks)
+⊙ boundary attacks: feel your way along the decision boundary while moving closer to the
+
+sample which one wants to corrupt. But always stay on the wrong side of the decision
+boundary
+
+| 53
+
+overcoming black boxes I: Surrogate attacks
+
+https://arxiv.org/pdf/1602.02697.pdf
+Setting: can observe only output f (x ) of target classifier.
+key idea for graded knowledge
+⊙ train a replacement g(x ) which mimicks f (x ) and after that white-box attack the
+
+replacement g(x ).
+⊙ iterate training. at every step increase the training data set by augmenting the
+
+existing samples along the gradient of the surrogate
+
+| 54
+
+overcoming black boxes I: Surrogate attacks
+
+Some finer details:
+⊙ iterate the following training. At each step r train a surrogate g mimicking f
+· input many samples x into f as queries, collect probability labels f (x )
+· train g using a dataset Sr of (x , f (x ))
+· note: can use cross-entropy with soft labels as well
+X
+L(g(x ), f ) =
+−fc log gc (x )
+c
+
+Cross-entropy works NOT ONLY with one hot labels!
+· enlarge existing training dataset by augmentation:
+P
+Sr +1 = Sr ∪ {x + λsign( c fc (x )∇gc (x )), x ∈ Sr }
+Here one uses only the gradient of the surrogate.
+⊙ perform white box attacks on your trained surrogate g(x )
+
+| 55
+
+overcoming black boxes I: Surrogate attacks
+
+⊙ out of exams: uses a slightly different adversarial attack for the surrogate:
+Compute a saliency score for a target class t and every dimension i of a sample (image) x
+(
+P
+∂ft
+∂fc
+< 0 or
+0
+if ∂x
+c:c̸=t ∂xi > 0
+i
+S(x , t)[i] = ∂ft P
+∂fc
+else
+c:c̸=t ∂xi |
+∂xi |
+idea: a dimension i of an input x is salient if either the gradient for the target class is positive or the
+sum of gradients along all other classes is negative.
+goal: sparse selection of dimensions. May help to suppress noise from dimensions where the gradient of
+the surrogate does not match the gradient of the target due to a falsely learnt surrogate.
+Results on larger networks known??
+
+| 56
+
+overcoming black boxes I: Boundary attacks (out of quizzes)
+
+key idea for (out of quizzes) knowledge
+⊙ input is target image. output: synth image. synth image should look like target image,
+but have differing or wrong prediction (see examples in the paper)
+⊙ idea: move along decision boundary to the predicted class of target image, but always “on
+the wrong side” of the decision boundary.
+⊙ Principle: do not use gradients. Use rejection sampling to define moves.
+⊙ Sample perturbations from a distribution. Accept perturbed image if it is adversarial and
+one gets closer to the target.
+⊙ for accept/ reject one needs only the predicted label, no probabilities.
+⊙ See Fig 4 and Fig 7 in the paper.
+
+| 57
+
+...
+
+| 58
+
+https://openreview.net/pdf?id=SyZI0GWCZ
+from the paper of Brendel and Bethge:
+
+...
+
+| 59
+
+...
+
+| 60
+
+an exemplary result from the paper:
+
+Other attack ideas
+
+⊙ Training set poisoning: how to add training samples, such that training will make your
+
+predictor predict wrongly if a trigger is present, e.g. for NLP Wallace et
+al. https://aclanthology.org/2021.naacl-main.13/
+⊙ attacks which aim to extract some kind of answers:
+· Membership inference attacks: Shokri et al. https://arxiv.org/abs/1610.05820 – was a
+training sample used to train a model?
+· Reconstruction Attacks: Dosovitsky et al. https://arxiv.org/abs/1506.02753 – given a
+feature map or a gradient, what was the input sample? Relevant for Federated Learning
+
+| 61
+
+Training set poisoning
+
+realistic scenario!
+⊙ attacker being a malicious insider adding the data to your training data pool
+· disgruntled employee
+· your ”US-based” intern from Kim Yong Un’s paradise:
+https://www.bbc.com/news/articles/cm2l2yn5zmxo https://edition.cnn.com/interactive/
+2025/08/05/world/north-korea-it-worker-scheme-vis-intl-hnk/index.html
+
+| 62
+
+Outline
+
+| 63
+
+1
+
+Simple creation of adversarial samples
+
+2
+
+Why can we run these attacks at all??
+
+3
+
+A basic taxonomy of attacks
+
+4
+
+gradient and gradient sign attacks against white boxes
+
+5
+
+Attacks against black boxes
+
+6
+
+Outline of defenses
+
+Defenses: Two exemplary directions
+
+⊙ Adversarial hardening: make an ML model more robust to adversarials by training it
+
+with normal and adversarial samples e.g. https://arxiv.org/abs/1706.06083, however this
+is not easy to achieve. It does not generalize easily to different types of attacks: see
+https://arxiv.org/abs/1805.09190 and https://arxiv.org/abs/1904.13000.
+⊙ Alternatives for hardening
+· https://openreview.net/forum?id=SyJ7ClWCb which does hardening by using image
+transformations at inference step. Cf. Image quilting
+· https://arxiv.org/pdf/1802.03471, https://arxiv.org/pdf/1902.02918 hardening by adding
+noise layers to the network, and repeated sampling with noise. However: Abstaining of a
+prediction is in many scenarios not an option!
+
+| 64
+
+Defenses: Two exemplary directions
+
+Do not rely on hardening alone:
+⊙ problem 1: Mind the adaptive attacker: Attacker may use models with defenses and
+
+attack those defense-augmented model to create better evasive adversarials
+⊙ problem 2: the attacker is patient: The attacker does not need to be 100% or 90%
+
+successful. Damage can be done even if 1% of attacks passes.
+
+| 65
+
+Defenses: Two exemplary directions
+
+⊙ no matter whether harden or detect:
+⊙ problem 1: Mind the adaptive attacker: Attacker may use models with defenses and
+
+attack those defense-augmented model to create better evasive adversarials
+⊙ problem 2: the attacker is patient: damage can be done even if 1% of attacks passes
+
+| 66
+
+Adversarial detection – the general idea
+
+⊙ rank or classify an example by predicting the probability that it is an adversarial one
+⊙ Idea: measure change of prediction on input x when the input is transformed.
+⊙ Hypothesis: predictions on adversarial perturbations change stronger than clean data.
+
+| 67
+
+Adversarial detection – the next slides are all out of quizzes
+
+⊙ Idea: measure change of prediction on input x when the input is transformed.
+⊙ Hypothesis: predictions on adversarial perturbations change stronger than clean data.
+
+Example 1: use ℓ1 -norm to measure changes in https://arxiv.org/abs/1704.01155 of the
+prediction f (·) under some transformation t(·):
+s = ∥f (x ) − f (t(x ))∥1
+in https://arxiv.org/abs/1704.01155 they proposed for t(·) a 2 × 2 median filter blur (replace
+lower left pixel by the median of pixels in a 2 × 2 neighborhood) and color-range squeezing.
+
+| 68
+
+another defense
+
+Example 2: https://arxiv.org/abs/1705.08378 follows a detection idea by using a more
+complex transformation
+⊙ measure entropy of distribution of subpixel values. Entropy defined on pi - probability of
+
+pixel value in the image being i ∈ {0 . . . , 255}.
+⊙ discretize each rgb-pixel value in 2, 4 or 6 intervals (binning), depending on the value of
+
+the entropy
+⊙ on high-entropy images: also apply a convolution with some averaging filter, if this
+
+makes the resulting image closer to the original image
+⊙ Table 11: a defense aware attacker still succeeds 67% of all the time ...
+⊙ statistic s not defined?
+
+| 69
+
+out of class
+
+https://openreview.net/forum?id=SyJ7ClWCb uses image transformations to remove attacks,
+but it does not measure the impact of image transformations on destroying predictions on
+clean samples. What is interesting is to consider the TV-regularization as smoothing (on those
+pixels which are not kept randomly ) and the image quilting as potential transformations.
+
+| 70
+
+Alternatives for Defenses?
+
+⊙ sometimes useful: Monitoring of Data Tampering (e.g. Hashing):
+
+... small-scale but non-local changes are suspicious
+⊙ attacks can be facilitated by disgruntled employees!! Do not assume that an attacker
+
+may have no access to internal resources
+
+| 71
+
+on transferability of attacks
+
+https://arxiv.org/pdf/1611.02770.pdf
+non-targeted attacks generalize better across different models than targeted ones.
+Chapter 5, table 4: non-targeted ensemble attacks. It helps to optimize against an
+ensemble of different classifiers to get strong attacks that are valid for many architectures.
+
+| 72
+
+Some papers
+
+⊙ https://arxiv.org/pdf/1511.04599.pdf – deepfool: whitebox, untargeted, works on Imagenet
+⊙ https://arxiv.org/pdf/1707.08945.pdf – design attacks on images that look like physical-world
+plausible changes. hide them or make them look natural. Adversarial stickers for objects :-D .
+⊙ https://arxiv.org/pdf/1707.07397.pdf 3d print adversarial objects.
+⊙ https://arxiv.org/pdf/1705.07263.pdf detection is hard
+⊙ https://arxiv.org/pdf/2404.14581 Detecting AI-art in adversarial settings
+⊙ Proper defense evaluation http://proceedings.mlr.press/v80/uesato18a/uesato18a.pdf
+
+| 73
+
+Foolbox – from 0 to attack in 10 minutes
+
+https://github.com/bethgelab/foolbox#example
+very simple coding:
+https:
+//github.com/bethgelab/foolbox/blob/master/examples/single attack pytorch resnet18.py
+
+| 74
+
+Your coding homework
+
+... Mr. Sh*t, a close associate of Alex.
+For amusement: https://arxiv.org/pdf/2203.04405 intersection between attack and art
+
+| 75
+
+...
+
+| 76
+
+Questions?!
+
+

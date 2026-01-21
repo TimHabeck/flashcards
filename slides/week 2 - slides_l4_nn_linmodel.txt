@@ -1,0 +1,1183 @@
+links
+
+know where to look for
+⊙ http://neuralnetworksanddeeplearning.com/ Chapter 1
+⊙ d2l.ai Chapter 3 and Chapter 4
+⊙ https://numpy.org/doc/
+
+|1
+
+What you will see today
+
+⊙ Artificial Neurons
+⊙ Neural networks
+⊙ theory: understand what that linear model is computing
+⊙ how neural networks can represent decision boundaries in classification
+
+|2
+
+Outline
+
+1 Artificial neurons
+2 Neural Networks
+3 Understanding the output of the linear model
+4 Example: The XOR problem
+5 More on representability
+
+|3
+
+What is an artificial neuron?
+
+|4
+
+A mathematical function that for instance can:
+⊙ Take some inputs {zi }di=1 .
+⊙ Depend on some weights wij and bias bj .
+⊙ Apply some non-linear activation function g(·).
+⊙ Output zj .
+Forward equation:
+aj =
+
+d
+X
+
+zi wij + bj
+
+linear mapping
+
+i=1
+
+zj = g(aj )
+
+nonlinear activation
+
+Activation functions
+
+⊙ A function g : R1 −→ R1
+⊙ Introduces non-linearity.
+⊙ Should be differentiable if you are planning to use gradient-based optimisation.
+⊙ Typically prevents or reduces weak signals from passing through.
+⊙ Intuition: Determines what the neuron fires for different outputs of the linear mapping.
+
+|5
+
+Sigmoid activation
+
+|6
+
+We could for instance use the logistic sigmoid
+function:
+g(x ) =
+
+1
+exp(−x ) + 1
+
+⊙ Called sigmoid activation.
+⊙ Historically popular.
+⊙ Currently rarely used.
+
+Suffer from gradient saturation: its derivative gets exponentially small for large |x |:
+(
+e −x
+x ≥0
+∂s(x )
+e −x
+= −x
+≤
+1
+2
+∂x
+(e + 1)
+x <0
+e −x +1
+
+Sigmoid activation
+
+|6
+
+We could for instance use the logistic sigmoid
+function:
+g(x ) =
+
+1
+exp(−x ) + 1
+
+⊙ Called sigmoid activation.
+⊙ Historically popular.
+⊙ Currently rarely used.
+
+Suffer from gradient saturation: its derivative gets exponentially small for large |x |:
+(
+e −x
+x ≥0
+∂s(x )
+e −x
+= −x
+≤
+1
+2
+∂x
+(e + 1)
+x <0
+e −x +1
+
+Sigmoid activation
+
+|6
+
+We could for instance use the logistic sigmoid
+function:
+g(x ) =
+
+1
+exp(−x ) + 1
+
+⊙ Called sigmoid activation.
+⊙ Historically popular.
+⊙ Currently rarely used.
+
+Suffer from gradient saturation: its derivative gets exponentially small for large |x |:
+(
+e −x
+x ≥0
+∂s(x )
+e −x
+= −x
+≤
+1
+2
+∂x
+(e + 1)
+x <0
+e −x +1
+
+Rectified linear unit (ReLU) activation
+
+An alternative is to simply set negative values to 0,
+i.e. let:
+g(x ) = max(0, x )
+⊙ Called ReLU activation.
+⊙ Gradient do not saturate.
+⊙ Not differentiable in 0.
+· Not of practical concern.
+· Could define it to be 1.
+
+|7
+
+Rectified linear unit (ReLU) activation
+
+|8
+
+The gradient is 0 for negative inputs.
+⊙ Might cause inactive nodes to remain inactive.
+⊙ Might still work fine in practice.
+⊙ There exists alternatives with non-zero
+gradient for negative inputs, e.g. leaky ReLU:
+g(x ) = max(0.01x , x )
+A popular choice, particularly with convolutional
+neural networks.
+ReLU, not leaky one
+
+Artificial vs biological neurons
+
+Artificial (non-spiking) neurons as used in Deep Learning are not a model of biological
+neurons. not even close!.
+
+|9
+
+Artificial vs biological neurons
+⊙ Biological neurons are spiking neurons with time-dependency.
+⊙ Fire spikes, if their voltage (= difference in energy compared to the outside) has increased over a
+threshold. The voltage can be increased by currents from the outside. Current = flow rate of
+charged particles (Na+ , K+ ions in biological systems, electrons in metals).
+⊙ Biological models often model the voltage over time as a function of incoming currents (and
+voltage decay, a neuron is not a perfect storage for energy)
+⊙ the formulas are not for exams:
+It
+Vt − EL
+∆t +
+∆t
+τm
+τm gL
+if Vt+∆t > V0 : emit spike and reset Vt+2∆t := EL
+
+LiF: = Vt+∆t − Vt = −
+
+∆t - small time amount, V - Voltage, I - incoming current, EL - resting potential, τ membrane
+time constant (how fast Vt decays), gL Leak conductance
+For examples see: https://compneuro.neuromatch.io/tutorials/W2D3 BiologicalNeuronModels/
+student/W2D3 Tutorial1.html
+
+| 10
+
+Compare these teo
+
+| 11
+
+Compare above formulation against artificial
+neurons
+⊙ spiking NNs: voltage over time steps. Current
+spikes.
+⊙ ANNs:
+· one-step function computation
+(but layers as weak analogy to time
+steps)
+· Affine mapping + nonlinearity as basic
+building block
+· no physical measures.
+
+aj = g(w · z + b)
+
+Artificial vs biological neurons
+
+Spiking neural network architectures might be the next generation of computing hardware (more likely
+than the quantum compute hype) because systems using them might use dramatically less energy.
+Energy consumption is a deployment cost issue for deep learning models:
+https://www.wionews.com/business-economy/
+chatgpt-costs-700000-daily-creator-openai-may-go-bankrupt-by-2024-report-625306
+https://www.firstpost.com/tech/news-analysis/
+openai-may-go-bankrupt-by-2024-chatgpt-costs-company-700000-dollars-every-day-12986012.html.
+For a spiking neuron toolbox:
+https://snntorch.readthedocs.io/en/latest/tutorials/tutorial 1.html
+
+| 12
+
+Outline
+
+1 Artificial neurons
+2 Neural Networks
+3 Understanding the output of the linear model
+4 Example: The XOR problem
+5 More on representability
+
+| 13
+
+Neural network
+
+A neural network is a directed graph structure made from connected neurons.
+⊙ A neuron can be input to many other neurons.
+⊙ A neuron can receive input to many other neurons.
+P
+⊙ Each neuron has same structure (g(·), ) but different parameters (wij , bj ).
+⊙ Can stack neurons in layers.
+
+| 14
+
+Neural network
+
+| 15
+
+Definition: Neural Network
+Any directed graph built from neurons is a neural network.
+Two important types: recurrent and feedforward neural networks
+
+recurrent (not covered in this lecture)
+for sequence processing
+
+feedforward
+e.g. for image classification
+
+Simplest Architecture: Fully connected Neural network
+layer instead of general graph
+For computation efficiency, one usually organizes neurons in layers .
+For the simplest type of networks: one layer is fully connected to the next layer.
+
+| 16
+
+Base architecture
+
+| 17
+
+Nodes and layers
+
+| 18
+
+Dense (fully-connected) feedforward neural network
+
+| 19
+
+General formulation: using linear algebra
+
+| 20
+
+Each neuron (circle) computes this:
+output = activation(inner product(w, input) + bias)
+(l)
+
+
+
+(l)
+
+(l)
+
+ak = g w [:,k] · a (l−1) + bk
+
+
+
+,
+
+(k ∈ {1, 2, . . . , n[l] }, l ∈ {1, 2, . . . , L})
+
+General formulation
+
+| 21
+
+(l)
+
+
+
+(l)
+
+(l)
+
+ak = g w [:,k] · a (l−1) + bk
+(l)
+
+(l)
+
+
+
+(l)
+
+output ak for a single neuron is g(zk ) where zk is the result from an inner product between
+⊙ the activation vector a (l−1) of the previous layer l − 1
+(l)
+
+⊙ the k-th slice w [:,k] of the weight matrix w (l) of the current layer l
+(l)
+
+⊙ added a bias term bk to the inner product
+
+General formulation
+
+| 22
+
+(l)
+
+
+
+(l)
+
+(l)
+
+ak = g w [:,k] · a (l−1) + bk
+(l)
+
+
+
+⊙ if one concatenates all outputs ak of layer (l) , and applies g(·) element-wise, then:
+
+
+a (l) = g W (l) a (l−1) + b (l)
+⊙ where W (l) a (l−1) is a matrix-vector multiplication
+
+What is happening in the hidden layer nodes
+
+
+
+a (l) = g W (l) a (l−1) + b (l)
+
+| 23
+
+
+
+⊙ The W and b are “trainable”, and will be adjusted according to some optimization
+
+routine.
+⊙ By convention:
+· ak(0) = xk and ak(L) = ŷk
+· The network has L layers (we do not include the input layer in the count) and L − 1 hidden
+layers.
+
+What is happening in the hidden layer nodes
+
+
+
+a (l) = g W (l) a (l−1) + b (l)
+
+| 23
+
+
+
+⊙ The W and b are “trainable”, and will be adjusted according to some optimization
+
+routine.
+⊙ By convention:
+· ak(0) = xk and ak(L) = ŷk
+· The network has L layers (we do not include the input layer in the count) and L − 1 hidden
+layers.
+
+What does a neuron compute?
+
+⊙ What does a neuron compute?
+⊙ What could a neural network compute?
+
+| 24
+
+Outline
+
+1 Artificial neurons
+2 Neural Networks
+3 Understanding the output of the linear model
+4 Example: The XOR problem
+5 More on representability
+
+| 25
+
+What does a neuron compute? / What does the affine model actually
+represent?
+
+f (x ) = w · x + b
+Next: What does the linear model actually represent / compute, once we have a (w , b) ?
+
+| 26
+
+What does a neuron compute?
+
+| 27
+
+w
+d
+oi
+t
+co
+ns
+
+gm
+va
+
+lu
+
+e
+
+of
+
+Si
+
+Re aj
+LU
+
+j
+
+a
+
+z2
+
+st
+
+-b
+
+n
+co
+
+z3
+(0,0,0)
+
+z1
+
+⊙ the red plane are the set of points where f (x ) = const
+⊙ The weights w defines the orientation of the plane, b shifts position of it.
+⊙ Output of activation function is constant in the red plane.
+
+What does a linear mapping represent?
+Goal: understand what the mapping f (·) does.
+Approach: characterizing the set of points x with a constant output f (x ) = c.
+Thinking task
+What is the set of points x = (x1 , x2 ) ∈ R2 such that
+3x1 − 2x2 + 3 = 0 ?
+What is the set of points x = (x1 , x2 , x3 ) ∈ R3 such that
+x1 − x2 − 2x3 + 2 = 0 ?
+A. What is the set of points x : fw ,b (x ) = 0 ?
+B. What is the set of points x the prediction is a constant c, that is fw ,b (x ) = c ?
+
+| 28
+
+What is the set of points x : fw ,b (x ) = 0?
+
+fw ,b (x ) = 0 ⇔ x · w = −b
+To understand how the bias b influences the zero set, lets consider three cases:
+⊙ b=0
+⊙ b>0
+⊙ b<0
+
+| 29
+
+The set of points x : fw ,b (x ) = 0 – The case b = 0
+⊙ We know that for b = 0: fw ,0 (x ) = w · x = 0 holds for the zero vector x = 0.
+⊙ The set of points x such that the inner product
+x ·w =0
+is in 2 dims a one-dimensional line, which goes through the origin (x1 , x2 ) = (0, 0), and which is
+orthogonal to w .
+
+w
+
+x1 ,x2 ,x3 are all orthogonal to the
+vector w
+
+x2
+x1
+x3
+
+hyperplane orthogonal to w
+
+| 30
+
+The set of points x : fw ,b (x ) = 0 – The case b = 0
+The analogy also holds for 3 or more dimensions. So for 3 dims it is a two-dimensional plane,
+which goes through the origin (x1 , x2 , x3 ) = (0, 0, 0).
+x2
+
+w
+
+x1
+
+hyperplane
+through origin
+orthogonal to w
+vectors x1 and x2 lie inside
+this hyperplane
+
+For n dimensions the plane of orthogonal vectors has n − 1 dimensions (+ goes through the
+origin), but is still a hyperplane
+
+| 31
+
+The set of points x : fw ,b (x ) = 0 – The case b = 0
+
+| 32
+
+Recap hyperplane of dimension n − 1
+⊙ P is a hyperplane (affine space) if it holds:
+
+x1 ∈ P, x2 ∈ P, o ∈ P ⇒ a1 (x1 − o) + a2 (x2 − o) + o ∈ P (space closed under
+linear operations)
+⊙ can find n − 1 basis vectors such that each point of P can be represented as an
+
+offset plus a linear combination of the basis vectors
+∃ o, v1 , . . . , vn−1 such that
+∀x ∈ P ∃ a1 , . . . , an−1 such that x = o +
+
+n−1
+X
+
+ai vi = a · V
+
+i=1
+
+⊙ o is any vector which lies on the hyperplane
+⊙ If the affine hyperplane is a vector space, then it contains the zero-vektor, and one can
+
+choose o = 0, then the definition simplifies to x1 ∈ P, x2 ∈ P ⇒ a1 x1 + a2 x2 ∈ P
+
+The set of points x : fw ,b (x ) = 0 – The case b < 0
+
+| 33
+
+b < 0, w · x + b = 0 ⇒ w · x = −b > 0
+We know: w · x > 0 for all points x that are on that side of the hyperplane through the
+origin orthogonal to w , in which w points to.
+hyperplane through origin
+orthogonal to w, wx=0 there
+
+w
+x1
+
+x2
+x3
+
+In the above figure x1 ,x2 ,x3 all have w · xi > 0 because relative to the hyperplane orthogonal
+to w which goes through the origin, they all point towards the direction of w
+
+The set of points x : fw ,b (x ) = 0 – The case b < 0
+b < 0, w · x + b = 0 ⇒ w · x = −b > 0
+We know: w · x > 0 for all points x that are on that side of the hyperplane through the
+origin, in which w points to.
+The same also holds for 3 or more dimensions. All the vectors below solve wx + b = 0 for
+some bias b < 0!
+x1
+w
+
+x2
+x3
+
+hyperplane
+through origin
+orthogonal to w
+
+In above figure x1 ,x2 ,x3 all have w · xi > 0
+
+| 34
+
+The set of points x : fw ,b (x ) = 0 – any bias
+
+| 35
+
+The bias b shifts the hyperplane corresponding to w · x + b = 0 parallel/anti-parallel to the
+direction of w .
+
+wx+b=0
+b<<0
+
+wx+b=0
+b>>0
+
+w
+
+wx=0
+
+zone:
+wx<0
+
+zone:
+wx>0
+
+the hyperplane is parallel to the hyperplane orthogonal to w which goes through the origin
+
+The set of points x : fw ,b (x ) = 0 – The case b < 0
+
+The set of points x such that
+{x : w · x + b = 0}
+for b < 0 is a hyperplane which is parallel to the hyperplane {x : x · w = 0} orthogonal to w
+going through the origin, and which is shifted towards the direction of w
+
+| 36
+
+The set of points x : fw ,b (x ) = 0 – The case b > 0
+
+The set of points x such that
+{x : wx + b = 0}
+for b > 0 is a hyperplane which is parallel to the hyperplane {x : x · w = 0} orthogonal to w
+going through the origin, and which is shifted opposite to the direction of w
+
+| 37
+
+The set of points x : fw ,b (x ) = 0 – any bias
+
+hyperplane dependency on bias b
+⊙ {x : w · x = 0} is a hyperplane orthogonal to w , which contains the zero vector
+
+(0, 0, . . . , 0).
+⊙ Negative b < 0 shift the hyperplane {x : wx + b = 0} towards the direction of w ,
+⊙ positive b > 0 shift the hyperplane {x : wx + b = 0} against the direction of w .
+⊙ Large absolute values |b| shift it far away.
+
+| 38
+
+The set of points x : fw ,b (x ) = 0 – any bias
+
+| 39
+
+hyperplane explicit
+The linear mapping f (x ) = w · x + b is zero for x which consist of the plane of points
+
+
+w
+x : x = u + −b
+, u such that w · u = 0
+∥w ∥2
+
+
+
+In this representation:
+⊙ u such that w · u = 0 is the hyperplane of vectors u orthogonal to w .
+⊙ the vector −b ∥ww∥2 shifts the hyperplane in direction of ±w .
+That holds because w · u = 0 and w · w = ∥w ∥22 :
+w
++b
+w · x + b = w · u + −b
+∥w ∥2
+w ·w
+=w
+| {z· u} −b ∥w ∥2 + b = 0 − b + b = 0
+
+
+=0
+
+
+
+How to find a vector u such that w · u = 0 ?
+
+By subtracting its component parallel to w !
+Be x any vector. Subtract its component parallel to w .
+w
+Important: use length-normalized w : ∥w
+∥
+
+
+
+
+
+w
+w
+x · ∥w
+∥ is the component of x in direction of ∥w ∥
+
+
+
+u=x− x·
+
+w
+∥w ∥
+
+
+
+w
+1
+= x − (x · w )
+w
+∥w ∥
+∥w ∥2
+
+⇒u·w =0
+cf. QR-decomposition to find an orthonormal basis of such vectors.
+
+| 40
+
+What is the set of points x where the prediction is a constant, that is
+gw ,b (x ) = c ?
+
+Answered by reducing it to a zero set:
+gw ,b (x ) = wx + b = c
+wx + (b − c) = 0
+The set of points x such that gw ,b (x ) = c is just the set x : gw ,b−c (x ) = 0.
+
+| 41
+
+Takeaway
+
+The points x such that w · x + b = c is a hyperplane orthogonal to w , shifted in direction of w by the
+amount of (c − b) ∥ww∥2 .
+given this, the next slide should be clear:
+
+| 42
+
+What does a neuron do?
+
+| 43
+
+in short:
+
+w
+d
+oi
+st
+co
+n
+
+gm
+va
+lu
+
+e
+
+of
+
+Si
+
+Re aj
+LU
+
+j
+
+a
+
+z2
+
+st
+
+-b
+
+n
+co
+
+z3
+(0,0,0)
+⊙ The weights w defines the orientation of the plane.
+⊙ The bias b defines the position of the plane.
+
+z1
+
+You should be able to solve that now
+
+thinking task
+What is the set of points x = (x1 , x2 ) ∈ R2 such that
+3x1 − 2x2 + 3 = 0 ?
+What is the set of points x = (x1 , x2 , x3 ) ∈ R3 such that
+x1 − x2 − 2x3 + 2 = 0 ?
+
+| 44
+
+You should be able to solve that now
+
+| 45
+
+0.6
+0.4
+0.2
+0.0
+0.2
+0.4
+0.6
+0.6
+
+0.4
+
+0.2
+
+0.0
+
+0.2
+
+What would be a separating hyperplane in this case ?
+
+0.4
+
+0.6
+
+You should be able to solve that now
+
+| 46
+
+0.6
+0.8
+1.0
+1.2
+1.4
+1.6
+1.8
+2.0
+2.4
+
+2.2
+
+2.0
+
+1.8
+
+1.6
+
+What would be a separating hyperplane in this case ?
+
+1.4
+
+1.2
+
+Outline
+
+1 Artificial neurons
+2 Neural Networks
+3 Understanding the output of the linear model
+4 Example: The XOR problem
+5 More on representability
+
+| 47
+
+The XOR problem
+
+To illustrate how concatenation of neurons allows learning non-linear mappings, consider
+separating red from blue samples in the following example:
+
+Samples lie in quadrants around coordinates (±1, ±1).
+
+| 48
+
+The XOR problem
+
+z1 = tanh(10x1 )
+z2 = tanh(10x2 )
+
+⊙ tanh pushes points towards
+
+(±1, ±1)
+
+| 49
+
+The XOR problem
+
+| 50
+
+Idea:
+
+⊙ For proper choice of w1 and b1 , g1 = σ(w1 z + b1 ) has
+high values ≈ 1 in the upper right and low values ≈ 0
+elsewhere.
+
+⊙ For proper choice of w2 and b2 , g2 = σ(w2 z + b2 ) has
+high values ≈ 1 in the lower left and low values ≈ 0
+elsewhere.
+
+⊙ Then, g1 + g2 will be ≈ 1 in the upper right and lower left corners.
+⊙ In the middle zone, g1 + g2 will be ≈ 0.
+
+The XOR problem
+
+⊙ w1 = (?, ?) , w2 = (?, ?)
+
+| 51
+
+The XOR problem
+
+| 52
+
+⊙ If w1 = (1, 1), w2 = (−1, −1), then
+
+w1 · z ≈ 0 , w2 · z ≈ 0 for the middle zone,
+while w1 · z ≫ 0 in the upper right corner and
+w2 · z ≫ 0 in the lower left corner.
+⊙ Could then choose b1 < 0 and b2 < 0 suitably.
+⊙ then for the middle zone: both g1 (z) ≈ 0 and
+
+g2 (z) ≈ 0
+(exact 0 if using hard thresholding neuron)
+⊙ outer zones: one of the g1 , g2 will be ≈ 1
+⊙ Final output: f (x ) = σ(c(g1 + g2 ) + cb3 )
+
+The XOR problem
+
+| 53
+
+⊙ Then, g1 + g2 ≈ 1 in the upper right and lower left corners.
+⊙ In the middle zone, g1 + g2 ≈ 0
+⊙ add a simple third layer with weights 1,1 and bias −0.5:
+y = thresh(g1 + g2 − 0.5)
+
+Outline
+
+1 Artificial neurons
+2 Neural Networks
+3 Understanding the output of the linear model
+4 Example: The XOR problem
+5 More on representability
+
+| 54
+
+Polygonal shapes
+
+⊙ Use threshold activation (for simplicity):
+
+⊙ A 2-layer network with n neurons in the hidden
+
+layer, and a thresholded sum in the second layer can
+represent any convex polygonal shape with n edges.
+⊙ With n → ∞ neurons in the first layer, any convex
+
+shape can be approximately encoded.
+
+| 55
+
+Polygonal shapes
+
+⊙ Adding a third layer allows the neural network to
+
+approximately encode any union of convex shapes.
+⊙ However, being able to (approximately) represent
+
+does not imply that this would be the result when
+learning from finite data.
+
+| 56
+
+Universal approximation theorem
+
+| 57
+
+Universal approximation theorem (a version)
+Let g(·) be a continuous function on a m-dimensional hypercube [0, 1]m . Let a(·) be
+a non-constant, bounded, continuous (activation) function. Then g(·) can be approximated arbitrarily well, that is, for every maximal deviation ϵ > 0, there exists a set of
+weights ui , wi and biases bi such that:
+∀x ∈ [0, 1]m : |g(x ) − (
+
+X
+
+ui a(wi x + bi ) + b)| < ϵ
+
+i=1
+
+Neural networks with one hidden layer and two layers of weights is able to approximate any
+smooth function on a compact hypercube. If there is a good algorithm for learning the
+parameters from finite data, we are done!
+
+Universal approximation theorem
+
+| 58
+
+Hinton & Co.
+⊙ Universal approximation theorem was
+
+misleading for neural network research in
+the 90s.
+⊙ Kolmogorov (1957), Hornik (1989),
+
+Cybenko (1989) and others: Neural
+network is able to approximate any
+continuous function on a compact region.
+the usual 90s
+neural net
+researcher
+
+Universal approximation theorem
+
+⊙ Kolmogorov (1957), Hornik (1989), Cybenko (1989) and others: Neural network is able
+
+to approximate any continuous function on a compact region.
+⊙ However, ability to approximate any function ̸= ability to learn any function well from
+
+finite training data (... overfitting)
+
+| 59
+
+Universal approximation theorem
+
+| 60
+
+4
+
+4
+
+learn from
+nite training data
+
+3
+
+2
+
+3
+
+2
+
+1
+
+1
+
+0
+
+0
+
+−
+
+−
+
+−
+
+1
+
+−
+
+2
+
+−
+
+3
+
+−
+
+4
+
+1
+
+2
+
+−
+
+3
+
+−
+
+4
+
+−
+
+3
+
+−
+
+2
+
+−
+
+1
+
+0
+
+1
+
+2
+
+risk: overtting to
+specics of the
+nite training set
+
+3
+
+3
+
+−
+
+−
+
+2
+
+−
+
+1
+
+0
+
+1
+
+2
+
+3
+
+4
+
+3
+
+2
+
+1
+
+0
+
+−
+
+1
+
+−
+
+2
+
+−
+
+3
+
+−
+
+4
+
+−
+
+3
+
+−
+
+2
+
+−
+
+1
+
+0
+
+1
+
+2
+
+3
+
+Right because you can represent any shape, you will easily reserve a blue area for the blue point in the
+training data on the wrong side. This results in overfitting. need to restrict models to prevent this!!!
+⊙ convolution layers as locally restricted linear operators
+⊙ regularizations on gradient flow
+
+

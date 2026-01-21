@@ -1,0 +1,523 @@
+Some CNN-based (non-transformer) architectures in classification for
+vision
+Prof. Alexander Binder
+August 18, 2025
+
+...
+
+|2
+
+Takeaway points
+good practices in state of the art models (not only for vision!!!):
+⊙ residual connections/skip connections
+⊙ Batchnormalization or Layernorm
+⊙ use an ensemble of models rather than a single model
+⊙ stack smaller kernels rather than use a big kernel – partially weakened in ConvNext
+(kernels up to size 7).
+⊙ dropout regularization
+The explanations for why these work well are often rather conceptual (except for ensembles).
+
+...
+
+|3
+
+Takeaway points
+at the end of this lecture you should be able to summarize:
+⊙ VGG – as baseline
+⊙ resnet – specialties
+· residual connections
+· batchnorm
+⊙ densenet – specialties
+
+Networks used for segmentation and GANs, image captioning and other tasks use similar
+building blocks
+
+prereading / post reading
+
+http://d2l.ai/chapter convolutional-modern/index.html
+
+|4
+
+Outline
+
+1 Ye olde VGG
+2 Dropout
+3 ResNets and residual connections
+4 Batch normalization
+5 DenseNets
+6 Ensembles
+7 Closer to the state of the art
+
+|5
+
+Architecture: VGG
+
+|6
+
+Architecture: VGG
+
+|7
+
+Simonyan & Zisserman, ICLR 2015
+https://arxiv.org/abs/1409.1556
+
+⊙ contribution: old-style network: repeated
+blocks of: (convolution-relu)∗n -pooling
+⊙ only 3x 3-convolutions to achieve larger
+fields of view by stacking
+⊙ 2014 ILSVRC competition second place.
+⊙ very large number of parameters: 130
+millions!
+
+Architecture: VGG
+
+|8
+
+Simonyan & Zisserman, ICLR 2015
+https://arxiv.org/abs/1409.1556
+
+⊙ very large number of parameters: 130
+millions!
+⊙ 3 fully connected layers contain most of
+the parameters
+⊙ dropout layer for less overfitting between
+fc layers
+
+Outline
+
+1 Ye olde VGG
+2 Dropout
+3 ResNets and residual connections
+4 Batch normalization
+5 DenseNets
+6 Ensembles
+7 Closer to the state of the art
+
+|9
+
+Method: Dropout
+
+| 10
+
+http://jmlr.org/papers/volume15/srivastava14a/srivastava14a.pdf
+⊙ Has one parameter: keep probability p ∈ (0, 1].
+⊙ At test time, rescaled identity.
+eval mode: dropout(x) = px
+⊙ At training time: set randomly 1 − p of all neurons to zero. A way of adding noise to the learning
+problem.
+(
+x [d] with probability p
+train mode: dropout(x)[d] =
+0
+with probability 1 − p
+why does it work?
+
+Method: Dropout
+Why does this work?
+⊙ two dimensions of the feature map ϕd1 (x ) and ϕd2 (x ) may have a correlation which helps to
+classify sample x on training data
+example: 95% of all the time we have on training data ((x , y ): input sample and its label) for a
+pair of two dimensions (d1 , d2 ) :
+2ϕd1 (x ) − ϕd2 (x ) > 0 whenever the label y > 0,
+... if this correlation would not be not present in test data – then picking up such a
+correlation results in overfitting.
+⊙ setting ϕd1 (x ) or ϕd2 (x ) randomly to zero, prevents the algorithm from setting weights to use this
+non-generalizing correlation in a too strong way. it has to rely also on other correlations in the
+data.
+
+| 11
+
+Method: Dropout
+
+One way to explain is:
+⊙ noise via setting features to zero reduces statistical correlation between features.
+⊙ Then the model cannot overfocus on a few correlations which are supported well by the training
+data
+⊙ instead it has to rely on a mixture of several different correlations between features. Some of
+them may not generalize / hold true for the source of your data Ptest .
+
+| 12
+
+Method: Dropout
+
+Inference Time Mistake !
+⊙ a model with dropout layers will behave in a randomized way, if the eval mode is not set!
+
+| 13
+
+Method: Dropout (out of exams)
+
+⊙ Modern applications of Dropout: model-based uncertainty estimates,
+example: Y Gal, Z Ghahramani https://arxiv.org/abs/1506.02142
+
+| 14
+
+Outline
+
+1 Ye olde VGG
+2 Dropout
+3 ResNets and residual connections
+4 Batch normalization
+5 DenseNets
+6 Ensembles
+7 Closer to the state of the art
+
+| 15
+
+ResNets and residual connections
+https://arxiv.org/abs/1512.03385
+
+| 16
+
+ResNets and residual connections
+⊙ https://arxiv.org/abs/1512.03385
+⊙ only 3 × 3 and 1 × 1 filters
+⊙ main contribution 1: residual connections – shortcuts across layers (usually as a linear mapping
+whenever number of filters changes, not as identity – see option B in Table 4)
+⊙ main contribution 2: uses batchnormalization after every convolution
+⊙ both contributions are about gradient flow
+⊙ in higher layers: once in a while half spatial size of feature maps, double number of filter channels
+(so that one can a rich set of detectors at higher layers)
+
+| 17
+
+ResNets and residual connections
+
+residual connection (2 conv blocks): f (x ) = x + C1 (C2 (x ))
+⊙ add convolution-relu-convolution outputs on top of input feature map x
+
+| 18
+
+ResNets and residual connections
+
+residual connection (2 conv blocks): f (x ) = x + C1 (C2 (x ))
+Why do residual connections work ?
+⊙ Reason 1 – gradient perspective: gradient flows as the identity through the shortcut, no vanishing
+gradient problem
+
+| 19
+
+ResNets and residual connections
+
+⊙ Reason 2 – forward flow perspective: f (x ) = x + C1 (C2 (x ))
+· shortcut in forward pass inputs feature x from previous block
+· convolutions C2 (C1 (x )) across the residual path can learn additionally non-linear function on
+top
+⊙ option for quick unlearning to identity: if poor fit was learned during early phases of training in
+C2 (C1 (x )), it can be undone: update weights of convolution layers to zero, then get back the
+identity again.
+(unhindered information flow fwd & gradient bwd)
+
+| 20
+
+ResNets and residual connections
+⊙ identity+ optional nonlinearity: f (x ) = x + C1 (C2 (x ))
+· allows to learn a more complex representation layer by layer
+· Network can start as: 1 conv layer and one fully connected layer, and (almost) only
+shortcuts in between.
+· Convolution kernels can add layer by layer some nonlinearities.
+
+| 21
+
+ResNets and residual connections
+Why do residual connections work ?
+⊙ gradient flows as the identity through the shortcut, no vanishing gradient problem
+⊙ identity+ optional nonlinearity ( the residual branch C1 (C2 (x )) ) ⇒ convolutions across the
+parallel path can learn additionally non-linear function on top.
+⊙ option to unlearn non-linearities fast
+⊙ later on: compare to the memory cell in LSTM (1998) recurrent neural nets (RNNs)
+https://www.bioinf.jku.at/publications/older/2604.pdf https://arxiv.org/abs/1909.09586. Earlier
+idea for gradient flow through time steps.
+
+| 22
+
+ResNets and residual connections
+
+⊙ Resnets use as second big change batchnormalization after every convolution before the ReLU
+
+| 23
+
+Outline
+
+1 Ye olde VGG
+2 Dropout
+3 ResNets and residual connections
+4 Batch normalization
+5 DenseNets
+6 Ensembles
+7 Closer to the state of the art
+
+| 24
+
+Batch normalization
+
+| 25
+
+Ioffe and Szegedy, 2015 https://arxiv.org/pdf/1502.03167.pdf
+
+Batchnorm at training time performs 2 steps
+⊙ step 1: take one neuron , normalize its outputs
+so that – over the all elements in your minibatch
+have zero mean and standard deviation 1
+⊙ step 2: apply a simple affine transformation on
+the normalized output y = γx̂ + β
+⊙ after this output has standard deviation γ and
+mean β , γ and β trainable
+
+Batch normalization
+
+| 26
+
+Ioffe and Szegedy, 2015 https://arxiv.org/pdf/1502.03167.pdf
+Batchnorm at training time performs 2 steps
+⊙ batchnorm at training time learns to output values
+which have constant mean and constant standard
+deviation (computed over the elements in a minibatch)
+⊙ convolution layers: compute mean, standard deviation,
+a, b not for one neuron and all samples in the minibatch
+but for all elements in the feature map of one channel in
+a conv layer and all samples in the minibatch – reduces
+parameters, treats each neuron in the same channel in
+the same way
+
+Batch normalization
+
+| 27
+
+Ioffe and Szegedy, 2015 https://arxiv.org/pdf/1502.03167.pdf
+Batchnorm at training time performs 2 steps
+⊙ batchnorm at training time learns to output
+values which have constant mean and constant
+standard deviation (computed over the elements
+in a minibatch)
+⊙ training time: update running mean and
+running variance for your training dataset (will
+be needed for test time)
+⊙ in order to work well requires usually a batchsize
+of 8 at least, better 16 or 32 or more.
+
+Batch normalization
+
+| 28
+
+Batchnorm at val/test time performs 2 steps:
+⊙ step 1: take one neuron, normalize its outputs by the running mean µrun and running
+2 learnt at training time (gets saved!).
+variance σrun
+
+x − µrun
+x̂ = q
+2 +ϵ
+σrun
+⊙ step 2: apply y = ax̂ + b. a,b the trainable (!!) rescaling parameters
+⊙ meaning: this simulates that the test sample would come from a very large batch with
+
+mean and variance statistics equal to the training data. under this assumption, any
+synthetic minibatch composed of many test samples would have mean b and std
+deviation a.
+⊙ important/error source in coding: use model.eval() or model.train(False) at
+
+testing time for your neural network, otherwise non-sense!
+
+Batch normalization: special case for convolutions
+
+for convolution layers:
+⊙ one set of running mean, running variance, a, b scaling parameters are learnt for each
+
+channel.
+⊙ that is they are the same for all inputs/outputs of one channel
+
+| 29
+
+Batch normalization
+
+Why does batchnorm improve performance?
+Equation on page 5 in the paper – Gradient with respect to inputs does not depend on scale of
+weight parameter anymore. Makes gradient flow more uniform across the channels of a layer.
+See evidence for it in: Bjorck et al https://arxiv.org/abs/1806.02375.
+
+| 30
+
+Layer normalization
+
+Layer normalization:
+⊙ Normalize for each sample separately.
+· statistics for normalization are computed over the spatial dimensions of a feature map
+f [b, c, h, w ] indexed by height h and width w
+· As if one would use batch normalization with a batch size of 1
+⊙ used in many Transformer architectures, for example in Swin Transformers, also in
+
+ConvNext
+⊙ the original Vision transformer uses group normalization
+
+| 31
+
+Outline
+
+1 Ye olde VGG
+2 Dropout
+3 ResNets and residual connections
+4 Batch normalization
+5 DenseNets
+6 Ensembles
+7 Closer to the state of the art
+
+| 32
+
+Densenets
+Huang, Liu, van der Maaten, Weinberger, https://arxiv.org/abs/1608.06993
+⊙ resnets to the extreme: within a block of same feature map size (“dense block”), each layer
+contains the feature maps of each previous layer (of the same block) via concatenation of feature
+maps.
+
+| 33
+
+Densenets
+The whole net looks like:
+
+| 34
+
+Densenets
+
+⊙ Important parameter: growth rate - the number of newly added output channels in a
+convolution layer, typically small like 12,24,40
+⊙ problem: within a block that starts with k0 channels, at depth index l one has as inputs
+k0 + (l − 1) · growthrate many channels.
+
+| 35
+
+Densenets
+
+⊙ usually used: Densenet-BC configuration
+
+| 36
+
+Densenets
+⊙ usually used: Densenet-BC:
+· Densenet-B: a stack of BN-ReLU-1x 1 convolutions before each layer with 3x3 convolution
+kernels.
+Reason: to reduce the # of channels and parameters in subsequent 3x3 kernels – reduction
+to 4 · growthrate channels which will be the input for 3x3 convolution
+· in transition layer (see figure: where feature map size is downscaled by 1/2): 1x1
+convolution reduces the number of channels to half
+⊙ low parameter count among the heavier networks, good performance
+
+| 37
+
+Outline
+
+1 Ye olde VGG
+2 Dropout
+3 ResNets and residual connections
+4 Batch normalization
+5 DenseNets
+6 Ensembles
+7 Closer to the state of the art
+
+| 38
+
+Googlenet v1 / Inception v1
+
+https://arxiv.org/abs/1409.4842
+
+⊙ main contribution discussed: ensembling of models
+⊙ model graphic only for eyecandy
+
+| 39
+
+Googlenet v1 / Inception v1
+
+| 40
+
+https://arxiv.org/abs/1409.4842
+⊙ main contribution discussed: ensembling of models
+⊙ train multiple models with the same data (but different random number generator seeds)
+⊙ predict using an average taken over multiple crops and multiple models
+1
+g(x ) =
+nm
+
+nX
+m −1
+models: i=0
+
+1
+nc
+
+nX
+c −1
+crops: k=0
+
+fi (cropk (x ))
+
+Ensembling
+
+| 41
+
+⊙ predict on one sample x using multiple models fi
+⊙ average the predictions of multiple models
+⊙ use the averaged prediction
+b [{fi , i = 0, . . .}](x ) = 1
+E
+nm
+
+nX
+m −1
+models: i=0
+
+fi (x )
+
+Outline
+
+1 Ye olde VGG
+2 Dropout
+3 ResNets and residual connections
+4 Batch normalization
+5 DenseNets
+6 Ensembles
+7 Closer to the state of the art
+
+| 42
+
+Basic techniques everyone should know
+
+Basic techniques everyone should know
+⊙ Residual connections
+⊙ Batch normalization / Layer normalization
+⊙ Dropout
+⊙ using ensembles to predict
+
+| 43
+
+closer to 2024 state of the art ?
+
+Some things which are not pretrained on even larger sets like Imagenet-22k, JFT-300M, and
+only use the image-net 1k:
+Vision Transformers:
+(1) Swin Transformers https://arxiv.org/abs/2103.14030 , Swin Transformers V2
+https://arxiv.org/abs/2111.09883 (relatively easy concept mod over the original ViT)
+(2) DeiT – distilled transformers https://arxiv.org/abs/2012.12877
+(*) not suitable for training from scratch, but good to know: the original ViT
+https://arxiv.org/abs/2010.11929
+(3) MaxVit https://arxiv.org/abs/2204.01697v4
+(4) DaVit https://arxiv.org/abs/2204.03645v1
+
+| 44
+
+closer to 2024 state of the art ?
+
+Some things which are not pretrained on even larger sets like Imagenet-22k, JFT-300M, and
+only use the image-net 1k:
+CNNs:
+(5) Efficientnet https://arxiv.org/abs/1905.11946 and Efficientnet V2
+https://arxiv.org/abs/2104.00298
+(*) notable: normalizer-free nets https://arxiv.org/abs/2102.06171
+(*) notable: Fixing the train-test resolution discrepancy https://arxiv.org/abs/2003.08237v5
+(*) notable: Sharpness-Aware Minimization for Efficiently Improving Generalization
+https://arxiv.org/abs/2010.01412v3
+(6) ConvNext: https://arxiv.org/abs/2201.03545 – takes inspiration from Transformer
+network design
+
+| 45
+
+

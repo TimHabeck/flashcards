@@ -1,0 +1,146 @@
+DL4MSc - Training Set Poisoning
+Alexander Binder
+January 18, 2026
+
+Training set poisoning
+
+⊙ Training set poisoning: how to add training samples, such that training will make your
+
+predictor predict wrongly if a trigger is present
+⊙ example for NLP Wallace et al. https://aclanthology.org/2021.naacl-main.13/
+
+NAACL2021
+
+|2
+
+Training set poisoning
+
+Coarse idea:
+
+|3
+
+Training set poisoning
+A possible target / use case. Can expand to any topic.
+
+|4
+
+Training set poisoning
+
+|5
+
+next: How to mine such samples??
+step 1: establish framework:
+⊙ need a model f with parameters θ∗ obtained by training on a dataset which is poisoned:
+fθ∗ , θ∗ = Training(Dclean ∪ Dpoisoned )
+⊙ need a loss Ladv to measure how good the poisoning works on some data samples Dadv . Loss for
+example: neg-log of classification probability for target class (e.g. negative sentiment for iphones)
+Ladv (Dadv , fθ∗ , θ∗ = Training(Dclean ∪ Dpoisoned ))
+⊙ we aim to minimize the adversarial loss over our poisoned dataset: Dpoisoned
+Dpoisoned,∗ = argmin Ladv (Dadv , fθ∗ , θ∗ = Training(Dclean ∪ Dpoisoned ))
+Dpoisoned
+
+Training set poisoning
+
+|6
+
+next: How to mine such samples??
+step 1: establish framework:
+⊙ need a model f with parameters θ∗ obtained by training on a dataset which is poisoned:
+⊙ we aim to minimize the adversarial loss over our poisoned dataset: Dpoisoned
+Dpoisoned,∗ = argmin Ladv (Dadv , fθ∗ , θ∗ = Training(Dclean ∪ Dpoisoned ))
+Dpoisoned
+
+⊙ training is itself a loss minimization:
+θ∗ = Training(Dclean ∪ Dpoisoned ) = argmin LLLM (fθ , Dclean ∪ Dpoisoned )
+θ
+
+⊙ we have in theory a bi-level optimization (two nested optimizations).
+⊙ if we had infinite compute power, we would run the inner optimization step (train the LLM with
+poisoned data) to convergence. This is impractical. So approximate it!
+for the first exam, the above is enough, the rollout and optimization further below needs not to be
+memorized
+
+Training set poisoning
+
+|7
+
+next: How to mine such samples??
+step 2: make it computable:
+⊙ need a model f with parameters θ∗ obtained by training on a dataset which is poisoned:
+⊙ we aim to minimize the adversarial loss over our poisoned dataset: Dpoisoned
+Dpoisoned,∗ = argmin Ladv (Dadv , fθ∗ , θ∗ = Training(Dclean ∪ Dpoisoned ))
+Dpoisoned
+
+⊙ training is itself a loss minimization:
+θ∗ = Training(Dclean ∪ Dpoisoned ) = argmin LLLM (fθ , Dclean ∪ Dpoisoned )
+θ
+
+⊙ approximate the full LLM training by rolling out one or more steps of of gradient descent on LLLM :
+θt+1 = θt − η∇θ LLLM (fθt , minibatch(Dclean ∪ Dpoisoned ))
+θt+2 = θt − η∇θ LLLM (fθt , minibatch(Dclean ∪ Dpoisoned )) − η∇θ LLLM (fθ1 , minibatch(Dclean ∪ Dpoisoned ))
+
+Training set poisoning
+
+|8
+
+next: How to mine such samples??
+step 2: make it computable:
+⊙ approximate Dpoisoned,∗ = argminDpoisoned Ladv (Dadv , fθ∗ , θ∗ = argminθ LLLM (fθ , Dclean ∪ Dpoisoned ) by
+plugging in one step-rollout or multistep rollout:
+θt+1 = θt − η∇θ LLLM (fθt , Dclean ∪ Dpoisoned )
+Dpoisoned,∗ = argmin Ladv (Dadv , fθ , θ = θt+1 (Dclean ∪ Dpoisoned ))
+Dpoisoned
+
+⊙ Ladv now depends differentiably on Dpoisoned via the weight update for θ
+⊙ in practice: average θt+1 over different randomly drawn minibatches over Dclean ∪ Dpoisoned
+⊙ for a vision problem one could compute now the gradient of the outer Ladv with respect to
+Dpoisoned :
+∇Dpoisoned Ladv (Dadv , fθ , θ = θt+1 (Dclean ∪ Dpoisoned ))
+then update Dpoisoned using gradient descent
+
+Training set poisoning
+
+|9
+
+next: How to mine such samples??
+step 2: make it computable:
+⊙ in NLP need an approximate strategy to minimize over Dpoisoned the objective
+Ladv (Dadv , fθ , θ = θt+1 (Dclean ∪ Dpoisoned ))
+⊙ consider to replace single token ei in one sample of Dpoisoned . Lets consider the objective as a
+function of this one token ei :
+g(ei ) = Ladv (Dadv , fθ , θ = θt+1 (Dclean ∪ Dpoisoned (ei )))
+The objective value for another token e ′ i would be g(e ′ i ). We can approximate usint Taylor
+decomposition:
+g(e ′ i ) ≈ g(ei ) + ∇ei g(ei )(e ′ i − ei )
+⇒ argmin ∇ei g(ei ) · (e ′ i − ei )
+e′ i
+
+This is the same as minimizing
+argmin ∇ei g(ei ) · e ′ i
+e′ i
+
+Training set poisoning
+
+| 10
+
+next: How to mine such samples??
+step 2: make it computable:
+⊙ consider to replace single token ei in one sample of Dpoisoned . Lets consider the objective as a
+function of this one token ei :
+g(ei ) = Ladv (Dadv , fθ , θ = θt+1 (Dclean ∪ Dpoisoned (ei )))
+⊙ compute the K = 50 tokens e ′ i which are the bottom-K = 50 minimizers of
+∇ei g(ei ) · e ′ i
+⊙ evaluate g(e ′ i ) on these bottom-K = 50 candidates to find the best minimizer
+⊙ iterate this over all poisoned samples.
+
+Training set poisoning
+
+next: How to mine such samples??
+Note: ∇ei g(ei ) is a second order gradient, that is a gradient (∇ei g) computed over a term g which
+contains another gradient, namely ∇θ LLLM (fθt , Dclean ∪ Dpoisoned )
+paper quote:”Depending on the adversary’s objective, the poi- son examples can be iteratively updated
+with this process until they meet a stopping criterion.”
+
+| 11
+
+

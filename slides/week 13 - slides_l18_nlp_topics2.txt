@@ -1,0 +1,528 @@
+Intro to DL4MSc: Attention and Transformer Blocks
+Alexander Binder
+January 5, 2026
+
+Outline
+
+1 The high level plan + recap
+2 Non-Finetuning-based Strategies for instruction tasks
+3 Finetuning for instruction tasks
+4 LoRa
+5 Relative Position embeddings
+6 Context window
+
+|2
+
+The high level plan
+
+Data Preparation:
+- Tokenization
+- Encoding
+- Decoding
+- Dataset class
+- Minibatch Sampling
+
+|3
+
+Model Inference
+Mechanism
+
+- Load weights
+- Evaluate Base
+Performance
+
+Load weights
+- Evaluate Task
+Performance
+
+examples of
+inputs and
+outputs
+
+Few-Shot
+Generation
+Foundational
+(Large)
+Language Model
+
+NLP:
+Transformer
+architecture
+
+Arch:
+- Embedding Layer
+- Attention Layer
+- Decoder Transformer Block
+
+Pretraining
+on Large Corpus
+
+Fine-tuned
+model
+
+Finetuning:
+- for Classication
+Finetuning:
+- for Instruction
+following
+
+Direct Task
+Execution
+
+RetrievalAugmented
+Generation
+
+external
+knowledge
+base
+
+one transformer block
+
+|4
+
+We will build a network as a sequence of so-called transformer decoder blocks.
+
+⊙ important: MLP is applied for each token
+separately
+⊙ why MLP?
+feature.shape = (bsize, seqlen, dim) applies
+the simplest non-linearity onto attention
+feature which mixed content across tokens
+and captured context from other tokens
+⊙ layernorm can be applied before the
+attention/mlp blocks (pre-LN) or after
+(post-LN) or sandwiching each block
+(peri-LN)
+
+Post-LN vs Pre-LN
+
+|5
+
+https://arxiv.org/pdf/2002.04745
+⊙ post-LN requires a learning rate warmup for
+training
+
+Peri-LN
+
+|6
+
+Peri-LN https://arxiv.org/html/2502.02732v1
+⊙ 2x LN: before and right after each Attention
+and MLP block
+
+The whole decoder transformer model
+
+|7
+
+IGnobel
+sample next token
+y.shape=(bsize, 1, n_vocab)
+x.shape=(bsize, seqlen, dim1)
+
+logits for next
+output
+token
+nn.Linear
+Layernorm
+
+position Embedding
+token Embedding
+
+transformer blocks
+tokens
+
+input sentence:
+Alex is the next
+
+K times
+blocks
+
+shape=(bsize, seqlen, dim2)
+transformer blocks
+
+tokenizer
+
+Decoder for sequential generation
+
+transformer blocks
+
+Outline
+
+1 The high level plan + recap
+2 Non-Finetuning-based Strategies for instruction tasks
+3 Finetuning for instruction tasks
+4 LoRa
+5 Relative Position embeddings
+6 Context window
+
+|8
+
+Instruction tasks
+
+What is an instruction task?
+User: Read the following email given at the end of the provided instructions. Remove any personally
+identifiable information, and replace it with a placeholder. For example, replace the name ”Alex
+Binder” with ”[NAME]”. The email starts after this sentence.
+Hi, I am Alex and I want to file a complaint about your horrible restaurant. First of all, it took the waiters 20
+minutes to come to us and bring us merely a menu. After ordering we had to wait 35 minutes until we got the
+food. What we got was below everything. The brokkoli was totally burnt and tasted burnt. How can one
+manage to burn brokkoli ?? The soup tasted like salt water, as if to induce us to vomit that stuff out. I dont
+expect you to address my complaint, in case you do, my email is alexander.binder@uni-leipzig.de
+
+inspired by https://learnprompting.org/docs/basics/instructions
+
+|9
+
+Instruction tasks
+
+Read the following part of a student homework and provide feedback based on the following criteria:
+grammar and style. Provide a rating on a scale 1 to 5 with 5 indicated the highest quality and provide
+a reasoning for your score. The text starts after this sentence.
+blablabla
+⊙ data sets for instruction tasks typical structure: user instruction, user content, agent reply
+
+| 10
+
+Instruction tasks
+
+Next slides contain important stuff to know:
+⊙ few-shot prompting
+⊙ chain-of-thought prompting
+⊙ finetuning
+⊙ LORA and variants for more memory efficient finetuning
+These things can be combined
+
+| 11
+
+few-shot prompting
+
+⊙ instruction tasks typical structure: user instruction, user content, agent reply
+few-shot prompting as alternative to fine-tuning an LLM
+⊙ Provide inside the instruction N pairs of examples consisting of input and desired output in a
+structure like
+input: <input text> output: <desired output text>
+⊙ the first papers to introduce it:
+· Radford et al. https://cdn.openai.com/better-language-models/
+language models are unsupervised multitask learners.pdf
+· Brown et al. https://arxiv.org/pdf/2005.14165
+
+| 12
+
+few-shot prompting
+
+Few-shot Prompting
+⊙ Provide inside the instruction N pairs of examples consisting of input and desired output
+in a structure like
+input: <input text> output: <desired output text>
+The internet has lots of examples.
+⊙ also applicable for vision-language models (example: image and desired segmentation) as in
+https://arxiv.org/pdf/2209.00647
+
+| 13
+
+Chain-of-Thought prompting
+
+Wei et al. Neurips 2022, https://arxiv.org/pdf/2201.11903
+⊙ use few-shot learning
+⊙ for every few-shot example provide not only the answer but also a reasoning chain arriving at the
+answer, step-by-step.
+
+| 14
+
+Optimizing instructions
+
+LLMs are not humans. Optimizing the instructions helps:
+⊙ See C1 to C5 and Table 3, Figure 5 in https://arxiv.org/pdf/2109.07830 (ACL 2022)
+⊙ drawback: hard to search for good instructions. Lots of try and error
+
+| 15
+
+Out of exams
+
+be polite ?
+⊙ Li et al. https://arxiv.org/pdf/2307.11760
+⊙ Yin et al. https://arxiv.org/pdf/2402.14531 yes somewhat.
+Expect something trained in human language to be as complex as humans are :)
+
+| 16
+
+Outline
+
+1 The high level plan + recap
+2 Non-Finetuning-based Strategies for instruction tasks
+3 Finetuning for instruction tasks
+4 LoRa
+5 Relative Position embeddings
+6 Context window
+
+| 17
+
+Finetuning for instruction tasks
+
+⊙ instruction tasks typical structure: user instruction, user content, agent reply
+⊙ Can be solved by using untuned LLMs,
+⊙ or by finetuning encoder-decoder or decoder-only models
+⊙ if using decoder-only models, one would put less weight in the loss on the non-agent parts of the
+instruction (user instruction, user content): One cares less about reconstruction of the original
+input, but in the agent output.
+
+| 18
+
+Outline
+
+1 The high level plan + recap
+2 Non-Finetuning-based Strategies for instruction tasks
+3 Finetuning for instruction tasks
+4 LoRa
+5 Relative Position embeddings
+6 Context window
+
+| 19
+
+Low Rank Adapters for finetuning
+
+Hu et al. 2021: https://arxiv.org/abs/2106.09685
+⊙ the use case of LoRA is finetuning
+⊙ goal: use less memory for finetuning of pretrained models
+⊙ has tradeoffs
+
+| 20
+
+Low Rank Adapters for finetuning
+
+| 21
+
+⊙ LLMs have a high memory consumption, also
+due to high dim parameters. When
+W .shape = (1000, 1000) its a million
+params.
+⊙ idea: init Wft = W + AB . Freeze W , train
+AB
+
+Low Rank Adapters for finetuning
+
+| 22
+
+⊙ idea: init Wft = W + AB . Freeze W , train
+AB
+⊙ full rank: W .shape = (1000, 1000). Choose
+AB so that AB.shape = (1000, 1000) but
+with less parameters:
+⊙ example A.shape = (1000, 50),
+B.shape = (50, 1000)
+
+Low Rank Adapters for finetuning
+
+What to finetune in a big NLP model ?
+⊙ Table 5, Table 6 in https://arxiv.org/abs/2106.09685: At least everything in the attention layers.
+Not the MLP. But also the top linear layer.
+⊙ all layers if one can afford to by memory
+⊙ Potential accuracy tradeoff: See Table 4, Table 6
+⊙ rank, α as new hyperparameters. α = 2 ∗ rank as good starting point
+
+| 23
+
+Low Rank Adapters for finetuning
+
+newer developments:
+⊙ some practical insights
+https://magazine.sebastianraschka.com/p/practical-tips-for-finetuning-llms
+⊙ quantized LORA (qLORA) – less memory but slower training Dettmers et al. 2023,
+https://arxiv.org/abs/2305.14314
+⊙ Disentangled LORA Liu et al. 2024,https://arxiv.org/abs/2402.09353
+
+| 24
+
+Low Rank Adapters for finetuning
+
+| 25
+
+newer developments:
+⊙ DORA = Disentangled LORA: Liu et al. 2024,https://arxiv.org/abs/2402.09353
+See eq 5 in the paper:
+W′ =
+
+m
+|{z}
+
+trainable !
+
+⊙ AB trainable by standard LORA
+⊙ m standard trainable scalar
+⊙ Table 1,2,4 for results
+
+W0 + AB
+∥W0 + AB∥
+
+Outline
+
+1 The high level plan + recap
+2 Non-Finetuning-based Strategies for instruction tasks
+3 Finetuning for instruction tasks
+4 LoRa
+5 Relative Position embeddings
+6 Context window
+
+| 26
+
+Relative Position embeddings
+
+| 27
+
+Relative Position Encodings: Shaw et al. https://arxiv.org/pdf/1803.02155
+Recap attention:
+q(xm ) = fq (xm , M)
+k(xn ) = fk (xn , N)
+v (xn ) = fn (xn , N)
+
+√
+⊤
+exp(qm
+kn / d)
+√
+αm,n = P
+⊤
+j exp(qm kj / d)
+X
+h=
+αm,n v (xn )
+n
+
+Relative Position embeddings
+
+| 28
+
+Recap attention:
+q(xm ) = fq (xm , M)
+k(xn ) = fk (xn , N)
+v (xn ) = fn (xn , N)
+
+√
+⊤
+exp(qm
+kn / d)
+√
+αm,n = P
+⊤
+j exp(qm kj / d)
+X
+h=
+αm,n v (xn )
+n
+
+absolute position embeddings:
+ft:t∈q,k,v (xi , i) = Wt:t∈q,k,v (xi + pi )
+pi = a function of absolute position i, was fixed in the first transformer Vaswani et al.. It was trainable
+in many other implementations
+
+Relative Position embeddings
+
+absolute position embeddings:
+ft:t∈q,k,v (xi , i) = Wt:t∈q,k,v (xi + pi )
+pi = a function of absolute position i, was fixed in the first transformer Vaswani et al.. It was trainable
+in many other implementations
+⊙ issues for long contexts (200k as in some Claude models)
+
+| 29
+
+Relative Position embeddings
+
+| 30
+
+Recap attention:
+q(xm ) = fq (xm , M)
+k(xn ) = fk (xn , N)
+v (xn ) = fn (xn , N)
+
+√
+⊤
+exp(qm
+kn / d)
+√
+αm,n = P
+⊤
+j exp(qm kj / d)
+X
+h=
+αm,n v (xn )
+n
+
+relative position embeddings, one formulation https://arxiv.org/pdf/1803.02155:
+fq (xi , I) = Wq xi
+fk (xn , N) = Wk xn + p(rel(i − n))
+fv (xn , N) = Wv xn + p(rel(i − n))
+rel(i − n) = clip(i − n, rmin , rmax )
+with p a trainable vector, but as above relatively parametrized.
+
+Relative Position embeddings
+
+| 31
+
+relative position embeddings, one formulation https://arxiv.org/pdf/1803.02155:
+fq (xi , I) = Wq xi
+fk (xn , N) = Wk xn + p(rel(i − n))
+fv (xn , N) = Wv xn + p(rel(i − n))
+rel(i − n) = clip(i − n, rmin , rmax )
+with p a trainable vector, but relatively parametrized over rel(i − n).
+⊙ clipping due to the argument that if the distance is too large, an exact difference is maybe less
+important
+
+Relative Position embeddings
+relative position embeddings, a second formulation He et al. https://arxiv.org/abs/2006.03654:
+⊙ drop encodings for value features, use them only on keys and queries as in:
+q ⊤ (xi )k(xn ) = xi⊤ Wq⊤ Wk xn⊤ + xi⊤ Wq⊤ Wk p(rel(i − n)) + p(rel(i − n))⊤ Wq⊤ Wk xn⊤
+rel(i − n) = clip(i − n, rmin , rmax )
+with p a trainable vector, but relatively parametrized.
+⊙ almost as if one uses:
+fq (xi , I) = Wq (xi + p(rel(i − n)))
+fk (xn , N) = Wk (xn + p(rel(i − n))),
+· drop the term in the inner product where only the position embeddings interact with each
+other:
+p(rel(i − n))⊤ Wq⊤ Wk p(rel(i − n))
+
+| 32
+
+Relative Position embeddings
+
+relative position embeddings, a third formulation Raffel et al. https://arxiv.org/abs/1910.10683 (page
+5):
+⊙ drop encodings for value features, use them only on keys and queries as in:
+q ⊤ (xi )k(xn ) = xi⊤ Wq⊤ Wk xn⊤ + p(rel(i − n))
+rel(i − n) = clip(i − n, rmin , rmax )
+with p a trainable vector, but relatively parametrized.
+
+| 33
+
+Relative/Rotary Position embeddings
+
+This one is out of exams:
+Rotary Position Encodings: Su et al.https://arxiv.org/pdf/2104.09864.
+A variant of relative position encodings which is multiplicative, and applied to query and key vectors.
+
+| 34
+
+Outline
+
+1 The high level plan + recap
+2 Non-Finetuning-based Strategies for instruction tasks
+3 Finetuning for instruction tasks
+4 LoRa
+5 Relative Position embeddings
+6 Context window
+
+| 35
+
+Context window in LLMs
+
+⊙ The context window in LLMs: how much output tokens a model is able to process as input and
+generate as output, summed together. For decoder models this directly is understandable.
+⊙ for a graphic see https://platform.claude.com/docs/en/build-with-claude/context-windows
+⊙ https://www.youtube.com/watch?v=-uW5-TaVXu4
+⊙ The context window defines the amount of amnesia-like behaviour exhibited by your model:
+Vending bench: things can get funny when content drops out of the context window
+https://arxiv.org/abs/2502.15840
+⊙ spaces are usually tokens, too!
+
+| 36
+
+
