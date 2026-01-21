@@ -1,1 +1,5 @@
 id,front,back,source_file,tags
+"20260121-1215-00-1","What property of the inner product states that (a u) . v = a(u . v)?","It is **linear in the first argument**.","slides/week 1 - slides_l2_logreg.txt","logistic-regression linear-algebra"
+"20260121-1215-00-2","How is the norm (length) of a vector v defined using the inner product?","<blockquote>||v|| = sqrt(v . v)</blockquote>","slides/week 1 - slides_l2_logreg.txt","logistic-regression linear-algebra"
+"20260121-1215-00-12","How are mutually exclusive class labels typically represented in multi-class classification?","Using a **one-hot vector** y~ in R^C.","slides/week 1 - slides_l2_logreg.txt","logistic-regression classification"
+"20260121-1215-00-13","What is the definition of the multi-class cross-entropy loss for one sample (x_i, y_i)?","<blockquote>e = -sum_{k=0}^{C-1} y~_i[k] ln P(Y=k|X_i=x_i, theta)</blockquote>","slides/week 1 - slides_l2_logreg.txt","logistic-regression cross-entropy"
