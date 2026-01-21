@@ -44,3 +44,15 @@ To ensure high-quality, readable, and consistent flashcards, the following tools
 -   **Formatting (HTML)**: All rich text formatting (bold, lists, tables) will be done using standard HTML tags.
 -   **Code Blocks**: Code snippets will be formatted using `<pre><code class="hljs language-xyz">...</code></pre>` tags. This dual-class approach ensures compatibility with both standard CSS and Highlight.js. The agent will attempt to infer the correct language (e.g., 'python', 'bash', 'json') from the context. If the language is unknown, use `plaintext`.
 -   **Diagrams (Mermaid.js)**: Diagrams will be generated using Mermaid.js syntax. The user must include the rendering script from `setup/anki_scripts.html` in their Anki card template. This ensures diagrams render correctly on all devices.
+## 5. "Exam-Ready" Content Principles
+
+To ensure cards are sufficient for exam preparation (especially when the user only reads slides once), follow these additional rules:
+
+-   **Derivations**: Don't just provide the final formula. Create cards for the **key logical steps** or assumptions in a derivation (e.g., "Why can we pull $P(Y_0)$ out of the summation over $Y_1, \dots, Y_n$?").
+-   **Visual/Intuitive Understanding**: Create cards that describe or ask about the **shape** of functions (sigmoid, loss curves).
+    -   *Example*: "What happens to the logistic sigmoid curve as the scaling factor $c$ increases?" 
+    -   *Answer*: "The transition from 0 to 1 becomes **steeper**, eventually approaching a step function."
+-   **Edge Cases & Limits**: Always include cards for the behavior of functions at $0, \infty, -\infty$.
+-   **Qualitative Reasoning**: Include cards about **uncertainty** and **confidence** based on model outputs.
+-   **Inter-theory Connections**: Ask about the *relationship* between concepts (e.g., "What is the connection between Maximum Likelihood and Cross-Entropy?").
+-   **Comparison Cards**: Always compare different approaches mentioned in the slides (e.g., "Logistic vs. Probit").

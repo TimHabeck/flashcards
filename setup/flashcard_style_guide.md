@@ -51,6 +51,11 @@ This section dictates how to use HTML to format the content on the back of a car
             B --> C{Output Layer};
         </div>
         ```
+-   **Reasoning and Edge Cases:**
+    -   Use `<ul>` to list conditions or consequences.
+    -   **Example:**
+        -   **Front:** "What happens to the Binary Cross-Entropy loss if the model predicts 0 but the ground truth is 1?"
+        -   **Back:** "The loss approaches **infinity** ($\lim_{x \to 0, x > 0} -\ln(x) = \infty$)."
 
 ## 5. Tagging Strategy
 
