@@ -3,16 +3,9 @@ Start a new flashcard generation session.
 Your first step is to read and fully understand the project's established procedures:
 1. `shared/instructions.md`
 2. `shared/flashcard_style_guide.md`
+
+After reading the shared procedures, locate the course folder based on the slide file path provided below and load:
 3. `[COURSE_FOLDER]/course_info.txt`
 4. `[COURSE_FOLDER]/flashcards_master.csv`
 
-After you have loaded the project state, begin processing the following source file:
-
-[COURSE_FOLDER]/slides/[FILENAME]
-
----
-
-FILL IN THE FOLLOWING:
-
-Course folder: [COURSE_FOLDER]
-Slide file: [FILENAME]
+Finally, begin processing the following source file:

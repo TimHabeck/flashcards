@@ -91,3 +91,11 @@ To ensure cards are sufficient for exam preparation (especially when the user on
 -   **Qualitative Reasoning**: Include cards about **uncertainty** and **confidence** based on model outputs.
 -   **Inter-theory Connections**: Ask about the *relationship* between concepts (e.g., "What is the connection between Maximum Likelihood and Cross-Entropy?").
 -   **Comparison Cards**: Always compare different approaches mentioned in the slides (e.g., "Logistic vs. Probit").
+
+## 6. Course Folder Discovery
+
+To simplify the user's workflow, the agent should be able to identify the `[COURSE_FOLDER]` automatically based on the provided slide file path.
+
+-   **Extraction**: If the user provides a path like `/absolute/path/to/flashcards/course-name/slides/week-2-slides.txt`, the `[COURSE_FOLDER]` is the parent of the `slides/` directory (in this case, `/absolute/path/to/flashcards/course-name/`).
+-   **Validation**: After inferring the `[COURSE_FOLDER]`, the agent must verify that it contains the required `course_info.txt` and `flashcards_master.csv` before proceeding.
+-   **Fallback**: If the folder structure does not follow this convention, the agent should ask the user to explicitly provide the course folder path.
