@@ -7,4 +7,3 @@ Your first step is to read and fully understand the project's established proced
 
 After you have loaded the project state, begin processing the following source file:
 
-`textfiles_for_searching/[REPLACE_WITH_FILENAME.txt]`
