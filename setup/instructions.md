@@ -55,6 +55,11 @@ To ensure high-quality, readable, and consistent flashcards, the following tools
 
 -   **Styling (CSS)**: The visual appearance of the cards (colors, fonts, etc.) is defined in `setup/anki_styling.css`. The content of this file is to be manually copied into the Anki Note Type's styling section one time by the user.
 -   **Formatting (HTML)**: All rich text formatting (bold, lists, tables) will be done using standard HTML tags.
+-   **Mathematical Notation (LaTeX)**: Use Anki's LaTeX delimiters for mathematical expressions:
+    - **Inline math**: Use `\(...\)` for inline expressions (e.g., `\(x^2 + y^2\)`)
+    - **Display math**: Use `\[...\]` for display/block expressions (e.g., `\[\sum_{i=1}^{n} x_i\]`)
+    - **CRITICAL**: Do NOT use `$...$` or `$$...$$` - these will not render in Anki
+    - **Example**: `\(f(x) = w \cdot x + b\)` for inline, `\[\text{RMSE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}\]` for display
 -   **Code Blocks**: Code snippets will be formatted using `<pre><code class="hljs language-xyz">...</code></pre>` tags. This dual-class approach ensures compatibility with both standard CSS and Highlight.js. The agent will attempt to infer the correct language (e.g., 'python', 'bash', 'json') from the context. If the language is unknown, use `plaintext`.
 -   **Diagrams (Mermaid.js)**: Diagrams will be generated using Mermaid.js syntax. The user must include the rendering script from `setup/anki_scripts.html` in their Anki card template. This ensures diagrams render correctly on all devices.
 ## 5. "Exam-Ready" Content Principles
