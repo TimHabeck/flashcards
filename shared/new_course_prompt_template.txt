@@ -1,0 +1,28 @@
+Create a new course folder for flashcard generation.
+
+Your task:
+1. Create the course directory structure:
+   - [COURSE_FOLDER_NAME]/
+   - [COURSE_FOLDER_NAME]/slides/
+   - [COURSE_FOLDER_NAME]/anki_exports/
+
+2. Create the course_info.txt file with the provided information:
+   ```
+   course_name: [COURSE_NAME]
+   semester: [SEMESTER]
+   ```
+
+3. Create an empty flashcards_master.csv with the header:
+   ```
+   id,front,back,source_file,tag
+   ```
+
+4. Confirm the setup is complete and ready for flashcard generation.
+
+---
+
+FILL IN THE FOLLOWING:
+
+Course folder name: [COURSE_FOLDER_NAME]
+Course name: [COURSE_NAME]
+Semester: [SEMESTER]
