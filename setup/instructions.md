@@ -24,6 +24,7 @@ The process is designed to be robust, stateful, and produce high-quality, format
         iii. Append the new, **HTML-formatted** content (front_html, back_html, tags) to the corresponding Anki export file (e.g., `anki_exports/week_1_logistic_regression.csv`).
             - **IMPORTANT**: Anki export files should have ONLY 3 columns: `front_html`, `back_html`, `tags`
             - Do NOT include `id` or `source_file` columns in Anki exports
+            - Do NOT include a header row in Anki export files (Anki doesn't expect it)
             - The source file information is embedded in the tags as `source::filename`
 
 ## 2. Handling Imperfect Text Extractions
@@ -44,7 +45,7 @@ The source `.txt` files may contain garbled text from the PDF extraction process
     - **Format**: `id,front,back,source_file,tags` (5 columns)
     - **Purpose**: Internal tracking and de-duplication
 -   **`anki_exports/`**: A directory containing the final, per-chapter/topic `.csv` files with rich HTML formatting, ready for Anki import.
-    - **Format**: `front_html,back_html,tags` (3 columns only)
+    - **Format**: `front_html,back_html,tags` (3 columns only, **no header row**)
     - **Purpose**: Direct import into Anki
     - **Note**: Source file information is embedded in tags as `source::filename`
 
