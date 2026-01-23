@@ -1,13 +1,17 @@
 # Flashcard Generation Instructions
 
-This document outlines the process for generating Anki flashcards from the course materials. It should be read by the agent at the beginning of every session to ensure consistency.
+This document outlines the process for generating Anki flashcards from course materials. It should be read by the agent at the beginning of every session to ensure consistency.
 
 ## 1. Overall Workflow
 
 The process is designed to be robust, stateful, and produce high-quality, formatted flashcards for import into Anki.
 
-1.  **Initialization**: At the start of a session, read this file (`setup/instructions.md`), the `setup/flashcard_style_guide.md`, and the entire `setup/flashcards_master.csv` to load the current state.
-2.  **Source Processing**: Process one `.txt` file from the `textfiles_for_searching/` directory at a time.
+1.  **Initialization**: At the start of a session, read:
+    - `shared/instructions.md` (this file)
+    - `shared/flashcard_style_guide.md`
+    - `[COURSE_FOLDER]/course_info.txt` - for course-specific metadata
+    - `[COURSE_FOLDER]/flashcards_master.csv` - to load the current state for this course
+2.  **Source Processing**: Process one `.txt` file from the `[COURSE_FOLDER]/slides/` directory at a time.
 3.  **Card Generation**: For each piece of content in the source file, perform the following:
     a.  **Identify Potential Card**: Find a key concept, definition, code block, or other piece of information suitable for a flashcard.
     b.  **De-duplication**: Perform a semantic check against the `front` text of all cards in the loaded `flashcards_master.csv`. If a similar card already exists, discard the new one and move on.
@@ -16,12 +20,14 @@ The process is designed to be robust, stateful, and produce high-quality, format
     a.  **ID Generation**: Generate a unique ID for each card using the format `YYYYMMDD-HHMM-SS-N` (e.g., `20240520-1430-15-1`).
     b.  **Tag Generation**: Create a space-separated tag string that includes:
         - Week tag (e.g., `week-1`)
+        - Semester tag from `[COURSE_FOLDER]/course_info.txt` (e.g., `winter-2025-2026`)
         - Topic tags (e.g., `logistic-regression`, `machine-learning`)
         - Source file tag using the format `source::filename` (e.g., `source::week-1-slides-l2-logreg`)
+        - **Example**: `week-1 winter-2025-2026 logistic-regression machine-learning source::week-1-slides-l2-logreg`
     c.  **File Updates**:
-        i.  Append the new, **raw** content (id, front, back, source_file, tags) to the `setup/flashcards_master.csv` file. 
+        i.  Append the new, **raw** content (id, front, back, source_file, tags) to the `[COURSE_FOLDER]/flashcards_master.csv` file. 
         ii. **Data Integrity**: Ensure all CSV fields are double-quoted. Escape literal double quotes by doubling them (`""`).
-        iii. Append the new, **HTML-formatted** content (front_html, back_html, tags) to the corresponding Anki export file (e.g., `anki_exports/week_1_logistic_regression.csv`).
+        iii. Append the new, **HTML-formatted** content (front_html, back_html, tags) to the corresponding Anki export file (e.g., `[COURSE_FOLDER]/anki_exports/week_1_logistic_regression.csv`).
             - **IMPORTANT**: Anki export files should have ONLY 3 columns: `front_html`, `back_html`, `tags`
             - Do NOT include `id` or `source_file` columns in Anki exports
             - Do NOT include a header row in Anki export files (Anki doesn't expect it)
@@ -39,15 +45,26 @@ The source `.txt` files may contain garbled text from the PDF extraction process
 
 ## 3. File Structure
 
--   **`setup/instructions.md`**: This file.
--   **`setup/flashcard_style_guide.md`**: Defines the specific formatting rules (HTML structure, styling) for the Anki cards.
--   **`setup/flashcards_master.csv`**: The central database of all card *content* for de-duplication. Simple, raw text format.
-    - **Format**: `id,front,back,source_file,tags` (5 columns)
-    - **Purpose**: Internal tracking and de-duplication
--   **`anki_exports/`**: A directory containing the final, per-chapter/topic `.csv` files with rich HTML formatting, ready for Anki import.
-    - **Format**: `front_html,back_html,tags` (3 columns only, **no header row**)
-    - **Purpose**: Direct import into Anki
-    - **Note**: Source file information is embedded in tags as `source::filename`
+-   **`shared/`**: Common resources used across all courses
+    -   `instructions.md`: This file - core instructions (course-agnostic)
+    -   `flashcard_style_guide.md`: Formatting and style rules
+    -   `anki_styling.css`: CSS for Anki cards (copy to Anki Note Type once)
+    -   `session_prompt_template.txt`: Template for starting sessions
+
+-   **`[COURSE_FOLDER]/`**: Course-specific folder (e.g., `deep-learning/`)
+    -   `course_info.txt`: Course metadata with format:
+        ```
+        course_name: Deep Learning
+        semester: winter-2025-2026
+        ```
+    -   `flashcards_master.csv`: Master database for this course only
+        - **Format**: `id,front,back,source_file,tags` (5 columns)
+        - **Purpose**: Internal tracking and de-duplication within this course
+    -   `slides/`: Source lecture slides for this course
+    -   `anki_exports/`: Anki-ready CSV files for this course
+        - **Format**: `front_html,back_html,tags` (3 columns only, **no header row**)
+        - **Purpose**: Direct import into Anki
+        - **Note**: Source file information is embedded in tags as `source::filename`
 
 ## 4. Card Formatting and Styling
 

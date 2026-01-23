@@ -1,0 +1,27 @@
+Start a new flashcard generation session for course: [COURSE_FOLDER]
+
+Your first step is to read and fully understand the project's established procedures:
+1. `shared/instructions.md`
+2. `shared/flashcard_style_guide.md`
+3. `[COURSE_FOLDER]/course_info.txt`
+4. `[COURSE_FOLDER]/flashcards_master.csv`
+
+After you have loaded the project state, begin processing the following source file:
+
+[COURSE_FOLDER]/slides/[FILENAME]
+
+---
+
+EXAMPLE USAGE:
+
+Start a new flashcard generation session for course: deep-learning
+
+Your first step is to read and fully understand the project's established procedures:
+1. `shared/instructions.md`
+2. `shared/flashcard_style_guide.md`
+3. `deep-learning/course_info.txt`
+4. `deep-learning/flashcards_master.csv`
+
+After you have loaded the project state, begin processing the following source file:
+
+deep-learning/slides/week 1 - slides_l1_spaces_lin1model.txt

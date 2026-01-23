@@ -1,0 +1,2 @@
+course_name: Deep Learning
+semester: winter-2025-2026

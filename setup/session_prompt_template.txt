@@ -1,9 +1,0 @@
-Start a new flashcard generation session.
-
-Your first step is to read and fully understand the project's established procedures. Read the following files to get your full context and instructions:
-1. `setup/instructions.md`
-2. `setup/flashcard_style_guide.md`
-3. `setup/flashcards_master.csv`
-
-After you have loaded the project state, begin processing the following source file:
-
