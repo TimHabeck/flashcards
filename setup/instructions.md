@@ -14,10 +14,17 @@ The process is designed to be robust, stateful, and produce high-quality, format
     c.  **Content Creation**: Generate the raw `front` and `back` text for the card.
     d.  **Formatting**: Using the full context from the source text and the rules in `flashcard_style_guide.md`, create the final HTML-formatted `front_html` and `back_html`.
     a.  **ID Generation**: Generate a unique ID for each card using the format `YYYYMMDD-HHMM-SS-N` (e.g., `20240520-1430-15-1`).
-    b.  **File Updates**:
+    b.  **Tag Generation**: Create a space-separated tag string that includes:
+        - Week tag (e.g., `week-1`)
+        - Topic tags (e.g., `logistic-regression`, `machine-learning`)
+        - Source file tag using the format `source::filename` (e.g., `source::week-1-slides-l2-logreg`)
+    c.  **File Updates**:
         i.  Append the new, **raw** content (id, front, back, source_file, tags) to the `setup/flashcards_master.csv` file. 
         ii. **Data Integrity**: Ensure all CSV fields are double-quoted. Escape literal double quotes by doubling them (`""`).
-        iii. Append the new, **HTML-formatted** content to the corresponding Anki export file (e.g., `anki_exports/week_1_logistic_regression.csv`).
+        iii. Append the new, **HTML-formatted** content (front_html, back_html, tags) to the corresponding Anki export file (e.g., `anki_exports/week_1_logistic_regression.csv`).
+            - **IMPORTANT**: Anki export files should have ONLY 3 columns: `front_html`, `back_html`, `tags`
+            - Do NOT include `id` or `source_file` columns in Anki exports
+            - The source file information is embedded in the tags as `source::filename`
 
 ## 2. Handling Imperfect Text Extractions
 
@@ -34,7 +41,12 @@ The source `.txt` files may contain garbled text from the PDF extraction process
 -   **`setup/instructions.md`**: This file.
 -   **`setup/flashcard_style_guide.md`**: Defines the specific formatting rules (HTML structure, styling) for the Anki cards.
 -   **`setup/flashcards_master.csv`**: The central database of all card *content* for de-duplication. Simple, raw text format.
+    - **Format**: `id,front,back,source_file,tags` (5 columns)
+    - **Purpose**: Internal tracking and de-duplication
 -   **`anki_exports/`**: A directory containing the final, per-chapter/topic `.csv` files with rich HTML formatting, ready for Anki import.
+    - **Format**: `front_html,back_html,tags` (3 columns only)
+    - **Purpose**: Direct import into Anki
+    - **Note**: Source file information is embedded in tags as `source::filename`
 
 ## 4. Card Formatting and Styling
 

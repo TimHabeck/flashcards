@@ -60,9 +60,12 @@ This section dictates how to use HTML to format the content on the back of a car
 ## 5. Tagging Strategy
 
 -   Tags are crucial for organizing cards in Anki.
--   The `tags` field in the master CSV should be a space-separated string.
-- **Convention:** Include at least three types of tags:
+-   The `tags` field in both CSVs should be a space-separated string.
+- **Convention:** Include at least four types of tags:
     1.  **Week:** A tag for the week (e.g., `week-1`, `week-2`).
     2.  **Topic:** At least one tag for the specific chapter or topic (e.g., `logistic-regression`, `neural-networks`).
-    3.  **Source:** A tag indicating the underlying source material if relevant (e.g., `lecture-slides`).
--   **Example:** `week-1 logistic-regression machine-learning gradient-descent`
+    3.  **Category:** General category tags (e.g., `machine-learning`, `linear-algebra`).
+    4.  **Source:** A tag indicating the source file using the format `source::filename` (e.g., `source::week-1-slides-l2-logreg`).
+        - Convert the filename to lowercase and replace spaces/underscores with hyphens
+        - Remove the `.txt` extension
+-   **Example:** `week-1 logistic-regression machine-learning gradient-descent source::week-1-slides-l2-logreg`
