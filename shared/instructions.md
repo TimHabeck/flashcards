@@ -14,8 +14,11 @@ The process is designed to be robust, stateful, and produce high-quality, format
 2.  **Source Processing**: Process one `.txt` file from the `[COURSE_FOLDER]/slides/` directory at a time.
 3.  **Card Generation**: For each piece of content in the source file, perform the following:
     a.  **Identify Potential Card**: Find a key concept, definition, code block, or other piece of information suitable for a flashcard.
+        - **Content-only filter**: Prefer exam-relevant, generalizable knowledge. Skip organizational/administrative details (course logistics, schedules, platforms, enrollment, announcements, etc.).
     b.  **De-duplication**: Perform a semantic check against the `front` text of all cards in the loaded `flashcards_master.csv`. If a similar card already exists, discard the new one and move on.
     c.  **Content Creation**: Generate the raw `front` and `back` text for the card.
+        - **No source phrasing**: Do not reference the slides/lecture in the card text (e.g., avoid “in the slides” or “in the introduction”). The source should only appear in tags.
+        - **Avoid over-specific attribution**: Do not ask for definitions “by author/group” unless that distinction is essential to the exam content.
     d.  **Formatting**: Using the full context from the source text and the rules in `flashcard_style_guide.md`, create the final HTML-formatted `front_html` and `back_html`.
     a.  **ID Generation**: Generate a unique ID for each card using the format `YYYYMMDD-HHMM-SS-N` (e.g., `20240520-1430-15-1`).
     b.  **Tag Generation**: Create a space-separated tag string that includes:

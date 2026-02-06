@@ -13,6 +13,8 @@ This document defines the rules for creating the content and structure of each f
 
 -   **Always a Question:** The front of every card must be phrased as a clear, specific question. This forces active recall rather than passive review.
 -   **Clarity is Key:** Avoid ambiguous or overly complex questions. The user should know exactly what is being asked.
+-   **No source framing:** Avoid phrasing like “in the slides/lecture” or “in the introduction.” Cards should read as general, exam-ready questions.
+-   **Avoid trivial attribution:** Do not ask for definitions tied to a specific author/group unless the distinction itself is exam-relevant.
 
 ## 3. Card Back: The Answer
 
