@@ -1,0 +1,1931 @@
+DATA MINING
+
+Kapitel 4: Empfehlungssysteme
+Dr. Christian Martin
+Wintersemester 2025/26
+
+Abteilung Datenbanken / ScaDS.AI
+Universität Leipzig
+
+THEMENÜBERSICHT
+
+Hochdimensionale Daten
+
+Graphdaten
+
+Datenströme
+
+Clustering
+
+Dimensionsreduktion
+
+Community
+Detection
+
+Windowing
+
+Empfehlungssysteme
+
+Assoziationsregeln
+
+PageRank
+
+Filtern
+
+Locality Sensitive
+Hashing
+
+Supervised ML
+
+Web Spam
+
+Momente
+
+Data Mining | WiSe 2025/2026
+
+4-2
+
+INHALTSVERZEICHNIS
+− Einführung
+− Inhaltsbasierte Analyse
+− Kollaboratives Filtern
+− Latentes Variablenmodell
+
+Data Mining | WiSe 2025/2026
+
+4-3
+
+EMPFEHLUNGEN
+
+Beispiele:
+
+Suche
+
+Empfehlungen
+
+Produkte, Webseiten,
+Blogs, Nachrichten,
+Filme, Musik, Bilder, …
+
+Data Mining | WiSe 2025/2026
+
+4-4
+
+EMPFEHLUNGEN
+− Unzählige Informationen im WWW benötigen Filter
+
+− Arten der Empfehlung
+− Redaktion: Liste der beliebtesten/wichtigsten Produkte
+− Globale Aggregate: Meist gekauften Produkte, Neuste Filme, …
+− Benutzerdefiniert: Auf einzelnen User zugeschnitten
+
+− Nutzenmatrix
+− Menge von Usern
+− Menge von Objekten
+− Nutzenwerte in Zellen
+− Beispiel: 1-10 Sterne
+
+Alice
+
+Avatar LotR
+
+Matrix Pirates
+
+10
+
+2
+
+Bob
+Carol
+
+5
+1
+
+David
+
+Data Mining | WiSe 2025/2026
+
+3
+5
+
+4
+4-5
+
+FRAGESTELLUNG
+− Schätzung der unbekannten Bewertungen
+− Hauptsächlich möchte man die hohen Bewertungen wissen
+− Weniger interessant, welche Objekte nicht gemocht werden
+
+− Drei Herangehensweisen (u.a.):
+− Inhaltsbasierte Analyse
+− Kollaboratives Filtern
+− Latentes
+Variablenmodell
+
+Alice
+
+Avatar LotR
+
+Matrix Pirates
+
+10
+
+2
+
+Bob
+
+Carol
+
+5
+
+1
+
+David
+Data Mining | WiSe 2025/2026
+
+3
+
+5
+4
+4-6
+
+AUCH GRAPH-BASIERT
+− Graph-Repräsentation sehr geeignet für
+Empfehlungssysteme
+− Nicht Bestandteil der VL
+Person
+
+Person
+
+name : Chris
+
+name : Kevin
+
+follows
+
+hasSeen
+
+hasSeen
+
+recommend
+recommend
+
+Movie
+
+Movie
+
+Movie
+
+title : Inception
+year : 2010
+
+title : Mad Max
+year : 2015
+
+hasSeen
+
+title : The Dark Knight Rises
+year : 2012
+
+directorOf
+
+actedIn
+
+directorOf
+
+actedIn
+
+actedIn
+
+Actor
+
+Director
+
+name : Tom Hardy
+
+name : Christopher Nolan
+
+Data Mining | WiSe 2025/2026
+
+4-7
+
+INHALTSVERZEICHNIS
+− Einführung
+− Inhaltsbasierte Analyse
+− Kollaboratives Filtern
+− Latentes Variablenmodell
+
+Data Mining | WiSe 2025/2026
+
+4-8
+
+INHALTSBASIERTE ANALYSE
+− Idee: Empfehlung von Objekten für einen Nutzer, wenn ähnliche
+Objekte von dem Nutzer bereits positiv bewertet wurden
+− Beispiele:
+− Empfehle Filme mit gleichen Schauspielern, Regisseur, Genre, …
+− Empfehle Webseiten mit ähnlichen Themen/Wörtern
+
+Hohe Bewertung
+
+Objektprofil
+Empfehlung
+Zuordnung
+
+Rot
+Kreise
+Dreiecke
+
+Data Mining | WiSe 2025/2026
+
+Nutzerprofil
+4-9
+
+INHALTSBASIERTE ANALYSE
+− Objektprofil: Menge von Merkmalen
+− z.B. Filme mit Schauspielern,
+Regisseur, Genre, …
+Cameron
+
+Wachowski
+
+UK
+
+Action
+
+Fantasy
+
+Avatar 1
+
+0
+
+1
+
+1
+
+1
+
+Matrix
+
+1
+
+1
+
+1
+
+0
+
+0
+
+Nutzenmatrix
+Avatar Matrix
+Alice
+
+10
+
+2
+
+Carol
+
+1
+
+5
+
+Zentrierung
+(pro Nutzer)
+Avatar Matrix
+
+− Nutzerprofil:
+
+Alice
+
+4
+
+-4
+
+Carol
+
+-2
+
+2
+
+− Gewichtung der Objektprofile mit zentrierter Bewertung
+4 ∗ 1 + −4 ∗ 0
+
+Cameron
+
+Wachowski
+
+UK
+
+Action
+
+Fantasy
+
+Alice
+
+4
+
+-4
+
+0
+
+0
+
+4
+
+Carol
+
+-2
+
+2
+
+0
+
+0
+
+-2
+
+Data Mining | WiSe 2025/2026
+
+4-10
+
+KOSINUS ÄHNLICHKEIT
+
+cos 𝒙, 𝐲 =
+
+𝒙·𝒚
+𝒙 ⋅ 𝒚
+
+∈ [−1,1] mit 𝑥 =
+
+σ𝑖 𝑥𝑖2 und 𝑦 =
+
+σ𝑖 𝑦𝑖2
+
+Quelle: https://www.learndatasci.com/glossary/cosine-similarity/
+https://de.wikipedia.org/wiki/Sinus_und_Kosinus#/media/Datei:Sine_cosine_one_period.svg
+
+Data Mining | WiSe 2025/2026
+
+4-11
+
+INHALTSBASIERTE ANALYSE
+− Unbewerteter Film
+Titanic
+
+Cameron
+
+Wachowski
+
+UK
+
+Action
+
+Fantasy
+
+1
+
+0
+
+1
+
+0
+
+0
+
+− Ähnlichkeit zwischen Objekt und Nutzer
+− z.B. über Kosinus-Ähnlichkeit
+
+cos 𝒙, 𝐲 =
+
+𝒙·𝒚
+𝒙 ⋅ 𝒚
+
+∈ [−1,1]
+
+Cameron
+
+Wachowski
+
+UK
+
+Action
+
+Fantasy
+
+Alice
+
+4
+
+-4
+
+0
+
+0
+
+4
+
+Carol
+
+-2
+
+2
+
+0
+
+0
+
+-2
+
+− Beispiel
+− Alice: cos 𝒙, 𝐲 =
+− Carol: cos 𝒙, 𝐲 =
+
+4∗1
+12 +12 ∗ 4 2 +−4 2 +4
+−2∗1
+
+4
+
+= 9.8 = 0.41
+2
+−2
+
+= 4.9 = −0.41
+2
+
+12 +12 ∗ −22 +22 +−2
+
+Data Mining | WiSe 2025/2026
+
+4-12
+
+INHALTSBASIERTE ANALYSE: PROBLEME
+− Alle Interessen eines Users müssen mit Objektprofil
+übereinstimmen
+− Leidenschaft für Feature "Cameron" ist nicht trennbar von
+Interesse für "Fantasy"
+− Durchaus vorstellbar, dass beide Bewertungen aus
+unterschiedlichen Filmen stammen und Alice alles von Cameron
+mag (unabhängig des Genre)
+− → komplexere Zusammenhänge nicht abbildbar
+
+− Merkmale müssen von Hand gewählt werden
+− evtl. wurden aber nicht alle relevanten Merkmale identifiziert, z.B.
+könnte auch Ort des Filmes wichtig sein.
+
+Data Mining | WiSe 2025/2026
+
+4-13
+
+INHALTSVERZEICHNIS
+− Einführung
+− Inhaltsbasierte Analyse
+− Kollaboratives Filtern
+− Latentes Variablenmodell
+
+Data Mining | WiSe 2025/2026
+
+4-14
+
+KOLLABORATIVES FILTERN
+− Kollaboratives Filtern (KF) für Nutzer
+− Auswertung von Verhaltensmuster von Benutzergruppen
+− Suche nach einer Menge 𝑁 von Nutzern mit ähnlichen Präferenzen
+(Nutzenmatrix)
+− Schätzung der unbekannten Bewertungen über die Bewertungen der
+Nutzer aus 𝑁
+
+− Alternative: KF für Objekte
+− Suche nach einer Menge 𝑁 von Objekten mit ähnlichen Bewertungen
+− Schätzen der unbekannten Bewertungen über die Bewertungen der
+Objekte aus 𝑁
+− Vorteil: Objekte sind oft einfacher klassifizierbar als Menschen
+− Ein Musikalbum ist entweder Death Metal oder Klassik
+− Menschen können beide Musikrichtungen mögen
+− Möglich, das zwei Menschen Death Metal mögen und gleichzeitig
+eine andere Musikrichtung, für die sich der jeweils andere gar nicht
+begeistert
+Data Mining | WiSe 2025/2026
+
+4-15
+
+KOLLABORATIVES FILTERN FÜR OBJEKTE
+− Sei 𝑟𝑥𝑖 die Bewertung des Nutzers 𝑥 zu Objekt 𝑖
+− Keine Bewertung 𝑟𝑥𝑖 für Objekt 𝑖 → soll geschätzt werden
+− Sei 𝑵(𝒊; 𝒙) die Menge der 𝑘 ähnlichsten Objekte, welche
+von x bewertet wurden
+− Schätzung 1 (aus 𝑘 ähnlichsten Objekten):
+1
+− Mittelwert: 𝑟𝑥𝑖
+Ƹ = σj∈𝑵(𝒊;𝒙) 𝑟xj
+𝑘
+
+− Schätzung 2 (+ Gewichtung nach Ähnlichkeit):
+− 𝑟𝑥𝑖
+Ƹ =
+
+σj∈𝑁(i;x) 𝑠𝑖𝑗 ⋅𝑟𝑥𝑗
+σj∈𝑁(i;x) 𝑠𝑖𝑗
+
+𝑠𝑖𝑗 =(Kosinus-)Ähnlichkeit zwischen
+Objekt 𝑖 und 𝑗
+
+Data Mining | WiSe 2025/2026
+
+4-16
+
+KOLLABORATIVES FILTERN FÜR OBJEKTE
+
+− Sei 𝑟𝑥𝑖 die Bewertung des Nutzers 𝑥 zu Objekt 𝑖
+− 𝒓.𝑖 : Bewertung aller Nutzer zu Objekt 𝑖
+− Sei 𝑠𝑖𝑗 (Kosinus-)Ähnlichkeit zwischen Objekt 𝑖 und 𝑗
+𝑠𝑖𝑗 =
+
+𝐫.𝑖 ·𝐫.𝑗
+𝐫.𝑖 ⋅ 𝐫.𝑗
+
+=
+
+σ𝑥 𝑟𝑥𝑖 ·𝑟𝑥𝑗
+2
+σ𝑥 𝑟𝑥𝑖
+
+2
+σ𝑥 𝑟𝑥𝑗
+
+∈ −1,1
+
+− Sind Bewertungen zentriert entspricht 𝑠𝑖𝑗 dem PearsonKorrelationskoeffizient
+
+Data Mining | WiSe 2025/2026
+
+4-17
+
+KOLLABORATIVES FILTERN FÜR OBJEKTE
+Nutzer
+1
+1
+
+2
+
+1
+
+Filme
+
+5
+2
+
+4
+
+6
+
+4
+2
+
+5
+
+5
+
+6
+
+?
+
+5
+
+4
+1
+
+4
+4
+
+1
+
+4
+
+3
+
+2
+3
+
+3
+
+3
+
+2
+
+4
+
+3
+
+Unbekannt
+
+8
+
+9
+
+10 11 12
+
+5
+
+4
+
+4
+3
+
+5
+3
+
+7
+
+4
+4
+
+2
+
+2
+
+1
+
+3
+
+5
+2
+2
+
+2
+
+3
+
+5
+
+4
+
+Bewertung
+
+Data Mining | WiSe 2025/2026
+
+4-18
+
+ZENTRIERUNG
+
+Zeile 1
+m1 = (1+3+5+5+4)/5 = 3.6
+-> 1-3.6, 3-3.6, ..
+
+zeilenweise Zentrierung
+
+Nutzer
+1
+1
+
+2
+
+-2.6
+
+Filme
+
+1.8
+
+-1
+
+4
+
+6
+
+1
+-1.4
+
+5
+
+5
+
+0.8
+
+7
+
+8
+
+0.8
+
+0.7
+0.4
+
+10
+
+0.6
+
+-1.3
+
+11
+
+-2.2
+
+Data Mining | WiSe 2025/2026
+
+-0.2
+
+2
+-1.4
+
+-1.3
+-0.6
+
+12
+
+0.4
+-1.2
+
+1
+
+1.6
+
+-0.3
+
+9
+1.4
+
+-1
+
+0.6
+
+0.4
+
+6
+1.4
+
+-2
+
+0.7
+-1.6
+
+4
+
+-0.6
+
+2
+
+3
+
+3
+
+1.7
+
+1.4
+
+4-19
+
+BERECHNUNG DER ÄHNLICHKEITEN VON OBJEKTEN
+Nutzer
+1
+1
+
+2
+
+-2.6
+
+Filme
+
+1.8
+-1
+
+4
+
+6
+
+1
+-1.4
+
+5
+
+5
+
+0.8
+
+0.6
+
+0.4
+
+6
+
+7
+
+8
+
+1.4
+
+-2
+
+0.7
+-1.6
+
+4
+
+-0.6
+
+2
+3
+
+3
+
+1
+
+0.4
+
+0.6
+
+-1.3
+
+11
+
+-2.2
+
+𝒔𝟏𝒋
+
+1.00
+-0.2
+
+2
+
+-0.18
+
+0.41
+
+-1.4
+
+-1.3
+-0.6
+
+12
+
+0.4
+-1.2
+
+-1
+
+0.7
+
+10
+
+1.4
+0.8
+
+1.6
+
+-0.3
+
+9
+
+-0.10
+1.7
+
+-0.31
+
+1.4
+
+0.59
+Ähnlichkeit zwischen Film 1 und Film 2:
+−0.6 ∗ 1.8 + 0.4 ∗ −2.2
+−1.96
+𝑠12 =
+=
+11.2 ∗ 10.84
+−2.62 + −0.62 + 1.42 + 1.42 + 0.42 ∗ 1.82 + 2 ∗ 0.82 + −1.22 + −2.22 + −0.22
+≈ −0.18
+Data Mining | WiSe 2025/2026
+
+4-20
+
+KOLLABORATIVES FILTERN FÜR OBJEKTE
+Nutzer
+
+k=2
+
+1
+1
+
+2
+
+1
+
+Filme
+
+5
+2
+
+4
+
+6
+
+4
+2
+
+5
+
+5
+
+6
+
+??
+
+5
+
+4
+1
+
+4
+4
+
+1
+
+4
+
+3
+
+2
+3
+
+3
+
+3
+
+2
+
+4
+3
+
+Unbekannt
+
+8
+
+9
+
+10 11 12
+
+𝒔𝟏𝒋
+
+5
+
+4
+
+1.00
+
+4
+3
+
+5
+3
+
+7
+
+4
+4
+
+2
+
+2
+
+1
+
+3
+
+5
+
+0.41
+
+2
+
+-0.10
+
+2
+2
+
+4
+
+3
+
+5
+
+-0.18
+
+-0.31
+0.59
+
+Bewertung
+
+Data Mining | WiSe 2025/2026
+
+4-21
+
+KOLLABORATIVES FILTERN FÜR OBJEKTE
+Nutzer
+
+k=2
+
+1
+1
+
+2
+
+1
+
+Filme
+
+5
+2
+
+4
+
+6
+
+4
+2
+
+5
+
+6
+
+4
+
+4
+
+3
+
+5
+
+7
+
+8
+
+2.6 5
+
+1
+
+4
+1
+
+4
+
+3
+
+2
+3
+
+3
+
+10 11 12
+
+𝒔𝟏𝒋
+
+5
+
+4
+
+1.00
+
+4
+2
+
+3
+
+5
+3
+
+9
+
+4
+3
+
+4
+4
+
+2
+
+1
+
+3
+
+5
+
+0.41
+
+2
+
+-0.10
+
+2
+2
+
+4
+
+3
+
+-0.18
+
+2
+
+5
+
+-0.31
+0.59
+
+σ𝑗∈𝑁(𝑖;𝑥) 𝑠𝑖𝑗 ⋅ 𝑟𝑗𝑥 0.41 ∙ 2 + 0.59 ∙ 3
+𝑟𝑖𝑥
+Ƹ =
+=
+= 2.6
+σ𝑗∈𝑁(𝑖;𝑥) 𝑠𝑖𝑗
+0.41 + 0.59
+Data Mining | WiSe 2025/2026
+
+4-22
+
+VERGLEICH: VORTEILE
+Kollaboratives Filtern
+
+Inhaltsbasierte Analyse
+
+Keine Auswahl von Merkmalen
+notwendig (insb. bei Bildern)
+
+Benötigt keine Daten anderer Nutzer
+
+Trennung verschiedener
+Interessen eines Nutzers
+möglich (KF für Objekte)
+
+Empfehlungen für Nutzer mit einzigartigem
+Geschmack möglich
+Empfehlungen von neuen/unpopulären
+Objekten möglich
+Erklärung für Empfehlung möglich: Auflisten
+der Merkmale mit höchstem Gewicht
+
+–
+–
+
+Allgemeines Problem: Nutzenmatrix ist oft spärlich besetzt
+Lösung (siehe auch Übungsaufgabe):
+– Clusteranalyse auf Objekte und Zusammenfassen der Objekte eines
+Clusters (Mittelwert über Bewertungen)
+– Anschließend Clusteranalyse auf Nutzer und Zusammenfassen der
+Nutzer eines Clusters (Mittelwert über gemittelte Bewertungen)
+– Wiederholung des Prozesses bis Matrix ausreichend besetzt
+Data Mining | WiSe 2025/2026
+
+4-23
+
+NETFLIX PRIZE
+− Trainingsdaten
+− 100 Million Bewertungen (1-5 Sterne)
+− ca. 480 000 zufällig ausgewählte Nutzer
+− ca. 17 770 Filme
+− Zeitraum: 2000-2005
+
+− Testdaten
+− Menge 𝑅: die letzten Bewertungen der ausgewählten Nutzer (2.8M)
+− Evaluation über Root Mean Squared Error (RMSE):
+−
+
+1
+2
+σ(𝑖,𝑥)∈𝑅 𝑟𝑥𝑖
+Ƹ
+−
+𝑟
+𝑥𝑖
+𝑅
+
+− System von Netflix: CineMatch
+− RMSE von CineMatch: 0.9514 (durchschnittlicher Fehler: ein Stern)
+
+− Wettbewerb: $1 Million für das erste Team, dessen Algorithmus eine
+Verbesserung um 10% (RMSE von 0.8572 oder weniger) erreicht
+Data Mining | WiSe 2025/2026
+
+4-24
+
+NETFLIX PRIZE: RMSE
+Globaler Durchschnitt: 1.13
+Nutzerdurchschnitt: 1.07
+Filmdurchschnitt: 1.05
+
+CineMatch: 0.95
+
+Kollaboratives Filtern: 0.94
+
+Grand Prize: 0.8563
+
+Data Mining | WiSe 2025/2026
+
+4-25
+
+KOLLOBORATIVES FILTERN MIT BIAS
+− KF für Objekte:
+
+𝑟𝑥𝑖
+Ƹ =
+
+σ𝑗∈𝑁(𝑖;𝑥) 𝑠𝑖𝑗 ⋅ 𝑟𝑥𝑗
+
+σ𝑗∈𝑁(𝑖;𝑥) 𝑠𝑖𝑗
+
+− Bessere Ergebnisse durch Berücksichtigung „globaler Effekte“:
+− Globaler Durchschnitt aller Bewertungen 𝝁
+𝟏
+
+− Nutzerbias: 𝒃𝒙∗ = 𝒏 σ𝒊 𝒓𝒙𝒊 − 𝝁 (𝑛𝑥 ist Anzahl der Bewertungen von x)
+𝒙
+
+𝟏
+
+− Filmbias: 𝒃∗𝒊 = 𝒏 σ𝒙 𝒓𝒙𝒊 − 𝝁 (𝑛𝑖 ist Anzahl der Bewertungen für i)
+𝒊
+
+− Baseline-Schätzer für 𝑟𝒙𝒊
+Ƹ : 𝒃𝒙𝒊 = 𝝁 + 𝒃𝒙∗ + 𝒃∗𝒊
+
+− KF mit Bias (systematische Verschiebung):
+σ𝑗∈𝑁(𝑖;𝑥) 𝑠𝑖𝑗 ∙ (𝑟𝑥𝑗 − 𝑏𝑥𝑗 )
+𝑟𝑥𝑖
+Ƹ ≅ 𝑏𝑥𝑖 +
+σ𝑗∈𝑁(𝑖;𝑥) 𝑠𝑖𝑗
+
+Data Mining | WiSe 2025/2026
+
+4-26
+
+KOLLOBORATIVES FILTERN MIT BIAS
+− Am Beispiel
+− Globaler Durchschnitt aller Bewertungen 𝝁
+− 𝝁 = 3.17
+𝟏
+
+− Nutzerbias: 𝒃𝒙∗ = 𝒏 σ𝒊 𝒓𝒙𝒊 − 𝝁 (𝑛𝑥 ist Anzahl der Bewertungen von x)
+𝒙
+
+− 𝒃5∗ = 0.33
+𝟏
+
+− Filmbias: 𝒃∗𝒊 = 𝒏 σ𝒙 𝒓𝒙𝒊 − 𝝁 (𝑛𝑖 ist Anzahl der Bewertungen für i)
+𝒊
+
+− 𝒃∗1 = 0.43
+
+− Baseline-Schätzer für 𝑟𝒙𝒊
+Ƹ : 𝒃𝒙𝒊 = 𝝁 + 𝒃𝒙∗ + 𝒃∗𝒊
+− 𝒃51 = 𝝁 + 𝒃5∗ + 𝒃∗1 = 3.17 + 0.33 + 0.43 = 𝟑. 𝟗𝟑
+− 𝒃53 = 𝝁 + 𝒃5∗ + 𝒃∗3 = 3.17 + 0.33 − 0.17 = 3.33
+− 𝒃56 = 𝝁 + 𝒃5∗ + 𝒃∗6 = 3.17 + 0.33 − 0.57 = 2.93
+
+𝑟51
+Ƹ = 3.93 +
+
+0.41 ∙ 2 − 3,33 + 0.59 ∙ 3 − 2.93
+−0.504
+= 3.93 +
+= 𝟑. 𝟒𝟐𝟔
+0.41 + 0.59
+1
+Data Mining | WiSe 2025/2026
+
+4-27
+
+KF MIT BIAS UND GELERNTEN GEWICHTEN
+− Problem bei Verwendung von 𝑠𝑖𝑗 : willkürlich festgelegtes
+Maß (z.B. Kosinus-Ähnlichkeit)
+− Anpassung über gewichtete Summe über k ähnlichste
+Objekte:
+− 𝑟𝑥𝑖
+Ƹ = 𝑏𝑥𝑖 + σ𝑘 𝑤𝑖𝑘 𝑟𝑥𝑘 − 𝑏𝑥𝑘
+− Die Gewichte 𝒘𝒊𝒌 (für Nutzer 𝑖 und Film 𝑘) werden
+gelernt: Minimierung des RMSE bei Anwendung auf
+Trainingsdaten
+− Problem 1: Overfitting – optimale Lösung auf Trainigsdaten nicht
+unbedingt allgemein gute Lösung (→ Cross-Validation)
+− Problem 2: Lernen der Gewichte
+Data Mining | WiSe 2025/2026
+
+4-28
+
+KF MIT BIAS UND GELERNTEN GEWICHTEN
+− Finde Gewichte 𝒘 = (𝑤𝑖𝑗 ), die folgenden Ausdruck
+Berechneter Wert
+minimieren:
+realer Wert
+
+− 𝐽 𝑤 = σ𝑥,𝑖 𝑟𝑥𝑖
+Ƹ − 𝑟𝑥𝑖 2
+−
+
+= σ𝑥,𝑖 𝑏𝑥𝑖 + σ𝑘 𝑤𝑖𝑘 𝑟𝑥𝑘 − 𝑏𝑥𝑘
+
+− 𝑟𝑥𝑖 2
+
+− Gradient Descent: Einfacher Algorithmus um
+lokales Minimum zu finden
+− Wiederhole bis Konvergenz:
+𝒘 ← 𝒘 − 𝛻𝑤 𝐽
+− Lernrate: 
+− Gradient an der Stelle (i,j):
+− (𝛻𝑤 𝐽)ij =
+
+𝜕𝐽(𝑤)
+= 2 σ𝑥
+𝜕𝑤𝑖𝑗
+
+𝑏𝑥𝑖 + σ𝑘 𝑤𝑖𝑘 𝑟𝑥𝑘 − 𝑏𝑥𝑘
+
+Data Mining | WiSe 2025/2026
+
+− 𝑟𝑥𝑖 𝑟𝑥𝑗 − 𝑏𝑥𝑗
+4-29
+
+STOCHASTIC GRADIENT DESCENT
+
+Minimierungsfunktion
+
+− Gradienten für die Elemente der Gewichtungsmatrix sind Summen
+über mehrere Datenpunkte: Berechnung kann sehr lange dauern
+− Schnellere Konvergenz wenn, für jede Iteration, nur ein (zufällig
+ausgewählter) Mini-Batch der Daten verwendet wird
+− SGD : stochastische Approximation von GD
+
+— Gradient Descent
+— Stochastic Gradient Descent
+
+Iteration
+Data Mining | WiSe 2025/2026
+
+4-30
+
+NETFLIX PRIZE: RMSE
+Globaler Durchschnitt: 1.13
+Nutzerdurchschnitt: 1.07
+Filmdurchschnitt: 1.05
+
+CineMatch: 0.95
+
+Kollaboratives Filtern: 0.94
+KF + Bias + gelernte Gewichte: 0.91
+
+Grand Prize: 0.8563
+
+Data Mining | WiSe 2025/2026
+
+4-31
+
+INHALTSVERZEICHNIS
+− Einführung
+− Inhaltsbasierte Analyse
+− Kollaboratives Filtern
+− Latentes Variablenmodell
+
+Data Mining | WiSe 2025/2026
+
+4-32
+
+LATENTES VARIABLENMODELL
+− Ein latentes Variablenmodell beschreibt den
+Zusammenhang zwischen beobachtbaren (oder
+manifesten) Variablen und dahinter liegenden
+latenten(versteckten) Variablen
+− Im Beispiel:
+− beobachtete Variablen: Bewertungen der Nutzer für Filme
+− Latente/versteckte Variablen: Faktoren, die diese Bewertungen
+beeinflussen, aber nicht direkt beobachtet werden können
+
+Data Mining | WiSe 2025/2026
+
+4-33
+
+LATENTES VARIABLENMODELL
+Ernst
+The Color
+Purple
+
+The Dark Knight Rises
+
+Titanic
+
+Pride and
+Prejudice
+
+Die Hard
+
+Twilight
+
+Romantik
+
+Shrek
+
+Action
+
+Independence Day
+
+The Princess
+Diaries
+
+Dumb and
+Dumber
+
+Spaß
+Data Mining | WiSe 2025/2026
+
+4-34
+
+LATENTES VARIABLENMODELL
+− Reduktion der Dimensionen auf wenige Faktoren
+− Zerlegung: 𝑅 ≈ 𝑄 · 𝑃𝑇 für nicht-leere Zellen von R
+Nutzer
+3
+
+5
+
+5 4
+2 4
+2 4
+
+5
+4
+
+1 2
+
+4
+2 1 3
+
+3
+
+5
+
+4 3 5
+4
+
+2
+
+4 3 4 2
+1
+
+3
+
+3
+
+≈
+
+2 5
+2
+
+4
+
+R Faktoren
+.1
+
+-.4
+
+.2
+
+-.5
+
+.6
+
+.5
+
+-.2
+
+.3
+
+.5
+
+1.1
+
+2.1
+
+.3
+
+-.7
+
+2.1
+
+-2
+
+-1
+
+.7
+
+.3
+
+Nutzer
+x
+
+1.1
+
+-.2
+
+.3
+
+.5
+
+-2
+
+-.5
+
+.8
+
+-.4
+
+.3
+
+1.4
+
+2.4
+
+-.9
+
+-.8
+
+.7
+
+.5
+
+1.4
+
+.3
+
+-1
+
+1.4
+
+2.9
+
+-.7
+
+1.2
+
+-.1
+
+1.3
+
+2.1
+
+-.4
+
+.6
+
+1.7
+
+2.4
+
+.9
+
+-.3
+
+.4
+
+.8
+
+.7
+
+-.6
+
+.1
+
+PT
+
+Q
+Data Mining | WiSe 2025/2026
+
+4-35
+
+Faktoren
+
+Filme
+
+Filme
+
+1
+
+LATENTES VARIABLENMODELL
+− Schätzung der Werte der leeren Felder über Faktoren
+Nutzer
+3
+
+5
+
+5
+
+5 4 ?
+
+4
+
+1 2
+
+3
+
+2 4
+2 4
+
+5
+
+1
+
+3
+
+4
+2 1 3
+
+4 3 5
+4
+
+𝒓ො 𝒙𝒊 = ෍ 𝒒𝒊𝒇 ⋅ 𝒑𝒙𝒇
+
+≈
+
+2
+
+4 3 4 2
+
+𝒇
+
+2 5
+
+3
+
+2
+
+4
+
+R
+Faktoren
+.1
+
+-.4
+
+.2
+
+-.5
+
+.6
+
+.5
+
+-.2
+
+.3
+
+.5
+
+1.1
+
+-.2
+
+.3
+
+.5
+
+-2
+
+-.5
+
+.8
+
+-.4
+
+.3
+
+1.4
+
+2.4
+
+-.9
+
+1.1
+
+2.1
+
+.3
+
+-.8
+
+.7
+
+.5
+
+1.4
+
+.3
+
+-1
+
+1.4
+
+2.9
+
+-.7
+
+1.2
+
+-.1
+
+1.3
+
+-.7
+
+2.1
+
+-2
+
+2.1
+
+-.4
+
+.6
+
+1.7
+
+2.4
+
+.9
+
+-.3
+
+.4
+
+.8
+
+.7
+
+-.6
+
+.1
+
+-1
+
+.7
+
+.3
+
+Nutzer
+
+Faktoren
+
+Filme
+
+Filme
+
+1
+
+PT
+
+Q
+Data Mining | WiSe 2025/2026
+
+4-36
+
+LATENTES VARIABLENMODELL
+− Ziel: Finden zweier Matrizen 𝑄 und 𝑃, so dass folgender Ausdruck
+für alle vorhandenen Felder minimiert wird
+− σ𝒊,𝒙 𝑟𝑥𝑖 − 𝑞𝑖 ⋅ 𝑝𝑥 2 (Kostenfunktion)
+− 𝑟𝑥𝑖 : tatsächliche Bewertung von Nutzer x für Film i
+− 𝑞𝑖 bzw. 𝑝𝑥 bezeichnet die i-te Zeile von Q bzw. x-te Zeile von P
+
+− 𝑞𝑖 ⋅ 𝑝𝑥 : vorhergesagte Bewertung
+
+− Bestes Ergebnis für Trainingsdaten durch hohe Anzahl an Faktoren
+(Spalten von Q und P) → Gefahr: Overfitting
+− „Auswendig lernen“ der Daten (inkl. zufälliger Fehler)
+− Keine Generalisierung auf unbekannte Daten möglich → Hohe
+Fehlerrate bei Testdaten
+
+− Lösung: Regularisierung
+
+Data Mining | WiSe 2025/2026
+
+4-37
+
+REGULARISIERUNG
+− Regularisierung fügt Strafterme hinzu, die die Komplexität der
+Matrizen Q und P begrenzen
+− min σ𝒊,𝒙 𝑟𝑥𝑖 − 𝑞𝑖 ⋅ px 2 + 𝜆1 σ𝑥 𝑝𝑥 2 + 𝜆2 σ𝑖 𝑞𝑖 2
+𝑃,𝑄
+
+− 𝜆1 σ𝑥 𝑝𝑥 2
+− Term bestraft große Werte in den Zeilen von P (Nutzerfaktoren)
+− 𝑝𝑥 2 : quadratische Norm der Zeile 𝑝𝑥
+− großer Wert = hohe Gewichtung der Nutzerfaktoren, was das Modell
+anfällig für Overfitting macht
+− Regularisierungsparameter 𝜆1 kontrolliert, wie stark Bestrafung
+
+− 𝜆2 σ𝑖 𝑞𝑖 2
+− Term bestraft große Werte in den Zeilen von Q (Filmfaktoren)
+− Regularisierung zwingt das Modell, einfachere Lösungen zu finden, indem es die
+Werte der latenten Faktoren Q und P begrenzt: generalisierbare Muster
+− Hohe Werte für 𝜆1 und 𝜆2 : stärkere Bestrafung großer Werte in Q und P: Modell wird
+dadurch einfacher, aber möglicherweise unterangepasst
+Data Mining | WiSe 2025/2026
+
+4-38
+
+EFFEKT DER REGULARISIERUNG
+Ernst
+The Color
+Purple
+
+The Dark Knight Rises
+
+Titanic
+
+Pride and
+Prejudice
+
+Die Hard
+
+Twilight
+
+Romantik
+
+Shrek
+
+Action
+
+Independence Day
+
+The Princess
+Diaries
+
+Dumb and
+Dumber
+
+Spaß
+Data Mining | WiSe 2025/2026
+
+4-39
+
+BERECHNUNG
+− Über (stochastic) Gradient Descent
+− Ziel: minimierung der Kostenfunktion und Optimierung
+von 𝑃 und 𝑄
+− min σ𝒊,𝒙 𝑟𝑥𝑖 − 𝑞𝑖 ⋅ 𝑝𝑥 2 + 𝜆1 σ𝑥 𝑝𝑥 2 + 𝜆2 σ𝑖 𝑞𝑖 2
+𝑃,𝑄
+
+− Gradient Descent:
+− 𝑃 ⟵ 𝑃 − 𝜂 ∙ 𝛻𝑃 mit 𝛻P = [𝛻p𝑥𝑓 ] und
+− 𝛻px𝑓 = σ𝑖 −2 𝑟𝑥𝑖 − 𝑞𝑖 ⋅ 𝑝𝑥 qi𝑓 + 2𝜆1 𝑝x𝑓
+
+− 𝑄 ⟵ 𝑄 − 𝜂 ∙ 𝛻𝑄 mit 𝛻𝑄 = [𝛻𝑞i𝑓 ] und
+− 𝛻𝑞i𝑓 = σ𝑥 −2 𝑟𝑥𝑖 − 𝑞𝑖 ⋅ 𝑝𝑥 𝑝𝑥𝑓 + 2𝜆2 𝑞j𝑓
+
+− 𝑃 anpassen, 𝑄 anpassen, Wiederholung bis Minimum
+Data Mining | WiSe 2025/2026
+
+4-40
+
+NETFLIX PRIZE: BEWERTUNGEN
+Globaler Durchschnitt: 1.13
+Nutzerdurchschnitt: 1.07
+Filmdurchschnitt: 1.05
+
+CineMatch: 0.95
+
+Kollaboratives Filtern: 0.94
+KF + Bias + gelernte Gewichte: 0.91
+Latente Variablen: 0.90
+Latente Variablen + Bias: 0.89
+Latent Variablen + Bias + Zeit: 0.876
+
+𝒓ො 𝒙𝒊 = 𝒒𝒊 ⋅ 𝒑𝒙
+
+𝒓ො 𝒙𝒊 = 𝝁 + 𝒃𝒙 + 𝒃𝒊 + 𝒒𝒊 ⋅ 𝒑𝒙
+𝒓ො 𝒙𝒊 = 𝝁 + 𝒃𝒙 (𝒕) + 𝒃𝒊 (𝒕) + 𝒒𝒊 ⋅ 𝒑𝒙 (𝒕)
+Grand Prize: 0.8567
+
+Data Mining | WiSe 2025/2026
+
+4-41
+
+Data Mining | WiSe 2025/2026
+
+4-42
+
+ZUSAMMENFASSUNG
+− Empfehlung über Schätzung der unbekannten Bewertungen von
+Nutzenmatrix
+− Inhaltsbasierte Analyse
+− Manuell festgelegte Merkmale
+− Ähnlichkeit zwischen Objekt und Nutzer
+
+− Kollaboratives Filtern
+− Verhaltensmuster von Benutzergruppen
+− Schätzung aus ähnlichen Objekten + Gewicht + Bias
+− (S)GD um Gewichte zu finden (statt Ähnlichkeit)
+
+− Latentes Variablenmodell
+− Faktoren nutzen, die nicht direkt beobachtet werden können
+− Zerlegung 𝑅 ≈ 𝑄 · 𝑃𝑇
+− (S)GD um Q und P zu bestimmen
+− Regularisierung um Overfitting zu vermeiden
+Data Mining | WiSe 2025/2026
+
+4-43
+
+

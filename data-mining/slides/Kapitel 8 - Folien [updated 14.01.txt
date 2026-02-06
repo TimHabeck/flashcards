@@ -1,0 +1,1394 @@
+DATA MINING
+
+Kapitel 8: Community Detection
+Dr. Christian Martin
+Wintersemester 2025/26
+
+Abteilung Datenbanken / ScaDS.AI
+Universität Leipzig
+
+THEMENÜBERSICHT
+Hochdimensionale Daten
+
+Graphdaten
+
+Datenströme
+
+Clustering
+
+Dimensionsreduktion
+
+Community
+Detection
+
+Windowing
+
+Empfehlungssysteme
+
+Assoziationsregeln
+
+Centrality
+
+Filtern
+
+Locality Sensitive
+Hashing
+
+Supervised
+Learning
+
+Momente
+
+8-2
+
+INHALTSVERZEICHNIS
+ Einführung Graphdaten
+ Einführung Community Detection
+ Girvan-Newman Algorithmus
+ Spectral Clustering
+
+8-3
+
+EINFÜHRUNG
+Verstärktes Aufkommen von Graphdaten
+ Technologische Netzwerke (Internet, Verkehrsnetze, Stromnetz, …)
+ Soziale Netzwerke (Freundschaften, Kommunikation, Krankheiten, …)
+ Biologische Netzwerke (Protein-Protein-Interaktion, Jäger-Beute, …)
+ Informationsnetzwerke (Knowledge-Graphen, WWW, Zitiernetzwerke, …)
+
+Quelle: http://www.lvb.de
+
+Quelle: http://bigg.ucsd.edu
+8-4
+
+BEISPIEL: GAME OF THRONES
+
+https://www.derstandard.de/story/200010
+1318773/wie-steht-es-gerade-in-westeros
+
+8-5
+
+DATENMODELL: GRAPH
+4
+
+1
+
+7
+
+3
+
+6
+2
+5
+
+8
+
+𝑮𝑟𝑎𝑝ℎ = (𝑽𝑒𝑟𝑡𝑖𝑐𝑒𝑠, 𝑬𝑑𝑔𝑒𝑠)
+•
+•
+
+𝑉 = 1, 2, 3, 4, 5, 6, 7, 8
+𝐸 = {{1,2}, {1,3}, {2,3}, {3,4}, {3,5}, {4,5},
+{4,6}, {4,7}, {5,8}, {6,8}, {6,7}, {7,8}}
+
+8-6
+
+GERICHTETER GRAPH
+4
+
+1
+
+7
+
+3
+
+6
+2
+5
+
+8
+
+𝑮𝑟𝑎𝑝ℎ = (𝑽𝑒𝑟𝑡𝑖𝑐𝑒𝑠, 𝑬𝑑𝑔𝑒𝑠)
+•
+•
+
+𝑉 = 1, 2, 3, 4, 5, 6, 7, 8
+𝐸 = { 1,2 , (2,3), (3,1), (3,4), (3,5), (4,5), (5,4), (4,7),
+(5,8), (6,4), (6,7), (6,8), (8,6), (7,8)}
+
+8-7
+
+GERICHTETER MULTIGRAPH
+4
+
+1
+
+7
+
+3
+
+6
+2
+5
+
+8
+
+𝑮𝑟𝑎𝑝ℎ = (𝑽𝑒𝑟𝑡𝑖𝑐𝑒𝑠, 𝑬𝑑𝑔𝑒𝑠)
+•
+•
+
+𝑉 = 1, 2, 3, 4, 5, 6, 7, 8
+𝐸 = { 1,2 , 2,3 , 3,1 , 3,1 , (3,4), (3,5), (4,5), (5,4), (4,7),
+(5,8), (6,4), (6,7), (6,8), (8,6), (7,8)}
+
+8-8
+
+GRAPHEN
+ Graph-Datenstruktur besteht aus Knoten und Kanten
+ Vielseitig einsetzbar
+
+
+
+
+
+
+
+Soziale Netzwerke ☞ Influencer erkennen
+Mikromobilität ☞ Verkehrsaufkommen vorhersagen
+Finanztransaktionen ☞ Betrugserkennung, Geldwäsche
+Lieferketten ☞ Engpässe erkennen
+Verkehrsnetzwerk ☞ Routenplanung
+Knowledge Graphen ☞ Wissensbasis
+
+ Vielzahl an Graph-Datenbanken
+ Neo4j, Memgraph, ArangoDB, Amz. Neptune
+
+ Standardisierte Abfragesprachen
+ SPARQL (RDF); GQL, SQL/PGQ (PG)
+
+ Vielzahl Graph-Algorithmen
+ PageRank, Shortest Path, Betweenness Centrality, ...
+8-9
+
+SOZIALE GRAPHEN
+ Soziale Graphen
+ Knoten repräsentieren Akteure
+(insb. Personen und Gruppen)
+ Kanten repräsentieren eine Beziehung
+zwischen Akteuren, z.B. Freundschaft,
+Kommunikation, Mitgliedschaft, …
+
+ Häufige Beobachtung:
+Small-World-Phänomen
+ Geringe durchschnittliche Distanz
+zwischen zwei zufälligen Knoten
+ Distanz wächst logarithmisch zur
+Anzahl der Knoten
+
+ Gruppierungen bilden sich
+ hoher Clusterkoeffizient (Maß für Cliquenbildung)
+
+8-10
+
+TRANSITIVITÄT
+ Maß über die "Cliquenbildung"
+ Veranschaulichung: Ist Person A mit Person B und C befreundet,
+sind B und C mit höherer Wahrscheinlichkeit auch befreundet.
+
+ Wenn eine Kante zwischen x und y und eine Kante zwischen y und z
+existiert, dann ist die Existenz einer Kante zwischen x und z
+wahrscheinlicher als in einem Zufallsgraph
+ Sei 𝑚 die Anzahl der Kanten und 𝑛 die Anzahl der Knoten
+ Ungerichteter Zufallsgraph: Wahrscheinlichkeit, dass eine bestimmte
+𝑛
+𝑚
+Kante existiert, ist 𝑛 , mit
+= mögliche Kanten
+2
+2
+8-11
+
+CLUSTERING COEFFICIENT
+ Transitivität = globaler Clusterkoeffizient 𝐶
+ relative Anzahl von Dreiecken im Graphen zur Gesamtzahl der in
+Dreiergruppen verbundenen Knoten
+3∗𝐴𝑛𝑧𝑎ℎ𝑙𝐷𝑟𝑒𝑖𝑒𝑐𝑘𝑒
+𝐶=
+𝐴𝑛𝑧𝑎ℎ𝑙𝑉𝑒𝑟𝑏𝑢𝑛𝑑𝑒𝑛𝑒𝑇𝑟𝑖𝑝𝑒𝑙
+{7,4,5}
+{4,5,6}
+{4,5,2}
+{6,5,2}
+{5,2,1}
+{5,2,3}
+{1,2,3}
+
+3∗0
+𝐶=
+=0
+7
+
+zusätzlich:
+{6,2,1}
+{6,2,3}
+
+3∗1
+𝐶=
+= 0.33
+9
+
+zusätzlich:
+{7,5,6}
+{7,5,2}
+{5,6,3}
+
+3∗3
+𝐶=
+= 0.75
+12
+8-12
+
+INHALTSVERZEICHNIS
+ Einführung Graphdaten
+ Einführung Community Detection
+ Girvan-Newman Algorithmus
+ Spectral Clustering
+
+8-13
+
+COMMUNITY DETECTION
+Suche nach Mengen von Knoten mit einer
+Hohen Dichte an Kanten
+
+8-14
+
+COMMUNITY DETECTION (2)
+ Verfahren zur Erkennung von "Communities" in Graphen
+ Community
+ Menge von Knoten, welche untereinander stärker verbunden
+sind als zu anderen Knoten
+ Auch "Cluster" genannt
+
+8-15
+
+COMMUNITY DETECTION (3)
+
+Quelle: Su et al.. (2021). A Comprehensive Survey on Community Detection with Deep Learning. 10.48550/arXiv.2105.12584.
+
+8-16
+
+IMPLEMENTIERUNGEN: NEO4J
+
+Link: https://neo4j.com/docs/graph-data-science/current/algorithms/community/
+8-17
+
+IMPLEMENTIERUNGEN: NETWORKX
+
+Link: https://networkx.org/documentation/stable/reference/algorithms/community.html
+8-18
+
+INHALTSVERZEICHNIS
+ Einführung Graphdaten
+ Einführung Community Detection
+ Girvan-Newman Algorithmus
+ Spectral Clustering
+
+8-19
+
+EDGE-BETWEENNESS
+ Edge-Betweenness b einer Kante e
+ Anzahl aller kürzesten Pfade des Graphen die durch e verlaufen
+ Bei x kürzesten Pfaden zwischen 2 Knoten wird nur der Anteil 1/x
+addiert
+
+ Tendenz einer Kante, die Brücke zwischen zwei Communities
+zu sein
+AE,AF,AG,AH
+BE,BF,BG,BH
+CE,CF,CG,CH
+DE,DF,DG,DH
+
+C
+
+A
+
+16
+
+F
+
+E
+
+D
+B
+
+H
+7,5
+
+AG,BG,CG,DG,EG
+1
+(AH,BH,CH,DH,EH)
+
+G
+
+2
+
+8-20
+
+GIRVAN-NEWMAN ALGORITHMUS
+ Girvan-Newman-Algorithmus
+ Anwendbar auf ungerichtete Graphen
+ Wiederhole bis gewünschte Anzahl an Cluster erreicht
+ Berechne Edge-Betweenness aller Kanten
+ Entferne Kante mit maximaler Edge-Betweenness
+
+ Verbundene Komponenten sind Cluster
+ Hierarchische Zerlegung des Graphen
+= Hierarchisches Clustering
+
+Code from [here]
+8-21
+
+GIRVAN-NEWMAN: BEISPIEL
+
+1
+
+12
+33
+49
+
+8-22
+
+GIRVAN-NEWMAN: BEISPIEL
+Schritt 1:
+
+Schritt 3:
+
+Schritt 2:
+
+Hierarchische Zerlegung:
+
+8-23
+
+BERECHNUNG DER EDGE-BETWEENNESS
+1. Sortierung der Knoten über Breitensuche
+(Breadth-first Search)
+ Beispiel für Knoten A:
+
+Level
+
+0
+1
+
+2
+3
+4
+
+8-24
+
+BERECHNUNG DER EDGE-BETWEENNESS
+2. Berechnung der Anzahl der kürzesten Pfade mit Knoten A als
+Anfang:
+ Wurzelknoten bekommt die Zahl 1 als Beschriftung
+ Anzahl der kürzesten Pfade (von A) zu einem Knoten = Summe der
+Beschriftungen der direkten Vorgängerknoten
+1
+
+8-25
+
+BERECHNUNG DER EDGE-BETWEENNESS
+3. Berechnung des Flow aller Knoten (
+
+) und Kanten (
+
+)
+
+ Beginne auf untersten Stufe (Knoten K)
+ Flow eines Knotens: 1 + (Summe des Flow aller nachfolgenden Kanten nach unten)
+ Aufteilung des Flow über alle vorherigen Kanten, anteilig nach den Beschriftungen
+der Knoten
+ Kanten auf gleicher Ebene werden nicht
+1
+11
+beachtet (z.B. {BC})
+2
+
+1
+
+4. Wiederholung der Schritte 1-3
+für alle Knoten
+ Je Knoten ergeben sich Kanten-Flows
+für eine betrachtete Kante e
+ Edge-Betweenness ergibt sich
+durch Addition aller Kanten-Flows
+und Division durch 2
+
+2
+
+2
+
+4
+
+1
+
+1
+
+4
+
+2
+
+1
+
+2
+
+2
+1
+
+2
+
+1
+
+2
+
+2
+1
+
+1
+
+2
+
+1
+
+2
+1
+
+1
+2
+
+1
+2
+
+3
+
+1.5
+
+3
+
+1
+2
+
+1
+2
+
+6
+
+1
+
+1
+2
+
+1.5
+
+8-26
+
+KOMPLEXITÄT
+Graph mit n Knoten und m Kanten
+Komplexität:
+1. Flow-Berechnung für alle Kanten: O(m)
+(> O(n) aus Schritt 1 und 2)
+2. Wiederholung für alle Knoten: O(nm)
+3. Da alle Kanten nach und nach entfernt werden: O(nm2)
+
+8-27
+
+OPTIMALE ANZAHL AN CLUSTER - MODULARITÄT
+ Cluster = Menge von Knoten mit einer hohen Dichte an Kanten
+ Gegeben sei eine Partitionierung S eines Graphen mit m Kanten
+ Kanten werden in beide Richtungen (also doppelt) gezählt
+ 𝑜𝑖𝑖 =
+
+
+2
+∗ (Anzahl der Kanten innerhalb eines Clusters i)
+m
+
+𝑜𝑖𝑖
+= (Anzahl der Kanten innerhalb eines Clusters i) durch m
+2
+1
+
+ 𝑜𝑖𝑗 = 𝑜𝑗𝑖 = 𝑚 σ𝑣∈𝑖,𝑤∈j 𝑎𝑣𝑤 mit 𝑖 ≠ 𝑗 und
+ 𝑎𝑣𝑤 = 1, falls eine Kante zwischen 𝑣 und 𝑤 existiert und 𝑎𝑣𝑤 = 0, falls keine
+Kante existiert; d.h. 𝑎𝑣𝑤 = 𝑎𝑤𝑣
+ 𝑜𝑖𝑗 = Anteil der Kanten mit einem Ende in Cluster 𝑖 und dem anderen Ende in
+Cluster 𝑗
+= (Anzahl der Kanten zwischen Cluster i und Cluster j) durch m
+8-28
+
+OPTIMALE ANZAHL AN CLUSTER - MODULARITÄT
+
+
+𝑜𝑖𝑖
+= (Anzahl der Kanten innerhalb eines Clusters) durch m
+2
+
+ 𝑜𝑖𝑗 = (Anzahl der Kanten zwischen Cluster i und Cluster j) durch m
+1
+2
+
+ 𝑒𝑖 = σ𝑗 𝑜𝑖𝑗 = Anteil der Kantenenden mit Ursprung in 𝑖
+ 𝑒𝑖2 ist der (in einem Zufallsnetzwerk) erwartete Anteil der Kanten
+innerhalb 𝑖
+ Modularität 𝑸 eines ungerichteten Graphen
+ Maß für die Güte einer Partitionierung eines Graphen in Cluster
+
+ 𝑄(𝑆) = σCluster 𝑖∈𝑆
+
+𝑜𝑖𝑖
+− 𝑒𝑖2
+2
+
+ Misst Anzahl der tatsächlichen Kanten in Cluster i im Vergleich
+zu dem erwarteten Anteil an Kanten in Cluster i
+8-29
+
+MODULARITÄT: BEISPIEL
+
+3
+
+2
+
+1
+
+4
+
+𝑄(𝑆) = σCluster 𝑖∈𝑆
+
+𝑜𝑖𝑖
+2
+−
+𝑒
+𝑖
+2
+
+1
+
+𝑒𝑖 = 2 σ𝑗 𝑜𝑖𝑗
+
+1
+
+𝑜𝑖𝑗 = 𝑚 σ𝑣∈𝑖,𝑤∈j 𝑎𝑣𝑤
+
+2
+2
+1
+ 𝑜12 = 𝑜21 = , o23 = 𝑜32 = , 𝑜24 = 𝑜42 =
+13
+13
+13
+2
+12
+2
+ 𝑜11 = , 𝑜22 = , 𝑜33 = , 𝑜44 = 0
+13
+13
+13
+1
+4
+17
+4
+1
+ 𝑒1 = ∗ 𝑜11 + 𝑜12 = , 𝑒2 = , 𝑒3 = , 𝑒4 =
+2
+26
+26
+26
+26
+1
+16
+6
+289
+1
+16
+1
+𝑄= −
++ −
++ −
++0−
+≈ 0.14
+13
+676
+13
+676
+13
+676
+676
+8-30
+
+MODULARITÄT
+1
+
+3
+2
+
+4
+
+ Q liegt im Intervall [-1, 1]
+ Q > 0 falls Anzahl der tatsächlichen Kanten innerhalb der Cluster
+die erwartete Anzahl in einem Zufallsgraph überschreitet
+ Bei Q > 0.3 spricht man von einer Clusterstruktur
+
+ Bei Girwan-Newman: Verwendung der Modularität um
+optimale Partitionierung in Cluster zu wählen
+ Alternative: Verwendung der Modularität um
+Partitionierung zu finden (z.B. Louvain Methode)
+8-31
+
+MODULARITÄT - BEISPIELE
+
+Quelle: http://networksciencebook.com/chapter/9#modularity
+8-32
+
+MODULARITÄT - BEISPIELE
+
+This example
+shows the detection
+of communities in
+the Zachary Karate
+Club dataset using
+the Girvan-Newman
+method.
+
+Quelle: https://networkx.org/documentation/stable/auto_examples/algorithms/plot_girvan_newman.html#sphx-glr-autoexamples-algorithms-plot-girvan-newman-py
+8-33
+
+INHALTSVERZEICHNIS
+ Einführung Graphdaten
+ Einführung Community Detection
+ Girvan-Newman Algorithmus
+ Spectral Clustering
+
+8-34
+
+GRAPHPARTITIONIERUNG
+ Finden einer Partitionierung mit hoher Modularität
+ Maximiere die Anzahl der Kanten innerhalb der Gruppen
+ Minimiere die Anzahl der Kanten zwischen den Gruppen
+
+5
+
+1
+2
+3
+
+A
+
+6
+
+4
+
+B
+
+ Einfacheres Maß für die Güte einer Partitionierung bei nur zwei
+Gruppen: Anzahl der Kanten zwischen den Gruppen (Graph Cut)
+
+cut(A,B) = 2
+8-35
+
+GRAPH CUT
+ Kriterium: Minimaler Cut
+
+arg minA,B cut(A,B)
+
+ Problem: Keine Berücksichtigung 1) der Kantendichte innerhalb der
+Cluster bzw. 2) der Größe der Cluster
+“Optimal cut”
+Minimum cut
+
+ Alternative: Normalisierter Cut
+ Verbundenheit zwischen den Clustern relativ zu der Dichte der
+einzelnen Cluster
+ Volumen 𝐯𝐨𝐥 𝑨 = σ𝒊∈𝑨 𝒅𝒊 (Summe der Grade aller Knoten des Clusters)
+8-36
+
+SPECTRAL GRAPH PARTITIONING
+ Wie kann eine Aufteilung mit minimalem normalisierten Cut effizient
+identifiziert werden?
+ Matrixrepräsentation 𝐌 𝑛 × 𝑛 eines Graphen, wobei 𝑛 die Anzahl
+der Knoten im Graphen
+ Eigenvektoren 𝒙 = 𝑥1 , … , 𝑥𝑛 𝑇 :
+𝐌∙𝒙=𝜆∙𝒙
+ Spektrum: zu den Eigenvektoren 𝒙𝒊 gehörige Eigenwerte 𝝀𝑖 :
+𝛬 = {𝜆1 , … , 𝜆𝑛 } mit 𝜆1 ≤ ⋯ ≤ 𝜆𝑛
+ Spectral Graph Theory: Analyse des “Spektrums” der
+Matrixrepräsentation eines Graphen
+
+8-37
+
+MATRIXREPRÄSENTATION EINES GRAPHEN
+ Adjazenzmatrix A
+5
+
+1
+2
+
+6
+
+4
+
+3
+
+ Gradmatrix D
+5
+
+1
+
+2
+4
+3
+
+6
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+1
+
+0
+
+1
+
+1
+
+0
+
+1
+
+0
+
+2
+
+1
+
+0
+
+1
+
+0
+
+0
+
+0
+
+3
+
+1
+
+1
+
+0
+
+1
+
+0
+
+0
+
+4
+
+0
+
+0
+
+1
+
+0
+
+1
+
+1
+
+5
+
+1
+
+0
+
+0
+
+1
+
+0
+
+1
+
+6
+
+0
+
+0
+
+0
+
+1
+
+1
+
+0
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+1
+
+3
+
+0
+
+0
+
+0
+
+0
+
+0
+
+2
+
+0
+
+2
+
+0
+
+0
+
+0
+
+0
+
+3
+
+0
+
+0
+
+3
+
+0
+
+0
+
+0
+
+4
+
+0
+
+0
+
+0
+
+3
+
+0
+
+0
+
+5
+
+0
+
+0
+
+0
+
+0
+
+3
+
+0
+
+6
+
+0
+
+0
+
+0
+
+0
+
+0
+
+2
+8-38
+
+MATRIXREPRÄSENTATION EINES GRAPHEN
+ Laplace-Matrix 𝑳 = 𝑫 − 𝑨
+5
+
+1
+2
+
+4
+
+3
+
+6
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+1
+
+3
+
+-1
+
+-1
+
+0
+
+-1
+
+0
+
+2
+
+-1
+
+2
+
+-1
+
+0
+
+0
+
+0
+
+3
+
+-1
+
+-1
+
+3
+
+-1
+
+0
+
+0
+
+4
+
+0
+
+0
+
+-1
+
+3
+
+-1
+
+-1
+
+5
+
+-1
+
+0
+
+0
+
+-1
+
+3
+
+-1
+
+6
+
+0
+
+0
+
+0
+
+-1
+
+-1
+
+2
+
+ Eigenschaft: Laplace-Matrix ist positive semi-definite:
+𝑇
+
+𝑇
+
+𝑇
+
+𝑥 𝐿𝑥 = 𝑥 𝐷𝑥 − 𝑥 𝐴𝑥 = ෍
+
+𝑛
+
+𝑑𝑖 𝑥𝑖2 − ෍
+
+𝑖=1
+
+𝑖,𝑗 ∈𝐸
+
+2𝑥𝑖 𝑥𝑗 = ෍ 𝑥𝑖 − 𝑥𝑗
+
+2
+
+≥0
+
+𝑖,𝑗 ∈𝐸
+
+ E ist Menge der Kanten
+ d.h. Eigenwerte sind nicht-negative reelle Zahlen: 𝜆𝑖 ≥ 0 für alle 𝑖
+8-39
+
+DER ZWEITKLEINSTE EIGENWERT 𝜆2
+ Spaltensummen und Zeilensummen von 𝑳 sind 0.
+ Erster Eigenvektor von 𝑳 (mit kleinstem Eigenwert): 𝒙1 = 𝟏, … , 𝟏 𝑇 :
+𝑳 ⋅ 𝒙1 = 𝟎 und 𝝀1 = 𝟎
+
+ Satz: Unter der Bedingung 𝑥 𝑇 𝑥 = 1 und 𝑥 orthogonal zum ersten
+Eigenvektor gilt für den zweitkleinsten Eigenwert von 𝑳
+𝑇
+
+𝜆2 = min 𝑥 𝐿𝑥 = min ෍ 𝑥𝑖 − 𝑥𝑗
+𝑥
+
+𝑥
+
+2
+
+𝑖,𝑗 ∈𝐸
+
+ Der Vektor 𝑥 ist der zugehörige Eigenvektor
+ Intuition:
+ Minimiere 𝑥 𝑇 𝐿𝑥: Wähle 𝑥𝑖 und 𝑥𝑗 nahe beieinander, falls {𝑖, 𝑗} ∈ 𝐸
+ Da x orthogonal zu erstem Eigenvektor (1, … , 1), muss σ𝑛𝑖=1 𝑥𝑖 = 0
+gelten
+ Es müssen also sowohl positive als auch negative Werte in 𝑥
+vorkommen
+
+ Idee: Einteilung der Knoten mit 𝑥𝑖 > 0 in Cluster X und alle Knoten
+mit 𝑥𝑖 < 0 in Cluster Y
+8-40
+
+SPECTRAL PARTITIONING
+ Vorbehandlung: Erstellung
+der Laplace-Matrix
+ Aufspaltung
+ Berechne Eigenwerte und Eigenvektoren
+ Verwende zweiten Eigenvektor um die Knoten
+0.0
+zwei Clustern zuzuordnen
+ Einfach: Aufteilung an der 0
+ Komplex: Aufteilung an Schwellenwert, =
+so dass normalisierter Cut minimal
+
+1.0
+3.0
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+1
+
+3
+
+-1
+
+-1
+
+0
+
+-1
+
+0
+
+2
+
+-1
+
+2
+
+-1
+
+0
+
+0
+
+0
+
+3
+
+-1
+
+-1
+
+3
+
+-1
+
+0
+
+0
+
+4
+
+0
+
+0
+
+-1
+
+3
+
+-1
+
+-1
+
+5
+
+-1
+
+0
+
+0
+
+-1
+
+3
+
+-1
+
+6
+
+0
+
+0
+
+0
+
+-1
+
+-1
+
+2
+
+0.4
+
+0.3
+
+-0.5
+
+-0.2
+
+-0.4
+
+-0.5
+
+0.4
+
+0.6
+
+0.4
+
+-0.4
+
+0.4
+
+0.0
+
+0.4
+
+0.3
+
+0.1
+
+0.6
+
+-0.4
+
+0.5
+
+0.6
+
+0.4
+
+-0.5
+
+3.0
+
+X = 0.4 -0.3 0.1
+
+4.0
+
+0.4
+
+-0.3
+
+-0.5
+
+-0.2
+
+0.4
+
+0.5
+
+5.0
+
+0.4
+
+-0.6
+
+0.4
+
+-0.4
+
+-0.4
+
+0.0
+
+1
+
+0.3
+
+2
+
+0.6
+
+3
+
+0.3
+
+Aufteilung an der 0
+
+4
+
+-0.3
+
+1
+
+0.3
+
+4
+
+-0.3
+
+5
+
+-0.3
+
+2
+
+0.6
+
+5
+
+-0.3
+
+6
+
+-0.6
+
+3
+
+0.3
+
+6
+
+-0.6
+
+A
+
+B
+
+8-41
+
+Werte von x2
+
+BEISPIEL: SPECTRAL PARTITIONING
+
+Rang
+8-42
+
+Werte von x2
+
+BEISPIEL: SPECTRAL PARTITIONING
+
+Rang
+8-43
+
+BEISPIEL: SPECTRAL PARTITIONING
+
+Werte von x3
+
+Zusätzliche Verwendung von x3
+
+Rang
+Kombination mehrerer Eigenvektoren um Graph in mehr als zwei Cluster zu
+partitionieren bzw. den normalisierten Cut zu minimieren
+8-44
+
+ZUSAMMENFASSUNG
+ Graph-Datenstruktur weit verbreitet
+ Gruppierungen typisch in Realwelt-Graphen
+ Community Detection
+ Girwan-Newman Methode mit Edge-Betweenness (EB) als
+Metrik und schrittweisen Entfernen von Kanten mit hoher EB
+ Modularität als Maß zur Beurteilung der Partitionierung
+ Minimaler normalisierter Cut via Spectral Clustering
+ Graph wird in Laplace-Matrix (Differenz zwischen Adjazenz- und
+Gradmatrix) überführt
+ Bestimmung von Eigenwerten und Eigenvektoren
+ Nutzung von zweit- bzw. drittkleinsten Eigenvektor und Aufteilung
+von Knoten an Schwellenwert
+
+8-45
+
+

@@ -1,0 +1,1523 @@
+DATA MINING
+
+Kapitel 7: Supervised Machine Learning
+Dr. Christian Martin
+Wintersemester 2025/26
+
+Abteilung Datenbanken / ScaDS.AI
+Universität Leipzig
+
+THEMENÜBERSICHT
+Hochdimensionale Daten
+
+Graphdaten
+
+Datenströme
+
+Clustering
+
+Dimensionsreduktion
+
+Community
+Detection
+
+Windowing
+
+Empfehlungssysteme
+
+Assoziationsregeln
+
+PageRank
+
+Filtern
+
+Locality Sensitive
+Hashing
+
+Supervised ML
+
+Web Spam
+
+Momente
+
+7-2
+
+INHALTSVERZEICHNIS
+− Einführung
+− Entscheidungsbäume / Random Forests
+− Support Vector Machines
+− Auswertung binäre Klassifikation
+
+7-3
+
+SUPERVISED LEARNING
+− Daten zu einem Paar (𝒙, 𝑦)
+− 𝒙 ist ein Vektor aus Merkmalen (Features):
+− verschiedene Datentypen möglich
+− Beispiel: (Age, Male, Class)
+
+Age
+
+Male
+
+Class Survived
+
+Child
+
+True
+
+1
+
+Yes
+
+Adult
+
+True
+
+2
+
+No
+
+Adult
+
+False
+
+1
+
+Yes
+
+Child
+
+True
+
+3
+
+No
+
+…
+
+…
+
+…
+
+…
+
+− 𝑦 ist eine Bezeichnung (Label),
+− eine reelle Zahl (→ Regression)
+− oder eine Kategorie/Klasse (→ Klassifikation)
+
+X
+
+Y
+
+X’
+
+Y’
+
+− Beispiel: Survived
+
+− Ziel: Auffinden einer Funktion (Modell) 𝑓 mit
+𝑦 = 𝑓(𝒙)
+− Vielzahl an Funktionen möglich
+− Bewertung und Auswahl der Funktion über Daten
+
+Trainingsdaten
+Testdaten
+
+− Aufteilung in Trainings- und Testdaten (z.B. 80% vs. 20%)
+− Schätzen der Funktion über Trainingsdaten: Fehler möglichst gering
+− Bewerten der Funktion an Testdaten: Fehler möglichst gering
+7-4
+
+SUPERVISED LEARNING
+− Cross-Validation
+− Aufteilung der Trainingsdaten in Trainings- und Validierungsdaten
+− Ziel: finde den besten ML-Algorithmus inkl. Hyperparametern
+(Hyperparameter-Tuning)
+− Die finale Evaluation mit dem besten ML-Algorithmus findet (einmalig!)
+auf den Testdaten statt
+− Die Testdaten dürfen nicht zum HyperparameterX’’
+Y’’
+Tuning verwendet werden (data leakage)
+
+− Beispiel: 5-fold cross-validation:
+
+X’’’
+Y’’’
+− Teile die Trainingsdaten in 5 gleich große Blöcke
+− 5 Durchläufe (x = 1 to 5)
+X’
+Y’
+− Training auf allen Blöcken außer Block x (X‘‘, Y‘‘)
+− Validierung auf Block x (X‘‘‘, Y‘‘‘)
+Trainingsdaten
+− Durchschnitt ergibt Trainingsfehler
+Validierungsdaten
+− Mehrere Durchläufe um Hyperparameter zu
+Testdaten
+optimieren
+7-5
+
+SUPERVISED LEARNING
+− Leave-one-out cross-validation:
+− Trainiere auf allen Datenpunkten bis auf einem (X‘‘, Y‘‘)
+− Validiere auf diesem einen Datenpunkt (X‘‘‘, Y‘‘‘)
+− N (Anzahl Datenpunkte) Durchläufe
+− nur bei Datensätzen mit wenigen Datenpunkten
+sinnvoll
+
+− Nested Cross-Validation
+
+X’’
+
+Y’’
+
+X’’’
+
+Y’’’
+
+X’
+
+Y’
+
+− Cross-Validierung innerhalb einer Cross-Validierung
+Trainingsdaten
+− Wie Cross-Validierung, nur dass jeder Teil der
+Validierungsdaten
+Daten einem zum Testdatensatz wird
+Testdaten
+− Robusteres Ergebnis als einfache Cross-Validation,
+aber auch zeitaufwendiger,
+auch Berechnung von Standardabweichung möglich
+7-6
+
+SUPERVISED LEARNING - METHODEN
+Bewährte Methoden (Ausschnitt)
+Lineare Regression
+
+Logistische Regression
+Linear Discriminant Analysis
+K-Nearest Neighbors
+Naïve Bayes
+Random Forests
+Support Vector Machines
+Neuronale Netze
+
+• Generelles Problem bei
+hochdimensionalen Daten:
+Overfitting (Funktion passt
+sich den zufälligen Fehlern an)
+
+• Lösung z.B.
+– Dimensionsreduktion über
+PCA/SVD oder Clustering
+– Regularisierung (Ridge,
+Lasso Regression)
+– Informationskriterien (z.B.
+Akaike Information Criterion
+(AIC), BIC, DIC, WAIC, …)
+um Qualität eines Modells zu
+schätzen
+7-7
+
+INHALTSVERZEICHNIS
+− Einführung
+− Entscheidungsbäume / Random Forests
+− Support Vector Machines
+− Auswertung binäre Klassifikation
+
+7-8
+
+ENTSCHEIDUNGSBÄUME
+
+𝒙𝟐 < 𝒗
+A
+
+− Ziel-Variable 𝑌: numerisch
+(Regression) oder kategorial
+(Klassifikation)
+− Vorhersage von Y durch X über eine
+Baumstruktur
+− Folge den Ästen des Baums
+entsprechend den Werten von X
+− Vorhersagewert für Y
+an den Blattknoten
+
+− i.d.R. binäre Bäume
+
+C
+
+Y=4
+
+𝒙𝟏 {𝒂, 𝒃, 𝒅}
+
+𝒙𝟑 < 𝒘
+
+D
+
+E
+𝒙𝟒 > 𝒖
+
+F
+
+Y=1
+
+H
+
+I
+
+− Höhere Unterscheidungskraft
+− Jeder nicht-binäre Baum überführbar
+
+7-9
+
+ERSTELLEN EINES ENTSCHEIDUNGSBAUMS
+(REGRESSION)
+Ziel: Aufteilung der Variaben aus X in Regionen 𝑅1 , 𝑅2 , … , 𝑅𝐽 , so dass
+𝐽
+
+෍ ෍ 𝑦𝑖 − 𝑦ෞ
+𝑅𝑗
+
+2
+
+𝑗=1 𝑖∈𝑅𝑗
+
+minimiert wird (𝑦ෞ
+𝑅𝑗 bezeichnet den Vorhersagewert der Region 𝑅𝑗 ).
+
+− Vorhersagewert ist der Mittelwert der Datenpunkte der Region
+A
+
+4,5
+4
+
+Berufserfahrung
+
+3,5
+
+𝑅2
+
+𝑅1
+
+3
+
+𝐀𝐥𝐭𝐞𝐫 < 𝟐𝟐
+
+2,5
+
+B
+
+𝑌𝑅1 = 4
+
+2
+1,5
+
+𝐁𝐞𝐫𝐮𝐟𝐬 −
+𝐞𝐫𝐟𝐚𝐡𝐫𝐮𝐧𝐠 < 𝟐, 𝟒
+
+𝑅3
+
+1
+0,5
+0
+
+16
+
+21
+
+26
+
+Alter
+
+31
+
+𝑌𝑅3 = 1
+
+𝑌𝑅2 = 2
+7-10
+
+ERSTELLEN EINES ENTSCHEIDUNGSBAUMS
+(REGRESSION)
+Ziel: Aufteilung der Variaben aus X in Regionen 𝑅1 , 𝑅2 , … , 𝑅𝐽 , so dass
+𝐽
+
+෍ ෍ 𝑦𝑖 − 𝑦ෞ
+𝑅𝑗
+
+2
+
+𝑗=1 𝑖∈𝑅𝑗
+
+minimiert wird (𝑦ෞ
+𝑅𝑗 bezeichnet den Vorhersagewert der Region 𝑅𝑗 ).
+
+− Vorhersagewert ist der Mittelwert der Datenpunkte der Region
+− Problem: zu viele mögliche Aufteilungen in 𝐽 Regionen
+
+7-11
+
+ERSTELLEN EINES ENTSCHEIDUNGSBAUMS
+(REGRESSION)
+− Problem: zu viele mögliche Aufteilungen in 𝐽 Regionen
+− Ausweg: Recursive Binary Splitting
+1. Auswahl
+− einer Variable xj und
+− eines Schwellenwerts s,
+
+so dass die beiden Regionen
+R1 j, s = {x|xj < s} und
+R 2 j, s = {x|xj ≥ s}
+die folgende Summe minimieren:
+
+2. σi:xi∈R1 j,s yi − yෟ
+R1 (j,s)
+
+2
+
++ σi:xi ∈R2 j,s yi − yෟ
+R2 (j,s)
+
+2
+
+3. Teile resultierende Regionen und gehe zu 1.
+
+− Stopp, falls z.B. in jede Region weniger als 5 Datenpunkte fallen
+− Jede Variable kann auch mehrfach ausgewählt werden
+7-12
+
+ENTSCHEIDUNGSBAUM FÜR KLASSIFIKATION
+− Vorhersagewert ist der häufigste Wert der Datenpunkte einer Region
+− Fehlermaß: z.B. Entropie
+𝑯 𝑌 =−
+
+෍
+
+𝑝𝑦 log 2 𝑝𝑦
+
+𝑦∈Domäne von 𝑌
+
+− Der Wert 𝑝𝑦 gibt die Wahrscheinlichkeit der Ausprägung 𝑌 = 𝑦 an
+− Hohe Entropie: gleichverteiltes Y
+− Niedrige Entropie: ungleiche Verteilung
+
+Niedrige Entropie
+
+Hohe Entropie
+
+7-13
+
+X
+
+ENTROPIE: BEISPIEL
+− 𝑿: Studium
+− 𝒀: mag den Film “Casablanca”
+− Schätzen der Wahrscheinlichkeiten
+über relative Häufigkeiten
+−
+
+−
+
+3
+𝑃 𝑌 = 𝐽𝑎 = 8 , 𝑃 𝑌 = 𝑁𝑒𝑖𝑛
+1
+𝑃 𝑌 = 𝐽𝑎|𝑋 = 𝑀𝑎𝑡ℎ𝑒 =
+4
+
+5
+=8
+
+Y
+
+Mathe
+
+Ja
+
+Geschichte
+
+Nein
+
+Informatik
+
+Ja
+
+Mathe
+
+Nein
+
+Mathe
+
+Nein
+
+Informatik
+
+Ja
+
+Mathe
+
+Nein
+
+Geschichte
+
+Nein
+
+3
+
+− 𝑃 𝑌 = 𝑁𝑒𝑖𝑛|𝑋 = 𝑀𝑎𝑡ℎ𝑒 = 4
+
+− Entropie:
+3
+3 5
+5
+𝐻 𝑌 = − log 2 − log 2 ≈ 0.95
+8
+8 8
+8
+− Spezifische bedingte Entropie:
+1
+1 3
+3
+𝐻 𝑌 𝑋 = 𝑀𝑎𝑡ℎ𝑒 = − log − log ≈ 0.81
+4
+4 4
+4
+7-14
+
+ENTROPIE: BEISPIEL
+
+X
+
+− Bedingte Entropie:
+𝐻 𝑌 𝑋 = ෍ 𝑃 𝑋 = 𝑥 𝐻(𝑌|𝑋 = 𝑥)
+𝑥∈𝑂𝑋
+
+𝑥
+Mathe
+Geschichte
+Informatik
+
+𝑃(𝑋 = 𝒙)
+1
+2
+1
+4
+1
+4
+
+𝐻(𝑌|𝑋 = 𝒙)
+0.81
+0
+
+Y
+
+Mathe
+
+Ja
+
+Geschichte
+
+Nein
+
+Informatik
+
+Ja
+
+Mathe
+
+Nein
+
+Mathe
+
+Nein
+
+Informatik
+
+Ja
+
+Mathe
+
+Nein
+
+Geschichte
+
+Nein
+
+0
+
+1
+1
+1
+𝐻 𝑌 𝑋 = ∙ 0.81 + ∙ 0 + ∙ 0 = 0.4
+2
+4
+4
+− Ziel: Auswahl des Attributs X mit niedrigstem 𝐻(𝑌|𝑋)
+
+7-15
+
+BESTE AUFTEILUNG EINES KNOTENS
+
+A
+𝒙𝟐 < 𝒗
+
+− Anschließend
+− X ist numerisch: Auswahl des Schwellenwertes
+− X ist kategorisch: Auswahl von Kategorien
+
+C
+
+Y=4
+
+− Beispiel: (hier Auswahl der besten Kategorie)
+− Aufteilung: 𝑋 = 𝑀𝑎𝑡ℎ𝑒 vs. 𝑋 ≠ 𝑀𝑎𝑡ℎ𝑒
+
+𝒙𝟏 {𝑴𝒂𝒕𝒉𝒆}
+D
+
+F
+
+− 𝐻(𝑌|𝑋 = 𝑀𝑎𝑡ℎ𝑒) = 0.81 und 𝐻(𝑌|𝑋 ≠ 𝑀𝑎𝑡ℎ𝑒) = 1
+− Spezifische bedingte Entropie gewichtet nach der Anzahl der Einträge pro Kindsknoten:
+1
+
+1
+
+2
+
+2
+
+− 𝐻 𝑌 𝑋 = 𝐻(𝑌│𝑋 = 𝑀𝑎𝑡ℎ𝑒) +
+
+𝐻(𝑌|𝑋 ≠ 𝑀𝑎𝑡ℎ𝑒) = 0.9
+
+− Aufteilung: 𝑿 = 𝑰𝒏𝒇𝒐𝒓𝒎𝒂𝒕𝒊𝒌 vs. 𝑿 ≠ 𝑰𝒏𝒇𝒐𝒓𝒎𝒂𝒕𝒊𝒌
+− 𝐻 𝑌|𝑋 = 𝐼𝑛𝑓𝑜𝑟𝑚𝑎𝑡𝑖𝑘 = 0 und 𝐻 𝑌|𝑋 ≠ 𝐼𝑛𝑓𝑜𝑟𝑚𝑎𝑡𝑖𝑘 = 0.65
+1
+
+3
+
+4
+
+4
+
+− 𝐻 𝑌 𝑋 = 𝐻 𝑌 𝑋 = 𝐼𝑛𝑓𝑜𝑟𝑚𝑎𝑡𝑖𝑘 + 𝐻 𝑌|𝑋 ≠ 𝐼𝑛𝑓𝑜𝑟𝑚𝑎𝑡𝑖𝑘 = 𝟎. 𝟒𝟖
+
+− Aufteilung: 𝑋 = 𝐺𝑒𝑠𝑐ℎ𝑖𝑐ℎ𝑡𝑒 vs. 𝑋 ≠ 𝐺𝑒𝑠𝑐ℎ𝑖𝑐ℎ𝑡𝑒
+− 𝐻 𝑌|𝑋 = 𝐺𝑒𝑠𝑐ℎ𝑖𝑐ℎ𝑡𝑒 = 0 und 𝐻 𝑌|𝑋 ≠ 𝐺𝑒𝑠𝑐ℎ𝑖𝑐ℎ𝑡𝑒 = 1
+1
+
+3
+
+4
+
+4
+
+− 𝐻 𝑌 𝑋 = 𝐻 𝑌 𝑋 = 𝐺𝑒𝑠𝑐ℎ𝑖𝑐ℎ𝑡𝑒 + 𝐻 𝑌|𝑋 ≠ 𝐺𝑒𝑠𝑐ℎ𝑖𝑐ℎ𝑡𝑒 = 0.75
+
+7-16
+
+ENTSCHEIDUNGSBÄUME - KRITIK
+− Leicht zu verstehen, implementieren und interpretieren
+− Parallelisierbar:
+− B. Panda, J. S. Herbach, S. Basu, and R. J. Bayardo. PLANET:
+Massively parallel learning of tree ensembles with MapReduce. In
+Proc. VLDB 2009.
+− J. Ye, J.-H. Chow, J. Chen, Z. Zheng. Stochastic Gradient Boosted
+Distributed Decision Trees. In Proc. CIKM 2009.
+− Sowohl für kategoriale als auch metrische Ergebnisvariable Y geeignet
+− Problem: Overfitting (Überanpassung des Modells an die Daten)
+− Overfitting bei zu vielen Ebenen
+− Doch bei wenigen Ebenen können nur wenige Attribute verwendet
+werden
+
+7-17
+
+BAGGING UND RANDOM FORESTS
+− Ausweg: Kombination mehrerer Entscheidungsbäume geringer Tiefe
+− z.B. über Bagging
+− Ziehen mehrerer Zufallsstichproben aus den Daten (mit Zurücklegen)
+− Ein Entscheidungsbaum geringer Tiefe pro Stichprobe
+− Mittelwert/häufigster Wert über alle Bäume ergibt Vorhersage
+
+− Random Forest:
+Zusätzlich zum Bagging
+wird beim Lernen der
+Bäume an jedem Knoten
+nur eine kleine (zufällige)
+Auswahl der Attribute
+betrachtet
+
+7-18
+
+GINI INDEX, FEATURE IMPORTANCE
+− Gini Index: Alterative Messung der Qualität eines Splits
+(an einem Knoten zu einem Parameter)
+− Datensatz D mit C Klassen
+− Relative Häufigkeit der Klasse c im Datensatz D: 𝑝𝑐
+− Gini Index des Datensatzes D:
+𝐶
+
+𝐺𝑖𝑛𝑖 𝐷 = 1 − ෍ 𝑝𝑐2
+𝑐=1
+
+− Split S: D wird geteilt in 𝐷1 und 𝐷2
+− Gini Index des Splits:
+𝐷1
+𝐷2
+𝐺𝑖𝑛𝑖𝑆 𝐷 =
+𝐺𝑖𝑛𝑖 𝐷1 +
+𝐺𝑖𝑛𝑖 𝐷2
+𝐷
+𝐷
+− Reduktion der Unreinheit:
+∆𝐺𝑖𝑛𝑖 𝐷 = 𝐺𝑖𝑛𝑖 𝐷 − 𝐺𝑖𝑛𝑖𝑆 𝐷
+7-19
+
+GINI INDEX, FEATURE IMPORTANCE
+− Anwendung:
+Über Gini
+Index kann
+die Feature
+Importance
+für jedes
+Feature
+berechnen
+werden.
+
+Walther et al., Machine Learning for Rupture Risk Prediction of Intracranial Aneurysms, Symmetry 2022, 14(5)
+
+7-20
+
+INHALTSVERZEICHNIS
+− Einführung
+− Entscheidungsbäume / Random Forests
+− Support Vector Machines
+− Auswertung binäre Klassifikation
+
+7-21
+
+KLASSIFIZIERUNG ÜBER HYPEREBENE
+− Numerischer Merkmalsvektor 𝒙 = (𝑥1 , … 𝑥𝑛 )
+− Binäre Variable 𝑦 ∈ −1, +1
++1
+
+- - -- -1
+- - -7-22
+
+KLASSIFIZIERUNG ÜBER HYPEREBENE
+− Numerischer Merkmalsvektor 𝒙 = (𝑥1 , … 𝑥𝑛 )
+− Binäre Variable 𝑦 ∈ −1, +1
+− Eine Hyperebene des ℝ𝑛 teilt diesen Raum in 2 Bereiche
+− Die Gewichte 𝒘 = 𝑤0 , 𝑤1 , … , 𝑤𝑛 ∈ ℝ𝑛+1 beschreiben
+eine Hyperebene H über
+𝑛
+
+𝐻 = 𝑥 ∈ ℝ𝑛 |𝑤0 + ෍ 𝑤𝑖 𝑥𝑖 = 0
+𝑖=1
+
+− Klassifizierung über Hyperebene:
+𝑦ො = +1, falls 𝑤0 + σ𝑖 𝑤𝑖 𝑥𝑖 > 0
+𝑦ො = −1, falls 𝑤0 + σ𝑖 𝑤𝑖 𝑥𝑖 < 0
+
+7-23
+
+KLASSIFIZIERUNG ÜBER HYPEREBENE
+Ziel: Finden der Parameter 𝒘, so dass der Raum der
+Merkmalsvektoren in zwei Teile aufgespalten wird und Punkte mit dem
+gleichen Label auf der gleichen Seite sind
+𝑛
+
+𝑥+
+
+𝑛
+
+𝑤0 + ෍ 𝑤𝑖 𝑥𝑖 = 0
+𝑖=1
+
+𝑤0 + ෍ 𝑤𝑖 𝑥𝑖+ > 0
+𝑖=1
+
+𝑥
+
+- - -- - − - 𝑥 -
+
+𝑛
+
+𝑤0 + ෍ 𝑤𝑖 𝑥𝑖− < 0
+𝑖=1
+
+7-24
+
+AUSWAHL DER HYPEREBENE
+
+-
+
+-
+
+-
+
+- -
+
+Welche Hyperebene ist die beste?
+7-25
+
+MAXIMAL MARGIN CLASSIFIER
+Verwendung der Hyperebene mit maximalen Abstand 𝜸 zu
+den Daten
+
+𝜸
+
+7-26
+
+MAXIMAL MARGIN CLASSIFIER
+Ziel: Suche nach Gewichten 𝒘 = 𝑤0 , 𝑤1 , … , 𝑤𝑛 , so dass 1. der Rand
+(Margin) 𝜸 maximal ist und 2. für alle Daten (𝒙,𝑦), gilt:
+𝑛
+
+𝑦 𝑤0 + ෍ 𝑤𝑖 𝑥𝑖 ≥ 1
+𝑖=1
+𝑛
+
+𝑛
+
+𝑤0 + ෍ 𝑤𝑖 𝑥𝑖 = 0
+𝑖=1
+
+𝑤0 + ෍ 𝑤𝑖 𝑥𝑖 = −𝟏
+𝑖=1
+
+𝑛
+
+𝑤0 + ෍ 𝑤𝑖 𝑥𝑖 = +𝟏
+𝑖=1
+
+Sei 𝐰
+
+′
+
+1
+= (𝑤1 , … , 𝑤𝑛 ). Für den Rand gilt: 𝛾 = ′
+|𝒘 |
+
+𝛾 ist maximal, wenn σ𝐧𝐢=𝟏 𝐰𝐢𝟐 minimal ist.
+
+7-27
+
+MAXIMAL MARGIN CLASSIFIER
+Sei 𝐰 ′ = (𝑤1 , … , 𝑤𝑛 ). Für 𝒙+ gilt:
+
+𝑥+
+
+𝑛
+
+1 = 𝑤0 + ෍ 𝑤𝑖 𝑥𝑖+
+𝑖=1
++ 𝐰 ′ ∙ 𝒙+
+
+= w0
+= 𝑤0 + 𝐰 ′ 𝒗′
+= w0 + 𝐰 ′ 𝒗 + 𝛾
+= w0 + 𝒘′ 𝒗 + 𝒘′ 𝛾
+= w0 + 𝒘′ ∙ 𝒙 + 𝒘 ′ 𝛾
+= 0 + 𝒘′ 𝛾
+
+𝒗′
+
+Orthogonale Projektion von 𝑥 + auf 𝑤 ′
+
+𝑥
+
+Also: 1 = |𝒘′ |𝛾
+
+𝜸
+
+Rand 𝛾 ist maximal, wenn
+
+𝒘′
+
+=
+
+σ𝐧𝐢=𝟏 𝐰𝐢𝟐 minimal
+
+𝒗
+
+𝒗′
+7-28
+
+LINEAR NICHT TRENNBARE DATEN
+− Falls Daten nicht linear trennbar, Einführung einer
+Bestrafung für falsche Zuordnungen:
+𝐧
+
+min ෍ 𝐰𝐢𝟐 + 𝑪 ∙ (# 𝐟𝐚𝐥𝐬𝐜𝐡𝐞 𝐙𝐮𝐨𝐫𝐝𝐧𝐮𝐧𝐠𝐞𝐧)
+𝒘
+
+𝐢=𝟏
+
+− Optimaler Wert für den Parameter C
+kann über Testdaten ermittelt werden
+− 𝑪 groß: wichtig ist die Trennung der
+Daten (soweit möglich)
+− 𝑪 klein: wichtig ist ein großer Rand
+
+𝑪 groß
+
++
++
+
++ +
++
+
+-
+
+-
+
++
+
+-
+
+𝑪 klein
+
+-
+
+7-29
+
++
+
+LINEAR NICHT TRENNBARE DATEN
+
++ +
+− Nicht alle falschen Zuordnungen sind +
++
+gleich wichtig
++
+− Bestrafung 𝜉𝑖
++
++
+𝐧
+min ෍ 𝐰𝐢𝟐 + 𝑪 ∙ ෍ 𝜉𝑗
+𝒘
+
+𝐢=𝟏
+
+𝑗
+
+− Hinge Loss für Datenpunkt (𝒙𝑖 , 𝑦𝑖 )
+
+-
+
+-
+
+j
+
+i
+
+-
+
++
+- -
+
+𝑛
+
+𝜉𝑗 ≔ max 0, 1 − 𝑦𝑗 𝑤0 + ෍ 𝑤𝑖 𝑥𝑗𝑖
+𝑖=1
+
+− 𝜉𝑗 = 0 falls 𝑥𝑗 auf “richtiger Seite” der Ränder
+− 𝜉𝑗 ≤ 1 falls 𝑥𝑗 auf “richtiger Seite” der Hyperebene
+
+− 𝜉𝑗 > 1 falls 𝑥𝑗 auf “falschen Seite” der Hyperebene
+
+7-30
+
+SUPPORT VECTOR CLASSIFIER
+− Zielfunktion:
+𝐧
+
+𝑛
+
+min ෍ 𝐰𝐢𝟐 + 𝑪 ∙ ෍ max 0, 1 − 𝑦𝑗 𝑤0 + ෍ 𝑤𝑖 𝑥𝑗𝑖
+𝒘
+
+𝐢=𝟏
+
+𝑗
+
+𝑖=1
+
+− Schätzung der Parameter: (Stochastic) Gradient Descent
+− Als Support-Vektoren bezeichnet man die Punkte des Datensatzes,
+welche direkt auf den Rändern oder auf der falschen Seite des
+zugehörigen Randes liegen → nur Support-Vektoren beeinflussen
+die Klassifizierung neuer Datenpunkte
+− Sei 𝑆 die Menge der Support-Vektoren und 𝛼𝑠 ∈ ℝ, 𝑠 ∈ 𝑆,
+dazugehörige Parameter. Der Klassifizierer lässt sich in folgender
+Form schreiben:
+𝑓 𝑥 = 𝑤0 + ෍ 𝛼𝑠 𝑥 ∙ 𝑥𝑠
+𝑠∈𝑆
+7-31
+
+SUPPORT VECTOR MACHINE
+− Erweiterung des (linearen) Support Vector Classifier über Kernel:
+
+𝑓 𝑥 = 𝑤0 + ෍ 𝛼𝑠 𝐾 𝑥, 𝑥𝑠
+𝑠∈𝑆
+Polynomial Kernel
+Radial Kernel
+𝐾 𝑥, 𝑥𝑠 = 1 + 𝑥 ∙ 𝑥𝑠
+
+𝑑
+
+𝑛
+
+𝐾 𝑥, 𝑥𝑠 = exp −𝑟 ෍ 𝑥𝑖 − 𝑥𝑠𝑖 2
+𝑖=1
+
+7-32
+
+VERGLEICH
+Entscheidungsbäume
+
+Support Vector Machines
+
+Regression & Klassifikation
+(mehrere (~10) Klassen)
+
+Klassifikation: gewöhnlich 2
+Klassen (erweiterbar auf mehrere
+Klassen)
+Support Vector Regression
+
+Attribute sind numerisch oder
+kategorial
+
+Attribute sind numerisch bzw. binär
+
+Beschränkung auf wenige, dicht
+besetzte Attribute
+
+Verwendung tausender, spärlich
+besetzter Attribute
+
+Gut interpretierbar
+
+Schwer interpretierbar
+
+7-33
+
+INHALTSVERZEICHNIS
+− Einführung
+− Entscheidungsbäume / Random Forests
+− Support Vector Machines
+− Auswertung binäre Klassifikation
+
+7-34
+
+BINÄRE KLASSIFIKATION - KONTINGENZTAFEL
+− Bewertung eines binären Klassifikators
+→ 2x2 Kontingenztabelle (contingency table / confusion matrix)
+
+Reality
+Positive
+
+Negative
+
+Positive
+
+True Positives
+(TP)
+
+False Positives
+(FP)
+
+Negative
+
+False Negatives
+(FN)
+
+True Negatives
+(TN)
+
+Classifier
+
+7-35
+
+BINÄRE KLASSIFIKATION - BEWERTUNGSMAßE
+− Abgeleitete Bewertungsmaße
+
+Reality
+
+Positive
+
+Negative
+
+Positive
+
+True Positives (TP)
+
+False Positives (FP)
+
+Negative
+
+False Negatives (FN)
+
+True Negatives (TN)
+
+Classifier
+
+𝑇𝑃
+𝑇𝑃 + 𝐹𝑁
+
+𝐹𝑁
+𝑇𝑃 + 𝐹𝑁
+
+𝐹𝑃
+𝐹𝑃 + 𝑇𝑁
+
+𝑇𝑃
+[Precision]
+𝑇𝑃 + 𝐹𝑃 [Positive Predictive Value]
+𝐹𝑃
+[False Discovery Rate]
+𝑇𝑃 + 𝐹𝑃
+𝐹𝑁
+[False Omission Rate]
+𝐹𝑁 + 𝑇𝑁
+𝑇𝑁
+[Negative Predictive
+𝐹𝑁 + 𝑇𝑁 Value]
+
+𝑇𝑁
+𝐹𝑃 + 𝑇𝑁
+
+[Recall]
+[False
+[Specificity]
+[Fall-out]
+[Sensitivity]
+Negative [False Positive [True Negative
+[True Positive Rate]
+Rate]
+Rate]
+Rate]
+
+7-36
+
+PRECISION VS. RECALL
+− Einsatzgebiete: Suche, Information Retrieval
+
+− Auswertung der (positiven) Ergebnisliste
+Reality
+Positive
+
+Negative
+
+Positive
+
+True Positives (TP)
+
+False Positives (FP)
+
+Negative
+
+False Negatives (FN)
+
+True Negatives (TN)
+
+Classifier
+
+Recall =
+
+Precision =
+
+𝑇𝑃
+𝑇𝑃+𝐹𝑃
+
+𝑇𝑃
+𝑇𝑃+𝐹𝑁
+
+− Precision: Wie rein ist die Ergebnisliste?
+− Recall: Wie komplett ist die Ergebnisliste?
+7-37
+
+PRECISION VS. RECALL
+− Beispiel: Erkenne alle Katzen in einem (Bild-)Datensatz
+− Datensatz mit 800 Katzen und vielen anderen Bildern
+− Suche liefert 750 Treffer, von denen aber nur 600 Katzen sind
+Reality
+
+Positive
+
+Positive
+
+Negative
+
+TP = 600
+
+FP = 150
+
+Precision =
+
+Classifier
+Negative
+
+FN = 200
+
+TN = x
+
+600
+600+150
+
+= 80%
+(Reinheit)
+
+Recall =
+
+600
+= 75%
+600+200
+
+(Vollständigkeit)
+
+− Die TN werden nicht berücksichtigt.
+7-38
+
+F1 SCORE
+− alias: F-score, F-measure
+
+− Harmonisches Mittel von Precision und Recall
+
+𝐹1 =
+
+2
+1
+1
++
+𝑅𝑒𝑐𝑎𝑙𝑙 𝑃𝑟𝑒𝑐𝑖𝑑𝑖𝑜𝑛
+
+=2
+
+𝑅𝑒𝑐𝑎𝑙𝑙 ∗ 𝑃𝑟𝑒𝑐𝑖𝑠𝑖𝑜𝑛
+𝑇𝑃
+=
+1
+𝑅𝑒𝑐𝑎𝑙𝑙 + 𝑃𝑟𝑒𝑐𝑖𝑠𝑖𝑜𝑛
+𝑇𝑃 + 2 (𝐹𝑃 + 𝐹𝑁)
+
+− Vorteil: Ein Wert, um die Performanz des Klassifikators zu messen
+− Nachteile:
+− Precision (FPs) und Recall (FNs) werden gleich gewichtet
+− Die TN werden auch beim F1 Score nicht berücksichtigt
+7-39
+
+SENSITIVITY VS. SPECIFICITY
+− Einsatzgebiete: z.B. Medizin, Psychologie
+− Auswertung eines Tests (in positive und negative Richtung)
+Reality (Gold Standard)
+Positive
+
+Negative
+
+Positive
+
+True Positives (TP)
+
+False Positives (FP)
+
+Negative
+
+False Negatives (FN)
+
+True Negatives (TN)
+
+Classifier
+
+Sensitivity =
+
+𝑇𝑃
+𝑇𝑃+𝐹𝑁
+
+Spezifität =
+
+𝑇𝑁
+𝐹𝑃+𝑇𝑁
+
+− Sensitivity: Wieviele der positiven Fälle (z.B. erkrankte Patienten)
+wurden gefunden?
+− Specificity: Wieviele der negativen Fälle (z.B. gesunde Patienten)
+wurden auch als gesund identifziert?
+
+7-40
+
+SENSITIVITY VS. SPECIFICITY: BEISPIEL
+− Aufgabe: Erkenne alle Patienten mit Covid-19
+
+Reality (Gold Standard)
+Positive
+
+Negative
+
+Positive
+
+TP = 500
+
+FP = 100
+
+Negative
+
+FN = 50
+
+TN = 400
+
+Classifier
+
+Sensitivity =
+
+500
+≈ 91%
+500+50
+
+Spezifität =
+
+400
+= 80%
+400+100
+
+7-41
+
+SENSITIVITY VS. SPECIFICITY: SPECIFICITY
+− Hohe Sensitivity: Wie viele der erkrankten Personen werden erkannt?
+− Was ist eine gute Specificity?
+− Hängt vom Einsatzgebiet ab und wie der Test verwendet wird
+
+− Hängt von der Prävalenz ab (wie häufig ist eine Erkrankung)
+− Eine kleine Prävalenz erfordert eine hohe Spezifität
+
+− Beispiel:
+− Corona-Test mit Sensitivity = 99% und Specificity = 90%
+
+− Alle Personen in einer Stadt mit 100.000 Einwohnern werden getestet
+− Prävalenz = 0,1% (100 von 100.000 Personen)
+
+− Ist dies ein guter Test?
+
+7-42
+
+SENSITIVITY VS. SPECIFICITY: SPECIFICITY
+− Sensitivity = 99%, Specificity = 90%, Prevalence = 0.1%
+
+Reality (Gold Standard)
+Positive
+
+Negative
+
+Positive
+
+TP = 99
+
+FP = 9900
+
+Negative
+
+FN = 1
+
+TN = 89100
+
+99
+= 99%
+99+1
+
+Spezifität =
+
+Classifier
+
+Sensitivity =
+
+9999
+positive
+Tests!
+
+89100
+= 90%
+89100+9900
+
+− 9999 Personen werden Covid-19 positiv getestet → Quarantäne
+7-43
+
+DIAGNOSTIC ODDS RATIO
+− Alternative Interpretation: Test wird als Risikofaktor interpretiert
+− Misst die Effektivität eines Tests
+− 𝐷𝑂𝑅 =
+
+𝑇𝑃 𝐹𝑁
+ൗ
+𝐹𝑃 𝑇𝑁
+
+− Beispiel: Test für Covid-19
+
+Reality (Gold Standard)
+
+Positive
+
+Negative
+
+Positive
+
+TP = 200
+
+FP = 100
+
+Negative
+
+FN = 50
+
+TN = 150
+
+Classifier
+
+200 50
+ൗ
+=6
+100 150
+
+→ Wenn der Test positiv ist, dann ist die
+Chance/das Risiko Covid-19 zu haben, 6x
+höher als wenn der Test negativ wäre.
+− 𝐷𝑂𝑅 = 1 → unbrauchbarer Test
+
+− 𝐷𝑂𝑅 =
+
+− Je höher 𝐷𝑂𝑅, desto besser der Test
+
+7-44
+
+RECEIVER OPERATOR CHARACTERICTICS (ROC)
+− Ursprung
+− Entwickelt während des 2. Weltkriegs zur Analyse von Radarsignalen
+− Detektion von Flugzeugen anhand von Radarsignalen
+− Dann: Verwendung in der Psychologie (Erkennung von Reizen) und Medizin
+− Heute: Standard-Ansatz zur Evaluation von Verfahren des maschinellen
+Lernens
+
+− Ansatz:
+− Verwende die Regressions-Version statt der Klassifikations-Version
+− Setze und variiere Schwellwert, um Klassifikation zu erhalten
+− Trage Bewertungsmaße gegeneinander auf, typische ROC-Plots:
+− x-Achse: 1 – Specificity, y-Achse: Sensitivity
+
+− x-Achse: Recall, y-Achse: Precision
+− Berechne: Area under the curve (AUC)
+7-45
+
+RECEIVER OPERATOR CHARACTERICTICS (ROC)
+
+class 0
+
+t = 0 (SE=85%, SP=80%)
+
+𝒘∗𝒙 −𝑏 =𝑡
+
+class 1
+
+7-46
+
+RECEIVER OPERATOR CHARACTERICTICS (ROC)
+
+class 0
+
+t = 2 (SE=0%, SP=100%)
+t = 1 (SE=35%, SP= 90%)
+t = 0 (SE=85%, SP=80%)
+t = -1
+(SE=95%, SP= 20%)
+
+t = -2
+(SE=100%, SP=0%)
+
+𝒘∗𝒙 −𝑏 =𝑡
+
+class 1
+
+Threshold 𝑡 ∈ [−2,2]
+
+7-47
+
+ROC KURVEN UND AUC
+t = -2 (SE=100%, SP=0%)
+
+1
+
+t = -1 (SE=95%, SP=20%)
+
+Sensitivity
+(True
+Positive
+Rate)
+
+t = 0 (SE=85%, SP=80%)
+
+Area Under the Curve
+𝐴𝑈𝐶 ∈ [0,1]
+
+t = 1 (SE=35%, SP=80%)
+
+t = 2 (SE=0%, SP=100%)
+
+0
+Specificity = 1
+
+1
+Specificity = 0
+
+1 – Specificity
+(False Positive Rate)
+
+− Je größer die AUC, desto besser das Modell
+7-48
+
+ROC KURVEN
+
+1
+
+1
+
+exzellent
+
+exzellent
+gut
+
+Precision
+
+Sensitivity
+
+gut
+Zufall
+
+schlechter als Zufall
+
+0
+
+1-Specificity
+
+Zufall
+
+schlechter als Zufall
+
+1
+
+0
+
+Recall
+
+1
+
+7-49
+
+INHALTSVERZEICHNIS
+− Einführung
+− Entscheidungsbäume / Random Forests
+− Support Vector Machines
+− Auswertung binäre Klassifikation
+
+7-50
+
+

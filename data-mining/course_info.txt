@@ -1,0 +1,2 @@
+course_name: Data Mining
+semester: WiSe 25/26

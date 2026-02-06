@@ -1,0 +1,786 @@
+DATA MINING
+
+Kapitel 5: Assoziationsregeln
+Dr. Christian Martin
+Wintersemester 2025/26
+
+Abteilung Datenbanken / ScaDS.AI
+Universität Leipzig
+
+THEMENÜBERSICHT
+Hochdimensionale Daten
+
+Graphdaten
+
+Datenströme
+
+Clustering
+
+Dimensionsreduktion
+
+Community
+Detection
+
+Windowing
+
+Empfehlungssysteme
+
+Assoziationsregeln
+
+PageRank
+
+Filtern
+
+Locality Sensitive
+Hashing
+
+Supervised ML
+
+Web Spam
+
+Momente
+
+INHALTSVERZEICHNIS
+− Einleitung
+− A-Priori Algorithmus
+− PCY Algorithmus
+− Algorithmen mit Stichproben
+− Prinzip Zufallsstichprobe
+− SON Algorithmus
+− Algorithmus von Toivonen
+
+Data Mining | WiSe 2025/2026
+
+5-3
+
+MOTIVATION
+− Warenkorbanalyse (Market Basket Analysis): Analyse des
+Kaufverhaltens
+− Datengrundlage:
+− Große Menge an Elementen und große Menge an Warenkörben
+− Zuordnungen von kleinen Mengen an Elementen zu Warenkörben
+
+− Beispiel: Kaufverhalten im Supermarkt
+− Welche Produkte werden von hinreichend vielen Leuten (nicht)
+zusammen gekauft?
+− Klassische (Assoziations-)Regeln:
+− Wenn jemand Bratwürste kauft, dann auch Senf.
+− Wenn jemand Coca Cola kauft, dann nicht Pepsi.
+− Wenn jemand Windeln kauft, dann auch Bier.
+Warenkörbe
+Brot, Cola, Milch
+Milch, Windeln
+Bier, Cola, Windeln, Milch
+Bier, Brot, Windeln, Milch
+Cola, Windeln, Milch, Bier
+
+Assoziationsregeln:
+{Milch} → {Cola}
+{Windeln, Milch} → {Bier}
+Data Mining | WiSe 2025/2026
+
+5-4
+
+ANWENDUNGEN
+− Kaufverhalten für Werbung, Treueprogramme, Store-Design,
+Rabattpläne oder den „Querverkauf“ von Produkten
+− Produktempfehlungen:
+− „Kunden, die diesen Artikel gekauft haben, kauften auch …“
+− „Kunden, die diesen Film angesehen haben, haben auch angesehen …“
+
+− Thematisch verwandte Konzepte
+− Elemente: Wörter
+− Warenkörbe: Dokumente
+
+− Plagiatserkennung
+− Elemente: Sätze
+− Warenkörbe: Dokumente
+
+?
+=
+
+− Nebenwirkungen von bestimmten Kombination von Medikamenten
+− Elemente: Nebenwirkung und Medikament
+− Warenkörbe: Patienten
+
+Data Mining | WiSe 2025/2026
+
+5-5
+
+HÄUFIGE ELEMENTMENGEN
+− Elementmenge 𝐼 (Itemset) = Teilmenge der Elemente
+− Support einer Elementmenge 𝐼 (sup(𝐼)): Anteil der Warenkörbe,
+welche alle Elemente aus 𝐼 enthalten
+− Gegeben eines Schwellenwerts 𝑠, eine Elementmenge 𝐼 wird als
+Häufige Elementmenge (Frequent Itemset) bezeichnet, falls
+sup(𝐼) ≥ 𝑠
+Warenkörbe
+Häufige Mengen (𝑠 = 0.6)
+sup
+Brot, Cola, Milch
+
+{Milch}
+
+1.0
+
+{Windeln}, {Milch, Windeln}
+
+0.8
+
+{Cola}, {Bier}, {Bier, Milch},
+{Cola, Milch}, {Windeln, Bier},
+{Bier, Windeln, Milch}
+
+0.6
+
+Milch, Windeln
+
+Bier, Cola, Windeln, Milch
+Bier, Brot, Windeln, Milch
+Cola, Windeln, Milch, Bier
+
+Data Mining | WiSe 2025/2026
+
+5-6
+
+ASSOZIATIONSREGELN
+− Assoziationsregel: Wenn-Dann-Regel zu den Inhalten
+der Warenkörbe
+− Form: 𝑖1 , 𝑖2 , …, 𝑖𝑘 → 𝑗
+− Interpretation: Falls ein Korb die 𝑘 Elemente 𝑖1 , 𝑖2 , …, 𝑖𝑘 enthält,
+dann enthält er mit hoher Wahrscheinlichkeit das Element 𝑗
+
+− Auswahl einer Regel über deren Confidence:
+
+sup( 𝑖1 , 𝑖2 , …, 𝑖𝑘 , 𝑗 )
+conf {𝑖1 , 𝑖2 , …, 𝑖𝑘 } → 𝑗 =
+sup( 𝑖1 , 𝑖2 , …, 𝑖𝑘 )
+− Beispiel: falls 𝑐𝑜𝑛𝑓 𝑖1 , …, 𝑖𝑘 → 𝑗 > 0.8, dann kommt in
+über 80% aller Warenkörbe mit den Elementen 𝑖1 , …, 𝑖𝑘
+auch das Element 𝑗 vor
+Data Mining | WiSe 2025/2026
+
+5-7
+
+BEISPIEL
+Warenkörbe
+
+Häufige Mengen (𝑠 = 0.6)
+
+sup
+
+Brot, Cola, Milch
+
+{Milch}
+
+1.0
+
+{Windeln}, {Milch, Windeln}
+
+0.8
+
+Milch, Windeln
+Bier, Cola, Windeln, Milch
+Bier, Brot, Windeln, Milch
+Cola, Windeln, Milch, Bier
+
+{Cola}, {Bier}, {Bier, Milch}, {Cola,
+Milch}, {Windeln, Bier}, {Bier,
+0.6
+Windeln, Milch}
+
+sup( 𝑖1 , 𝑖2 , …, 𝑖𝑘 , 𝑗 )
+conf {𝑖1 , 𝑖2 , …, 𝑖𝑘 } → 𝑗 =
+sup( 𝑖1 , 𝑖2 , …, 𝑖𝑘 )
+sup({𝐶𝑜𝑙𝑎, 𝑀𝑖𝑙𝑐ℎ}) 0.6
+𝑐𝑜𝑛𝑓 𝐶𝑜𝑙𝑎 → 𝑀𝑖𝑙𝑐ℎ =
+=
+=1
+sup({𝐶𝑜𝑙𝑎})
+0.6
+sup({𝑀𝑖𝑙𝑐ℎ, 𝐵𝑖𝑒𝑟}) 0.6
+𝑐𝑜𝑛𝑓 𝑀𝑖𝑙𝑐ℎ → 𝐵𝑖𝑒𝑟 =
+=
+= 0.6
+sup({𝑀𝑖𝑙𝑐ℎ})
+1
+
+Data Mining | WiSe 2025/2026
+
+5-8
+
+BEISPIEL
+Warenkörbe
+
+Häufige Mengen (𝑠 = 0.6)
+
+sup
+
+Brot, Cola, Milch
+
+{Milch}
+
+1.0
+
+{Windeln}, {Milch, Windeln}
+
+0.8
+
+Milch, Windeln
+Bier, Cola, Windeln, Milch
+Bier, Brot, Windeln, Milch
+Cola, Windeln, Milch, Bier
+
+{Cola}, {Bier}, {Bier, Milch}, {Cola,
+Milch}, {Windeln, Bier}, {Bier,
+0.6
+Windeln, Milch}
+
+Regeln
+conf
+{Cola} → {Milch}, {Bier} → {Windeln}, {Bier} → {Milch}, {Windeln}
+1.0
+→ {Milch}, {Bier,Windeln} → {Milch}, {Bier, Milch} → {Windeln}
+{Milch} → {Windeln}
+0.8
+{Windeln} → {Bier}, {Windeln, Milch} → {Bier}
+
+0.75
+
+{Milch} → {Cola}, {Milch} → {Bier}
+
+0.6
+
+Data Mining | WiSe 2025/2026
+
+5-9
+
+INTEREST EINER REGEL
+− Nicht alle Regeln mit hoher Konfidenz sind wichtig,
+z.B. Milch kommt oft vor, weil sie einfach fast immer
+gekauft wird → ist in jedem Korb vorhanden
+− Interest einer Regel
+𝑖𝑛𝑡 I → 𝑗 = 𝑐𝑜𝑛𝑓 I → j − P[j]
+− P[j] ist relative Häufigkeit des Elementes j
+− Interessant sind Regeln mit
+− 𝑖𝑛𝑡 I → 𝑗 > 0.5 oder
+− 𝑖𝑛𝑡 I → 𝑗 < −0.5
+
+− Beispiel:
+− 𝑖𝑛𝑡 Cola → {𝑀𝑖𝑙𝑐ℎ} = 1.0 − 1.0 = 0
+− 𝑖𝑛𝑡 Windeln → {𝐵𝑖𝑒𝑟} = 0.75 − 0.6 = 0.15
+Data Mining | WiSe 2025/2026
+
+5-10
+
+DIE SUCHE NACH ASSOZIATIONSREGELN
+− Problem: Finde alle Assoziationsregeln 𝐼 → 𝑗
+mit sup(𝐼 ∪ 𝑗 ) ≥ 𝑠 und conf 𝐼 → 𝑗 ≥ 𝑐
+− Schwierigkeit: Suche nach häufigen Elementmengen
+mit 𝑠𝑢𝑝(𝐼) ≥ 𝑠 bzw. die Berechnung des Supports aller
+möglichen Elementmengen
+− Konstruktion der Assoziationsregeln aus häufigen
+Elementmengen
+− Für jede häufige Elementmenge 𝐼 und jedes Element 𝑗 aus 𝐼
+− Erstelle die Regel 𝐼\ 𝑗 → 𝑗
+𝑠𝑢𝑝 𝐼
+
+− Ausgabe der Regel, falls conf 𝐼\ 𝑗 → 𝑗 = 𝑠𝑢𝑝 𝐼\ 𝑗 ≥ 𝑐
+− (da 𝐼 häufig ist, ist auch 𝐼\{𝑗} häufig; somit wurde sowohl sup(𝐼) als
+auch sup(𝐼\{𝑗}) schon berechnet)
+
+Data Mining | WiSe 2025/2026
+
+5-11
+
+SUCHE NACH HÄUFIGEN ELEMENTMENGEN
+− Annahme:
+Daten sind in Dateisystem auf Festplatte gespeichert
+− Sortiert nach Warenkörben
+− Wenige Elemente pro Korb: Aufwand der Generierung
+aller Teilmengen eines Korbs ist relativ gering
+− Entscheidend: Anzahl der Warenkörbe, insb. wenn
+diese nicht vollständig in Hauptspeicher passen
+− 1. Problem: Speichern der Zwischenergebnisse
+(Häufigkeiten der Teilmengen) in Hauptspeicher
+− 2. Problem: Evtl. mehrere Festplattendurchläufe
+nötig (Lesen aller Warenkörbe von Festplatte)
+
+Data Mining | WiSe 2025/2026
+
+Item
+Item
+Item
+Item
+Item
+Item
+Item
+Item
+Item
+Item
+Item
+Item
+
+etc.
+
+5-12
+
+PROBLEM: SPEICHERN DER ZWISCHENERGEBNISSE
+− Beispiel: Bestimmen der häufigen Paare
+− Zählen im Hauptspeicher ist nicht für große Dimensionen geeignet
+− Angenommen 𝑛 verschiedene Elemente und Speichern der Zähler
+(Integer: 4 Byte) als Dreiecksmatrix = Array der Form {1,2}, {1,3},…,
+{1,n}, {2,3}, {2,4},…,{2,n}, {3,4},…
+𝑛
+𝑛(𝑛−1)
+𝑛2
+− Speicherplatz für
+=
+≈ Zähler á 4 Byte: 2𝑛2 Byte
+2
+2
+2
+− Bei 32 GB Hauptspeicher: 𝑛 < 217 ≈ 130 000 Elemente
+− Damit würde weder Walmart (17 Millionen Produkte) noch Amazon (500
+Millionen Produkte) auskommen
+
+− Weniger Speicherplatz notwendig, falls nicht alle Paare auftreten
+− Speichern als spärlich besetzte Matrix: Liste von Tripeln [𝑖, 𝑗, 𝑐] wobei 𝑖
+und 𝑗 die Elemente bezeichnen und 𝑐 den Zähler: 12 Byte pro Paar
+− Weniger Speicherplatz, falls maximal 1/3 der Paare auftreten
+
+Data Mining | WiSe 2025/2026
+
+5-13
+
+INHALTSVERZEICHNIS
+− Einleitung
+− A-Priori Algorithmus
+− PCY Algorithmus
+− Algorithmen mit Stichproben
+− Prinzip Zufallsstichprobe
+− SON Algorithmus
+− Algorithmus von Toivonen
+
+Data Mining | WiSe 2025/2026
+
+5-14
+
+A-PRIORI ALGORITHMUS
+
+𝐽 = 𝑎, 𝑏 mit sup 𝐽 = ⋯
+𝐼 = 𝑎, 𝑏, 𝑐 dann sup(𝐼) ≤ sup(𝐽)
+
+− Wichtige Eigenschaft der häufigen Elementmengen: Monotonie
+𝐽 ⊆ 𝐼 ⇒ sup(𝐼) ≤ sup(𝐽)
+− Gegenrichtung: Falls eine Menge 𝐽 keine häufige Elementmenge ist,
+dann ist keine Menge 𝐼, welche 𝐽 enthält, eine häufige
+Elementmenge
+− A-Priori Algorithmus: Begrenzung des benötigten (Haupt-)
+Speicherplatzes über zweifaches Einlesen aller Daten
+− 1. Durchlauf: Zählen aller Elemente (einelementige Mengen) und
+Auswahl der häufigen Elemente über Schwellenwert 𝑠
+− 2. Durchlauf: Zählen eines vorkommenden Paares nur dann, wenn
+beide Elemente häufig sind
+Data Mining | WiSe 2025/2026
+
+5-15
+
+A-PRIORI ALGORITHMUS: DETAILS
+− Tabelle: Durchnummerierung der Elemente von 1, …, n
+− 1. Durchlauf: Zähler für Elemente ist einfaches Array der Länge n
+− Danach: Neues Array der gleichen Länge, aber Zuordnung der
+häufigen Element zu neuer Nummerierung 1, …, m und seltene
+Elemente auf 0
+Elemente →
+{1, …, n}
+
+Zähler für
+Elemente
+
+Häufige
+Elemente
+
+RAM
+
+− 2. Durchlauf: Speicherung der
+Paare häufiger Elemente über
+Dreiecksmatrix
+(da spärlich besetzte Matrix)
+
+Elemente →
+{1, …, m}
+
+Zähler für
+Paar häufiger
+Elemente
+
+1. Durchlauf
+
+2. Durchlauf
+
+Data Mining | WiSe 2025/2026
+
+5-16
+
+HÄUFIGE TRIPEL ETC.
+− Weiterer Durchlauf für jede Menge der Größe k
+− Menge 𝐶𝑘 von Kandidaten
+− Kandidat = Menge der Größe k, die aufgrund der Informationen über
+Mengen der Größe 𝑘 − 1 häufig sein könnten
+− Für einen Kandidat gilt: alle (k-1)-elementigen Teilmengen müssen
+häufig sein
+
+− Menge 𝐿𝑘 der häufigen Mengen der Größe k
+Zählen und
+Aussortieren
+
+C1
+
+Alle Elemente
+
+Filter
+
+Alle Elementpaare von 𝐿1
+
+L1
+
+Erzeuge
+
+Häufige Elemente
+
+Paare Zählen und
+Aussortieren
+
+Alle ElementTripel von 𝐿2
+
+Filter
+
+Erzeuge
+
+C2
+Alle Paare
+
+L2
+
+Häufige Paare
+
+1. Durchlauf
+
+...
+
+C3
+
+Alle Tripel
+
+2. Durchlauf
+Data Mining | WiSe 2025/2026
+
+5-17
+
+BEISPIEL
+𝐶1 = {{b}, {c}, {j}, {m}, {n}, {p}}
+Neue
+Elementmengen
+generieren
+
+↓
+𝐿1 = {{b}, {c}, {j}, {m}}
+
+1. Support berechnen
+2. Bestimmung
+häufiger Mengen
+sup(ci ) ≥ 𝑠
+
+↓
+𝐶2 = {{b, c}, {b, j}, {b, m}, {c, j}, {c, m}, {j, m}}
+
+↓
+Neue
+Elementmengen
+generieren
+
+𝐿2 = {{b, c}, {b, m}, {c, j}, {c, m}}
+
+↓
+
+1. Support berechnen
+2. Bestimmung
+häufiger Mengen
+sup(ci ) ≥ 𝑠
+
+𝐶3 = {{b, c, m}}
+
+↓
+𝐿3 = {}
+Data Mining | WiSe 2025/2026
+
+Warum z.B. {b,c,j}
+nicht?
+
+5-18
+
+WEITERES BEISPIEL
+
+Achtung: andere
+Definition von
+Support.
+
+Dol Aher, Sunita & J, Lobo. (2012). A Comparative Study of Association Rule Algorithms for Course Recommender System in E-learning. International Journal of Computer
+Applications. 39. 48-52. 10.5120/4788-7021.
+
+Data Mining | WiSe 2025/2026
+
+5-19
+
+INHALTSVERZEICHNIS
+− Einleitung
+− A-Priori Algorithmus
+− PCY Algorithmus
+− Algorithmen mit Stichproben
+− Prinzip Zufallsstichprobe
+− SON Algorithmus
+− Algorithmus von Toivonen
+
+Data Mining | WiSe 2025/2026
+
+5-20
+
+PARK-CHEN-YU (PCY) ALGORITHMUS
+− Ziel: Finde häufige Elementmengen in großen Datensätzen
+− In einigen Fällen könnte Hauptspeicher für den 2. Durchlauf des
+A-Priori Algorithmus nicht ausreichen
+− Idee: Verwende den restlichen Speicherplatz im 1. Durchlauf, um die
+Kandidatenmenge weiter zu reduzieren
+− PCY-Algorithmus:
+− Verwendung einer Hash-Funktion (z.B. ℎ 𝑖, 𝑗 = 𝑖 + 𝑗 𝑚𝑜𝑑 3) mit
+möglichst vielen Buckets und einem Array aus Zählern (ein Zähler
+pro Bucket)
+− Für jeden Warenkorb:
+− Für jedes Element des Warenkorbs: Addiere 1 zu dem Zähler des
+Elements
+c:2 c:4 c:4
+− Für jedes Paar von Elementen:
+− Anwendung der Hash-Funktion auf Paar
+− Addiere 1 zu dem Zähler des Bucket
+Data Mining | WiSe 2025/2026
+
+0
+
+1
+
+2
+
+{1,2} {1,3} {1,4}
+...
+{2,7} ...
+
+5-21
+
+PCY ALGORITHMUS
+− Beobachtungen:
+− Falls ein Bucket ein häufiges Paar enthält (Support größer als ein Schwellen𝑍äℎ𝑙𝑒𝑟
+wert 𝑠), dann ist der Anteil
+dieses Bucket größer als 𝑠
+𝐴𝑛𝑧𝑎ℎ𝑙 𝑑𝑒𝑟 𝑊𝑎𝑟𝑒𝑛𝑘ö𝑟𝑏𝑒
+
+− Auch seltene Paare (sup < 𝑠) können in Buckets mit einem Anteil > 𝑠
+vorkommen
+− Buckets mit einem Anteil < 𝑠 können keine häufigen Paare (sup > 𝑠) enthalten
+
+− Folgerung: Alle Paare aus Buckets mit
+Anteil < 𝑠 müssen im 2. Durchlauf
+nicht betrachtet werden
+− Für 2. Durchlauf:
+
+Elemente →
+{1, …, n}
+
+Elemente →
+{1, …, n}
+
+Zähler für
+Elemente
+
+Häufige
+Elemente
+
+− Ersetze Hash-Tabelle durch Bit-Vektor:
+1 bedeutet, dass Anteil des Bucket größer
+als 𝑠 ist
+
+Bit-Vektor
+HashTabelle
+
+Zähler für
+Paare häufiger
+Elemente
+
+1. Durchlauf
+
+2. Durchlauf
+
+1
+
+− Bit-Vektor benötigt nur des Speichers
+32
+der Hash-Tabelle (Integer: 4 Byte)
+
+Data Mining | WiSe 2025/2026
+
+5-22
+
+PCY ALGORITHMUS
+− 2. Durchlauf: Zähle ein Paar {𝑖, 𝑗} genau dann, wenn
+− beide Element 𝑖 und 𝑗 häufig sind und
+− {𝑖, 𝑗} über die Hash-Funktion auf ein Bucket mit Wert 1 im Bit-Vektor abgebildet
+wird
+
+− Anmerkungen:
+− Große Anzahl an Buckets notwendig
+− Die Buckets der Hash-Tabelle benötigen nur wenige Bytes: man muss nur
+bis 𝑠 ∙ Anzahl der Warenkörbe zählen → Je nach Hauptspeicher: große Anzahl
+an Buckets möglich
+− PCY sollte 2/3 der Kandidaten eliminieren, damit Liste von Tripeln (spärlich
+besetzte Matrix) im 2. Durchlauf verwendbar und PCY tatsächlich effizienter als
+A-Priori
+
+− Erweiterungen:
+− Falls Hauptspeicher für 2. Durchlauf noch nicht ausreichend: weitere
+Einschränkung der Kandidatenmenge über erneuten Durchlauf möglich
+(Multistage PCY)
+− In manchen Fällen ist es effizient, zwei verschiedene Hash-Funktionen
+anzuwenden und daraus zwei kleinere Bit-Vektoren zu erzeugen (Multihash PCY)
+Data Mining | WiSe 2025/2026
+
+5-23
+
+INHALTSVERZEICHNIS
+− Einleitung
+− A-Priori Algorithmus
+− PCY Algorithmus
+− Algorithmen mit Stichproben
+− Prinzip Zufallsstichprobe
+− SON Algorithmus
+− Algorithmus von Toivonen
+
+Data Mining | WiSe 2025/2026
+
+5-24
+
+PRINZIP ZUFALLSSTICHPROBE
+
+− Vermeidung von False Positives: Verifiziere die über
+die Stichprobe ausgewählten häufigen Elementmengen
+durch einen weiteren Durchlauf (benötigt weniger
+Speicher, da weniger Kandidaten)
+− Reduzierung der False Negatives: Kleineren
+Schwellenwert, z.B. 0.9 ∙ 𝑠 (benötigt mehr Speicherplatz)
+Data Mining | WiSe 2025/2026
+
+Hauptspeicher
+
+− Problem: Datenmenge ist so groß, dass immer nur Teile/Stichproben
+betrachtet werden können
+→ ziehe Zufallsstichprobe, so dass alle Warenkörbe dieser Stichprobe
+und die benötigten Zähler in den Hauptspeicher passen
+− Anwendung von A-Priori oder PCY im Hauptspeicher
+− Nur ein Festplattendurchlauf für die Suche nach den
+häufigen Elementmengen aller Größen
+Stichprobe
+
+Platz für
+Zähler
+
+5-25
+
+SON Algorithmus
+− Savasere-Omiecinski-Navathe (SON) Algorithmus:
+− Lade wiederholt eine feste Anzahl an Warenkörben (Chunk) in
+Hauptspeicher
+− Finde häufige Elementmengen aller Größen
+− Gesamter Datensatz wird in Teilen durchlaufen und häufige
+Elementmengen der Chunks werden gespeichert
+− Keine False Negatives: Eine Elementmenge kann nicht im
+gesamten Datensatz mit Schwellenwert 𝑠 häufig vorkommen, ohne in
+mindestens einem Chunk mit Schwellenwert 𝑠 häufig vorzukommen
+− Aussortieren der False Positives über weiteren Durchlauf
+
+Data Mining | WiSe 2025/2026
+
+5-26
+
+Algorithmus von Toivonen
+− 1. Durchlauf:
+− Ziehen einer Zufallsstichprobe, die Arbeit in Hauptspeicher
+erlaubt
+− Nimm die Elementmengen aller Größen, die mit
+Schwellenwert s ′ = 0.9 ∙ 𝑠 häufig sind, als Kandidaten
+− Erstellen der Negativen Grenze zu Kandidaten:
+
+Eine Menge ist in der Negativen Grenze, falls
+− sie kein Kandidat ist (nicht häufig, also sup(𝐼) < 𝑠′), aber
+− alle direkten Untermengen (Untermengen haben genau ein
+Element weniger) Kandidaten oder die leere Menge sind:
+alle 𝐼′ ⊂ 𝐼 mit |𝐼′| = |𝐼| − 1 sind häufig, d.h., sup(𝐼′) ≥ 𝑠′
+
+Data Mining | WiSe 2025/2026
+
+5-27
+
+Algorithmus von Toivonen - Beispiel
+− Erstellen der Negativen Grenze zu Kandidaten:
+Eine Menge ist in der Negativen Grenze, falls
+− sie kein Kandidat ist, aber
+− Alle direkten Untermengen (Untermengen haben genau ein
+Element weniger) Kandidaten oder die leere Menge sind.
+Beispiel: Annahmen:
+− Grundmenge {A,B,C,D,E}
+− {A}, {B}, {C}, {D}, {B,C}, {C,D} kommen häufig in Stichprobe vor
+Dann:
+− Negative Grenze: {E}, {A,B}, {A,C}, {A,D}, {B,D}
+− {E}, da {} immer häufig ist
+− Die anderen Paare sind nicht in Negativer Grenze, da sie entweder E
+enthalten oder häufig vorkommen
+− kein Tripel ist in Negativer Grenze
+− z.B. {B,C,D} nicht, da {B,D} nicht häufig
+Data Mining | WiSe 2025/2026
+
+5-28
+
+Algorithmus von Toivonen
+− 2. Durchlauf: Zählen der Kandidaten und der Elemente der Negativen
+Grenze im gesamten Datensatz
+− Aussortieren der False Positives
+− falls kein Element der Negativen Grenze häufig vorkommt, wurden alle
+häufigen Elementmengen gefunden (keine False Negatives)
+− falls ein Element der Negativen Grenze häufig vorkommt, muss der
+Algorithmus mit neuer Zufallsstichprobe wiederholt werden (evtl. mit
+geringerem Schwellenwert)
+
+Data Mining | WiSe 2025/2026
+
+5-29
+
+ZUSAMMENFASSUNG
+− Assoziationsregeln
+− Support von I: Anteil der Warenkörbe, welche alle Elemente aus I
+enthalten
+− Häufige Elementmengen wenn sup(𝐼) ≥ 𝑠
+− Auswahl einer Regel über deren Confidence
+
+− A-Priori Algorithmus
+− 2 Durchläufe, Ausnutzen von Monotonie
+
+− PCY Algorithmus
+− Verwenden von Hash-Funktion
+
+− Algorithmen mit Stichproben
+− Prinzip Zufallsstichprobe
+− SON Algorithmus (Datensatz wird in Chunks durchlaufen)
+− Algorithmus von Toivonen (Negative Grenze)
+Data Mining | WiSe 2025/2026
+
+5-30
+
+

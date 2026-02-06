@@ -1,0 +1,812 @@
+DATA MINING
+
+Kapitel 2: Clustering
+Dr. Christian Martin
+Wintersemester 2025/26
+
+Abteilung Datenbanken / ScaDS.AI
+Universität Leipzig
+
+THEMENÜBERSICHT
+Hochdimensionale Daten
+
+Graphdaten
+
+Datenströme
+
+Clustering
+
+Dimensionsreduktion
+
+Community
+Detection
+
+Windowing
+
+Empfehlungssysteme
+
+Assoziationsregeln
+
+PageRank
+
+Filtern
+
+Locality Sensitive
+Hashing
+
+Supervised ML
+
+Web Spam
+
+Momente
+
+2-2
+
+INHALTSVERZEICHNIS
+− Einführung
+− Hierarchische Clusteranalyse
+− Hierarchisch agglomeratives Clustern
+
+− Partitionierende Clusteranalyse
+− k-means-Algorithmus
+− BFR-Algorithmus
+− CURE-Algorithmus
+
+2-3
+
+LONDON, 1854
+− Cholera Epidemie
+− 578 Tote
+− John Snow
+(1813 – 1858)
+
+Quelle: Wikipedia
+
+− kann als Anfang von
+Data Mining / Science
+gesehen werden
+
+Quelle: Wikipedia
+2-4
+
+CLUSTERING
+− Gegeben einer Menge von 𝑵 Datenpunkten im ℝ𝑑
+− 𝒙𝟏 = x11 , x12 , … , x1d ,
+− 𝒙𝟐 = x21 , x22 , … , x2d ,
+− …,
+− 𝒙𝑁 = x𝑁1 , x𝑁2 , … , xNd
+− Distanzfunktion 𝒅 𝒙i , 𝒙𝑗 :
+− Euklidisch: 𝑑 𝑥𝑖 , 𝑥𝑗 =
+
+2
+𝑑
+σ𝑘=1 𝑥𝑖𝑘 − 𝑥𝑗𝑘
+
+− Manhattan-Norm: 𝑑 𝑥𝑖 , 𝑥𝑗 = σ𝑑𝑘=1 𝑥𝑖𝑘 − 𝑥𝑗𝑘
+− Ziel: Gruppierung der Datenpunkte in Cluster, so daß
+− Mitglieder eines Cluster eine geringe paarweise Distanz aufweisen
+− Mitglieder verschiedener Cluster eine hohe paarweise Distanz aufweisen
+2-5
+
+WIE CLUSTER BILDEN?
+
+Wieviele Cluster?
+
+6 Cluster
+
+2 Cluster
+
+4 Cluster
+
+1-6
+
+VISUALISIERUNG DES ERGEBNISSES
+− Visualisierung möglich bei nur 2 Dimensionen:
+
+x
+xx x
+x x
+x x x
+x
+xx x
+x
+
+x
+x
+x x
+x x
+x xx x
+x x x
+x x
+Cluster
+
+Outlier
+x
+x x
+x x x x
+x x x
+x
+
+2-7
+
+VISUALISIERUNGEN VON CLUSTERDETAILS (1)
+− Box (and -Whisker-Plot)
+− Median, Q1, Q3
+− Interquartile range IRQ
+= Q3 - Q1
+− Whiskers:
+− Q1 – 1,5 * IQR
+− Q3 + 1,5 * IQR
+− Whisker ends at the last
+real data point within the
+range
+
+− Outlier: data points
+outside of the whiskers
+https://en.wikipedia.org/wiki/Box_plot
+
+2-8
+
+VISUALISIERUNGEN VON CLUSTERDETAILS (2)
+
+https://towardsdatascience.com/best-practices-for-visualizing-your-cluster-results-20a3baac7426
+
+− Visualisierung der einzelnen Cluster und Variablen mit
+Box-and-Whisker Plots
+2-9
+
+VISUALISIERUNGEN VON CLUSTERDETAILS (3)
+
+https://towardsdatascience.com/best-practices-for-visualizing-your-cluster-results-20a3baac7426
+
+− Visualisierung der einzelnen Cluster und Variablen mit
+Box-and-Whisker Plots
+2-10
+
+VISUALISIERUNGEN VON CLUSTERDETAILS (4)
+− Mittelwerte der Parameter und Cluster im Vergleich zu
+Gesamt-Mittelwert
+
+2-11
+https://towardsdatascience.com/best-practices-for-visualizing-your-cluster-results-20a3baac7426
+
+VISUALISIERUNGEN VON CLUSTERDETAILS (5)
+− Mittelwerte der Parameter und Cluster im Vergleich zu
+Gesamt-Mittelwert
+
+https://towardsdatascience.com/best-practices-for-visualizing-your-cluster-results-20a3baac7426
+
+2-12
+
+VISUALISIERUNGEN VON CLUSTERDETAILS (6)
+− Visualisierung
+mit StarPlot
+
+2-13
+https://towardsdatascience.com/best-practices-for-visualizing-your-cluster-results-20a3baac7426
+
+ANWENDUNG: SEGMENTIERUNG VON BILDERN
+− Clustering der Farben
+→ Regionen mit ähnlichen Farben ergeben ein Cluster
+
+https://www.researchgate.net/publication/285926394_Piecewise_Flat_Embedding_for_Image_Segmentation/figures?lo=1
+
+1-14
+
+ANWENDUNG: DNA SEQUENCE CLUSTERING
+
+doi: https://doi.org/10.1371/journal.pcbi.1002958.g003
+
+1-15
+
+ANWENDUNG: CLUSTERING VON DOKUMENTEN
+
+1-16
+https://www.kaggle.com/code/maksimeren/covid-19-literature-clustering
+
+ANWENDUNG: KUNDENSEGMENTIERUNG
+
+https://www.business-wissen.de/hb/kundensegmentierung-mit-clusteranalyse/
+
+1-17
+
+FLUCH DER HOHEN DIMENSIONEN
+− Clustering ist anspruchsvoll im Fall großer Datenmengen
+− gegebene Anzahl an Clustern 𝑘
+− 𝒌𝑵 Möglichkeiten die N Punkte in 𝑘 Cluster zu ordnen
+𝑁
+− Paarweiser Vergleich erfordert Berechnung von
+Ähnlichkeiten
+2
+
+− Clustering ist anspruchsvoll bei hoher Dimension der Datenpunkte
+− Oft: 10-10.000 Dimensionen
+− Datenpunkte liegen im Wesentlichen auf den Kanten des Datenraumes
+− The Curse of Dimensionality: Im Falle einer sehr hohen Dimension
+haben fast alle Paare von Datenpunkten eine ähnliche Distanz
+
+2-18
+
+ÜBERSICHT: CLUSTERVERFAHREN
+− Hierarchisch:
+− Agglomerativ (Bottom-up):
+− Zu Beginn bildet jeder Punkt ein Cluster
+− Wiederholtes Kombinieren von zwei
+ähnlichen Clustern zu einem neuen Cluster
+
+− Divisiv (Top-down):
+− Ein großes Cluster zu Beginn
+− Wiederholtes Aufteilen eines großen Clusters
+in zwei unähnliche kleinere Cluster
+
+− Partitionierend:
+− Feste Anzahl an Cluster
+− Zuordnen der Punkte zu den Clustern
+2-19
+
+INHALTSVERZEICHNIS
+− Einführung
+− Hierarchische Clusteranalyse
+− Hierarchisch agglomeratives Clustern
+
+− Partitionierende Clusteranalyse
+− k-Means-Algorithmus
+− BFR-Algorithmus
+− CURE-Algorithmus
+
+2-20
+
+HIERARCHISCHE CLUSTERANALYSE
+− Agglomerativ: Wiederholtes Kombinieren der beiden
+Cluster mit geringster Distanz zu einem neuen Cluster
+− Dendrogramm:
+− Blätter (unterste Ebene)
+repräsentieren die
+Datenpunkte
+− Jeder Punkt ist ein Cluster
+− Höhe der Vereinigung gibt die
+Distanz zwischen den beiden
+Clustern an
+
+− Zwei Kriterien:
+− Definition der Distanz zwischen zwei Clustern
+− Stoppregel
+
+2-21
+
+HIERARCHISCHE CLUSTERANALYSE
+(AGGLOMERATIV)
+− Mögliche Definitionen der Distanz zwischen zwei Clustern:
+− Single linkage: Minimale paarweise Distanz zwischen allen Mitgliedern der
+beiden Cluster
+− Complete linkage: Maximale paarweise Distanz zwischen allen Mitgliedern der
+beiden Cluster
+− Average linkage: Durchschnittliche paarweise Distanz zwischen allen Mitgliedern
+der beiden Cluster
+− Centroid linkage: Distanz zwischen den beiden Centroiden der Cluster (Centroid
+= Arithmetisches Mittel aller Punkte des Clusters)
+− Ward linkage: Zunahme der Varianz, wenn die Cluster zusammengeführt werden
+
+− Anmerkungen:
+− Single linkage bildet oft entartete Bäume
+− Complete/Average linkage bilden ausgeglichene Bäume
+− Single/Complete/Average linkage auch in nicht euklidischen Räumen direkt
+anwendbar
+− Centroid/Ward linkage: Erfordern Berechnung eines Centroiden, dies ist jedoch
+nicht immer direkt möglich (Beispiel: Vergleich von Strings)
+2-22
+
+HIERARCHISCHE CLUSTERANALYSE
+(AGGLOMERATIV)
+− Mögliche Stoppregeln:
+− Anzahl der Cluster
+− Maximale Distanz innerhalb des neu entstandenen Clusters übersteigt
+Schwellenwert
+− Durchschnittliche maximale Distanz steigt stark an
+− „Dichte“ der Cluster liegt unter einem Schwellenwert
+
+− Auch die Skalierung der Dimensionen hat Einfluss auf das Clustering
+− Bei Daten mit verschiedenen Attributen (z.B. Einkommen und Körpergröße)
+− Daten sollten standardisiert werden, so dass alle Attribute einen Mittelwert von 0
+und eine Standardabweichung von Eins aufweisen
+
+2-23
+
+BEISPIEL: VERWENDUNG DER CENTROIDEN
+o (5,3)
+
+(1,2)
+o
+x (1.5,1.5)
+(1,1) x
+
+o (2,1)
+
+o (0,0)
+
+o … Datenpunkt
+x … Centroid
+
+(4.7,1.3) x
+
+o (4,1)
+x
+(4.5,0.5) o (5,0)
+
+Dendrogram
+2-24
+
+HIERARCHISCHE CLUSTERANALYSE
+− Auch in Nicht-Euklidischen Räumen möglich
+− z.B. über Jaccard-Metrik
+− Anstatt Centroid: Clustroid = Punkt aus dem Cluster mit
+− Minimaler Summe aller Distanzen zu den anderen Punkten des
+Clusters, oder
+− Minimaler maximale Distanz zu den anderen Punkten des Clusters
+
+− Oder Anwendung eines Verfahrens ohne Centroid
+
+− Bestes Verfahren zur Auswahl zweier Cluster hängt von
+der Form der tatsächlichen Cluster ab (welche man nicht
+kennt)
+
+2-25
+
+KOMPLEXITÄT (BEARBEITUNGSZEIT)
+− Single Linkage (über minimale Distanz): 𝑂(𝑁 2 )
+− Einmal: Berechnung aller paarweiser Distanzen und Sortierung
+der Paare aufsteigend nach Distanz
+− Zusammenfügen der Cluster in dieser Reihenfolge
+
+− Alle anderen Verfahren: 𝑂(𝑁 2 log𝑁)
+− Start: Berechnung aller paarweiser Distanzen und Sortierung der
+Paare aufsteigend nach Distanz
+− Naiv: In jedem Schritt müssen Distanzmaße zwischen allen
+Clustern neu berechnet werden: 𝑂(𝑁 2 ), 𝑂((𝑁 − 1)2 ), 𝑂൫(𝑁 −
+2)2 ൯, …,
+− Da N Schritte, also 𝑂(𝑁 3 ) insgesamt
+− Bei Verwendung einer Priority Queue: 𝑂(𝑁 2 log 𝑁)
+2-26
+
+KOMPLEXITÄT – PRIORITY QUEUE
+− Abstrakter Datentyp (wie Stack, Heap, Queue)
+− Verschiedene Implementierungen möglich
+− z.B. Implementierung als Heap mit binärem Baum
+− Aufwand für Operationen Edit / Delete
+− Naiver Ansatz: 𝑂 𝑁
+− Mit binärer Suche: 𝑂 log 𝑁
+
+2-27
+
+KOMPLEXITÄT (BEARBEITUNGSZEIT)
+− Priority Queue: Veränderungen in 𝑂 log 𝑁
+− Vorgehen:
+− Berechnung aller Distanzen und Sortierung der Paare nach
+Distanz in Priority Queue P: 𝑂 𝑁 2
+
+C,D C,E A,B
+1.2 2.1 2.3
+
+D,A D,B A,E
+2.8 3.3 3.5
+
+C,B …
+4.0 …
+
+− Wiederhole:
+− Finden des Minimums (in 𝑂 1 ), hier Paar (C, D)
+− Entfernen aller Elemente aus P, welche sich auf C oder D beziehen,
+z.B. (C,D), (C,E), (D,A), …: max. 2𝑁 Veränderungen, also
+𝑂 𝑁 log 𝑁
+− Berechnung aller Distanzen zwischen neuem Cluster X = (C,D) und
+anderen Clustern, sowie Hinzufügen dieser Paare zu P: 𝑂 𝑁 log 𝑁
+
+− Maximal 𝑁 Wiederholungen, also 𝑂(𝑁 2 log 𝑁) insgesamt
+2-28
+
+ANWENDUNG: CLUSTERN VON GENEXPRESSIONEN
+
+Unsupervised hierarchical
+clustering analysis of miRNA
+gene expression of 41
+mammary tumors
+Min Zhi et al., Genome Biology,
+volume 12, R77 (2011)
+
+2-29
+
+INHALTSVERZEICHNIS
+− Einführung
+− Hierarchische Clusteranalyse
+− Hierarchisch agglomeratives Clustern
+
+− Partitionierende Clusteranalyse
+− k-means-Algorithmus
+− BFR-Algorithmus
+− CURE-Algorithmus
+
+2-30
+
+K-MEANS
+− Anzahl der Cluster k ist vorgegeben
+− Seien 𝐶1 , 𝐶2 , … , 𝐶𝑘 Mengen von Datenpunkten mit
+− 𝐶1 ∪ 𝐶2 ∪ ⋯ ∪ 𝐶𝑘 = Menge aller Datenpunkte
+− 𝐶𝑖 ∩ 𝐶𝑗 = ∅ für alle 𝑖 ≠ 𝑗.
+
+− k-Means-Clustering versucht ein Clustering 𝐶1 , 𝐶2 , … , 𝐶𝑘 mit möglichst
+geringer durchschnittlicher Distanz innerhalb der Cluster zu finden:
+− minimiere σ𝑘𝑗=1
+𝐶1 ,𝐶2 ,…,𝐶𝑘
+
+1
+σ ′ 𝑑(𝑥𝑖 , 𝑥𝑖 ′ )
+|𝐶𝑗 | 𝑖,𝑖 ∈𝐶𝑗
+
+− Sehr schwieriges Optimierungsproblem für große Datenmengen
+− Der k-Means-Algorithmus approximiert dieses Ziel ziemlich gut
+− Komplexität: O(N)
+2-31
+
+K-MEANS-ALGORITHMUS
+− Gegeben einer initialen Wahl von k Centroiden
+− Hinzufügen aller Punkte zum Cluster mit
+nächstgelegenem Centroiden
+− Wiederholung bis Konvergenz (keine Änderungen):
+− Neuberechnung der Centroiden
+− Zuordnung aller Punkte zum Cluster mit nächstgelegenem
+Centroiden
+
+x
+
+x
+x
+
+x
+x
+x
+
+x
+
+x
+
+x x x
+
+x … Datenpunkte
+… Centroid
+
+Cluster nach 1. Runde
+
+2-32
+
+K-MEANS-ALGORITHMUS
+− Gegeben einer Initialen Wahl von k Centroiden
+− Hinzufügen aller Punkte zum Cluster mit
+nächstgelegenem Centroiden
+− Wiederholung bis Konvergenz (keine Änderungen):
+− Neuberechnung der Centroiden
+− Zuordnung aller Punkte zum Cluster mit nächstgelegenem
+Centroiden
+x
+
+x
+
+x
+x
+x
+x
+
+x
+
+x
+
+x x x
+
+x … Datenpunkte
+… Centroid
+
+Cluster nach 2. Runde
+
+2-33
+
+K-MEANS-ALGORITHMUS
+− Gegeben einer Initialen Wahl von k Centroiden
+− Hinzufügen aller Punkte zum Cluster mit
+nächstgelegenem Centroiden
+− Wiederholung bis Konvergenz (keine Änderungen):
+− Neuberechnung der Centroiden
+− Zuordnung aller Punkte zum Cluster mit nächstgelegenem
+Centroiden
+x
+
+x
+x
+x
+x
+x
+
+x
+
+x
+
+x … Datenpunkte
+… Centroid
+
+x x x
+
+Cluster nach 3. Runde
+
+2-34
+
+INITIALISIERUNG: WAHL VON K CENTROIDEN
+− 1. Möglichkeit: Jeder Punkt wird zufällig einem von k Clustern
+zugeordnet und Berechnung der dazugehörigen Centroiden
+− 2. Möglichkeit: Auswahl von k Punkten mit größtmöglichen
+paarweisen Entfernungen
+− Wähle ersten Punkt zufällig
+− Wiederhole: Wähle den Punkt mit der maximalen minimalen Distanz zu
+allen schon gewählten Punkten
+
+− 3. Möglichkeit: Hierarchische Clusteranalyse auf Stichprobe (so dass
+k Cluster entstehen) und Auswahl der jeweiligen Clustroiden
+
+− Ergebnis des Algorithmus hängt von der Initialisierung ab
+− Die durchschnittliche Distanz ist zwar minimal (Konvergenz), aber nur
+lokales Minimum
+− Wiederholung mit verschiedenen Initialisierungen und Wahl des besten
+Clustering
+2-35
+
+WAHL VON K
+− Ausprobieren verschiedener Werte k = 2, 4, 8, 16, 32, …
+− Schrittweises Erhöhen von k solange „sich etwas Relevantes ändert“
+− Beispiel: durchschnittliche Distanz fällt signifikant
+
+Bester Wert für k
+durchschnittliche
+Distanz
+
+k
+
+− Binäre Suche um Rechenaufwand gering zu halten
+− Annahme: Signifikante Änderung von k = 8 zu k = 16, aber keine
+signifikante Änderungen von k = 16 zu k = 32 → Setze k = 12
+− Falls signifikante Änderungen von k = 12 zu k = 16, setze k = 14 , …
+− Falls keine signifikante Änderungen von k = 12 zu k = 16, setze k = 10 ,
+…
+2-36
+
+INHALTSVERZEICHNIS
+− Einführung
+− Hierarchische Clusteranalyse
+− Hierarchisch agglomeratives Clustern
+
+− Partitionierende Clusteranalyse
+− k-means-Algorithmus
+− BFR-Algorithmus
+− CURE-Algorithmus
+
+2-37
+
+BFR-ALGORITHMUS
+− BFR [Bradley-Fayyad-Reina] ist eine Variante
+des k-Means-Algorithmus, welche die
+Verarbeitung sehr umfangreicher Datensätze
+(die nicht in den Hauptspeicher passen) erlaubt
+− Annahme: Cluster sind (multivariat) normal
+verteilt
+− um den Centroiden
+− mit stochastisch unabhängigen Dimensionen
+
+− Idee:
+− Da die Cluster jeweils einer Normalverteilung
+folgen, müssen nicht mehr alle Punkte eines
+Clusters explizit gespeichert werden
+− Es genügen die Parameter der
+Normalverteilungen:
+Erwartungswert und Varianz
+
+− Ziel: Bestimmung der k Centroiden und
+dazugehörigen Varianzen
+
+2-38
+
+REPRÄSENTATION DER CLUSTER
+− Anzahl der Dimensionen: 𝑑
+− Effiziente Zusammenfassung eines Clusters mittels 2𝑑 + 1 Zahlen
+− n: Anzahl der im Cluster enthaltenen Punkte
+− 𝑆𝑈𝑀1 , 𝑆𝑈𝑀2 , … , 𝑆𝑈𝑀𝑑 die Summen der Komponenten dieser Punkte
+− 𝑆𝑈𝑀𝑆𝑄1 , 𝑆𝑈𝑀𝑆𝑄2 , … , 𝑆𝑈𝑀𝑆𝑄𝑑 die Summen der Quadrate der Komponenten
+dieser Punkte
+
+− Hinzufügen eines Punktes (𝑥1 , 𝑥2 , …, 𝑥𝑑 )
+− n+1
+− 𝑆𝑈𝑀1 + 𝑥1 , 𝑆𝑈𝑀2 +𝑥2 , … , 𝑆𝑈𝑀𝑑 + 𝑥𝑑
+− 𝑆𝑈𝑀𝑆𝑄1 + 𝑥12 , 𝑆𝑈𝑀𝑆𝑄2 + 𝑥22 , … , 𝑆𝑈𝑀𝑆𝑄𝑑 + 𝑥𝑑2
+
+− Centroid:
+
+𝑆𝑈𝑀1 𝑆𝑈𝑀2
+𝑆𝑈𝑀𝑑
+,
+,
+…
+,
+𝑛
+𝑛
+𝑛
+
+− Varianz:
+
+𝑆𝑈𝑀𝑆𝑄1 𝑆𝑈𝑀𝑆𝑄2
+𝑆𝑈𝑀𝑆𝑄𝑑
+,
+,…,
+𝑛
+𝑛
+𝑛
+
+−
+
+𝑆𝑈𝑀1 𝑆𝑈𝑀2
+𝑆𝑈𝑀𝑑
+,
+,…,
+𝑛
+𝑛
+𝑛
+
+2
+
+2-39
+
+DREI MENGEN
+− Discard set (DS): Punkte, die einem Cluster zugeordnet wurden
+− Retained set (RS): Punkte, die bisher keinem Cluster zugeordet wurden
+− Compression set (CS): Punkte aus RS, die nahe genug beieinander liegen,
+um sie zusammenzufassen (Mini-Cluster)
+
+Punkte
+aus RS
+
+Cluster (DS)
+
+Komprimierte
+Mengen (CS)
+
+2-40
+
+BFR-ALGORITHMUS
+− Initialisiere k Cluster, z.B. Clusteranalyse auf Stichprobe
+− Wiederhole:
+− Lade einen Chunk mit Punkten (Fülle Hauptspeicher mit Daten von
+Festplatte)
+− Hinzufügen der Punkte zu den k vorhandenen Clustern (DS), falls deren
+Distanz innerhalb eines Schwellenwerts liegen
+− Clusteranalyse auf übrigen Punkten, inkl. der Punkte aus RS
+− Zusammenführen der entstandenen „Mini-Cluster“ mit CS
+− z.B. Zusammenführen zweier Cluster, falls Varianz deren Kombination unter
+einem Schwellenwert liegt
+− Manche Punkte bleiben einzeln und somit in RS
+
+− Evtl. Zusammenführen einiger „Mini-Cluster“ aus CS mit Clustern aus
+DS.
+
+− Am Ende: Hinzufügen der Cluster aus CS und Punkte aus RS zu
+nächstliegenden Clustern aus DS
+2-41
+
+BFR-CLUSTER
+− Nach welchem Kriterium wird ein Punkt einem vorhandenen Cluster
+hinzugefügt?
+− Kriterium: Mahalanobis-Abstand zwischen Punkt und Centroid eines
+Clusters ist minimal und liegt unter einem Schwellenwert
+− Punkt (𝑥1 , 𝑥2 , …, 𝑥𝑑 )
+− Centroid (𝑐1 , 𝑐2 , …, 𝑐𝑑 )
+− Standardabweichungen (𝜎1 , 𝜎2 , …, 𝜎𝑑 )
+𝑑
+
+𝑀 𝑥, 𝑐 =
+
+𝑥𝑖 − 𝑐𝑖
+෍
+𝜎𝑖
+
+2
+
+𝑖=1
+
+− Für 68% der Punkte gilt: 𝑀 𝑥, 𝑐 < 𝑑
+− Für 95% der Punkte gilt: 𝑀 𝑥, 𝑐 < 2 𝑑
+− Wahl des Schwellenwerts, so dass Punkt mit hoher Wahrscheinlichkeit zu
+Cluster gehört
+
+2-42
+
+VERGLEICH: EUKLIDISCH VS MAHALANOBIS
+Konturlinien der Punkte mit gleichem Abstand zum Ursprung
+
+Gleichverteilung,
+Euklidische Distanz
+
+Normalverteilung,
+Euklidische Distanz
+
+Normalverteilung,
+Mahalanobis-Distanz
+
+2-43
+
+INHALTSVERZEICHNIS
+− Einführung
+− Hierarchische Clusteranalyse
+− Hierarchisch agglomeratives Clustern
+
+− Partitionierende Clusteranalyse
+− k-means-Algorithmus
+− BFR-Algorithmus
+− CURE-Algorithmus
+
+2-44
+
+CURE-ALGORITHMUS
+− Erweiterung von k-Means zu Clustern beliebiger Form
+− Probleme bei BFR:
+− Annahme der Normalverteilung
+und unabhängige Dimensionen
+− Ellipsen sind möglich, doch
+keine rotierten Ellipsen
+
+− CURE (Clustering Using Representatives):
+− Cluster beliebiger Form möglich
+− Cluster werden über eine
+Menge repräsentativer Punkte
+beschrieben
+
+2-45
+
+CURE-ALGORITHMUS
+− Ziehe eine Zufallsstichprobe, die in den Hauptspeicher passt
+− Initialisierung: Hierarchische Clusteranalyse, wobei eine
+agglomerative Methode ohne Centroid bevorzugt werden sollte
+− Auswahl von repräsentativen Punkten für jedes Cluster: Innerhalb
+eines Clusters sollten die Punkte möglichst weit auseinander liegen
+− Verschiebung der repräsentativen Punkte um einen bestimmten
+Anteil (z.B. 20%) hin zu den jeweiligen Centroiden der Cluster
+− Zusammenführung zweier Cluster, deren repräsentative Punkte eine
+geringe maximale paarweise Distanz aufweisen (Schwellenwert)
+− Durchlauf aller Punkte und Zuordnung zu Cluster mit geringstem
+Abstand zu einem repräsentativen Punkt
+
+2-46
+
+BEISPIEL
+− Ziehen einer Zufallsstichprobe & hierarchische
+Clusteranalyse
+
+2-47
+
+BEISPIEL
+− Auswahl repräsentativer Punkte & Verschiebung zu
+Centroiden
+
+2-48
+
+BEISPIEL
+− Zusammenführung zweier Cluster, deren repräsentative
+Punkte eine geringe Distanz aufweisen
+
+2-49
+
+ZUSAMMENFASSUNG
+− Einführung
+− Hierarchische Clusteranalyse
+− Hierarchisch agglomeratives Clustern
+
+− Partitionierende Clusteranalyse
+− k-means-Algorithmus
+− BFR-Algorithmus
+− CURE-Algorithmus
+
+2-50
+
+

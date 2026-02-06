@@ -1,0 +1,1745 @@
+DATA MINING
+
+Kapitel 3: Dimensionreduktion
+Dr. Christian Martin
+Wintersemester 2025/26
+
+Abteilung Datenbanken / ScaDS.AI
+Universität Leipzig
+
+THEMENÜBERSICHT
+Hochdimensionale Daten
+
+Graphdaten
+
+Datenströme
+
+Clustering
+
+Dimensionsreduktion
+
+Community
+Detection
+
+Windowing
+
+Empfehlungssysteme
+
+Assoziationsregeln
+
+PageRank
+
+Filtern
+
+Locality Sensitive
+Hashing
+
+Supervised ML
+
+Web Spam
+
+Momente
+
+3-2
+
+INHALTSVERZEICHNIS
+− Einführung
+− Hauptkomponentenanalyse
+− Singulärwertzerlegung
+− t-SNE - Algorithmus
+
+3-3
+
+DIMENSIONSREDUKTION
+− Aufdeckung versteckter Korrelationen
+− Entfernung redundanter und verrauschter Merkmale
+− Leichtere Interpretation und Visualisierung
+− Schnellere Speicherung und Verarbeitung der Daten
+
+3-4
+
+DIMENSIONSREDUKTION
+
+𝑛=2
+𝑑=1
+
+A
+
+𝑛=3
+𝑑=2
+
+− Idee: Falls die Datenpunkte eines n-dimensionalen Raumes in der
+Nähe eines d-dimensionalen Unterraums liegen, Reduzierung der
+Punkte auf deren Projektionen im Unterraum
+Anstatt 2 Koordinaten, wird jeder
+Punkt nur über eine Koordinate
+repräsentieren: Position auf der
+roten Linie
+
+Punkt A wird anstatt über 3
+Koordinaten (z.B. [3,4,2]) nur über 2
+Koordinaten (z.B. [2,1])
+repräsentiert
+
+3-5
+
+DIMENSIONSREDUKTION
+
+A
+𝑛=2
+𝑑=1
+
+𝑛=3
+𝑑=2
+
+− Ziel: Aufdeckung der Datenachsen
+− Die Achsen des Unterraums bezeichnet man auch als Faktoren
+− Wahl der Faktoren:
+− Erster Faktor zeigt in die Richtung, in welcher die Punkte ihre größte
+Streuung aufweisen
+− Zweiter Faktor ist orthogonal zum ersten Faktor und zeigt in die
+Richtung mit der größten Streuung unter den Punkten
+− usw..
+
+3-6
+
+DIMENSIONSREDUKTION
+− Einfaches Beispiel:
+Kunde
+
+Montag
+
+Dienstag
+
+Mittwoch
+
+Donnerstag
+
+Freitag
+
+Repräsentation
+
+A
+
+1
+
+1
+
+1
+
+0
+
+0
+
+[1, 0]
+
+B
+
+2
+
+2
+
+2
+
+0
+
+0
+
+[2, 0]
+
+C
+
+1
+
+1
+
+1
+
+0
+
+0
+
+[1, 0]
+
+D
+
+5
+
+5
+
+5
+
+0
+
+0
+
+[5, 0]
+
+E
+
+0
+
+0
+
+0
+
+2
+
+2
+
+[0, 2]
+
+F
+
+0
+
+0
+
+0
+
+3
+
+3
+
+[0, 3]
+
+− Rang einer Matrix: Anzahl der linear unabhängigen Zeilen/Spalten
+− Im Beispiel: Zeilen-/Spaltenrang ist 2
+Neue Achsen/Faktoren
+1
+2
+1
+− Aufspaltung:
+5
+0
+0
+
+1
+2
+1
+5
+0
+0
+
+1
+2
+1
+5
+0
+0
+
+0
+0
+0
+0
+2
+3
+
+0
+1
+0
+2
+0
+1
+=
+0
+5
+2
+0
+3
+0
+
+0
+0
+0 1 1
+∙
+0 0 0
+2
+3
+
+1 0 0
+0 1 1
+Neue Koordinaten
+
+3-7
+
+INHALTSVERZEICHNIS
+− Einführung
+− Hauptkomponentenanalyse
+− Singulärwertzerlegung
+− t-SNE - Algorithmus
+
+3-8
+
+HAUPTKOMPONENTENANALYSE
+− alias
+− Hauptkomponententransformation
+− Principal Component Analysis (PCA)
+− Verfahren der multivariaten Statistik und Linearen Algebra
+− Idee: Daten sind normalverteilt, aber in einem rotierten
+Koordinatensystem
+− beste lineare Approximation
+− Ziel
+− Suche der Hauptkomponenten einer
+Datenverteilung
+− Projektion der Datenpunkte auf
+Hauptkomponenten
+− Jeder Datenpunkt wird durch
+Linearkombination von möglichst wenigen
+Hauptkomponenten approximiert.
+Wikipedia, CC BY 4.0
+
+3-9
+
+HAUPTKOMPONENTENANALYSE
+− Sei A eine m x n Matrix mit m Zeilen (Datenpunkte) und n Spalten
+(Dimensionen) und 𝐴∙1 , 𝐴∙2 , … , 𝐴∙𝑛 die Spalten von A
+− Vorgehen:
+1. Translation
+2. Rotation
+3. Projektion
+
+1. Tranlation
+− Die Punkte werden so verschoben, dass Mittelpunkt im Ursprung
+liegt, d.h. die Spalten werden zentriert, so dass
+1 𝑚
+σ 𝐴 = 0 für alle 𝑗 = 1, . . , 𝑛
+𝑚 𝑖=1 𝑖𝑗
+
+3-10
+
+HAUPTKOMPONENTENANALYSE
+
+2. Rotation
+− Bildung der Kovarianzmatrix M von A: M = 𝐴𝑇 𝐴
+− M hat die Größe n x n (Anzahl der Dimensionen)
+− Bestimmung der Eigenvektoren 𝑒1 , … 𝑒𝑛 und Eigenwerte 𝜆1 , … 𝜆𝑛 von
+M mit
+𝑀𝑒 = 𝜆𝑒
+− Eigenschaften:
+− Die Eigenvektoren 𝑒1 , … 𝑒𝑛 werden auch Ladungsvektoren
+φ1 , … φn genannt
+− Es entstehen n Eigenvektoren und n Eigenwerte
+− Der 1. Eigenvektor zeigt in die Richtung der Hauptdatenverteilung
+(bildet die maximale Varianz ab), der 2. Eigenvektor in die
+zweitgrößte Datenrichtung (senkrecht zum 1. Eigenvektor), usw.
+3-11
+
+HAUPTKOMPONENTENANALYSE
+− Weitere Eigenschaften:
+− Alle Eigenvektoren stehen senkrecht aufeinander.
+Damit bilden die Eigenvektoren ein neues Koordinatensystem
+− Sortierung nach Größe der Eigenwerte
+− Die Eigenvektoren haben die Länge 1:
+2
+σ𝑛𝑗=1 𝜑𝑗𝑞
+= 1 für alle q = 1, . . , n
+− Die Eigenvektoren bilden eine Rotationsmatrix
+− Die Eigenwerte geben die Varianz entlang des jeweiligen
+Eigenvektors an.
+− Die Parameter 𝜑11 , 𝜑21 , … , 𝜑𝑛1 werden auch als Ladungen der
+ersten Hauptkomponente bezeichnet
+
+3-12
+
+HAUPTKOMPONENTENANALYSE
+3. Projektion
+− Projektion der Datenpunkte auf die neuen Hauptachsen
+− Die erste Hauptkomponente der Projektion von A ist gegeben durch
+den Vektor
+𝑧∙1 = 𝜑11 𝐴∙1 + 𝜑21 𝐴∙2 + ⋯ + 𝜑𝑛1 𝐴∙𝑛 (Linearkombination)
+2
+− mit σ𝑛𝑗=1 𝜑𝑗1
+= 1 und
+− maximaler empirischer Varianz
+
+1 𝑚
+2
+σ𝑖=1 𝑧𝑖1
+𝑚
+
+− Werden weniger Hauptachsen verwendet als es ursprünglich
+Dimensionen gab, kommt es zur Dimensionsreduktion
+
+3-13
+
+PCA: BEISPIEL (1)
+
+𝐴=
+
+1
+2
+3
+4
+
+2
+1
+4
+3
+
+3-14
+
+PCA: BEISPIEL (2)
+
+𝐴=
+
+1
+2
+3
+4
+
+2
+1
+4
+3
+
+Bestimmung des Mittelpunktes
+3-15
+
+PCA: BEISPIEL (3)
+
+𝐴=
+
+1
+2
+3
+4
+
+2
+1
+4
+3
+
+𝐴′ =
+
+−1.5
+−0.5
+0.5
+1.5
+
+−0.5
+−1.5
+1.5
+0.5
+
+Translation des Datensatzes
+3-16
+
+PCA: BEISPIEL (4)
+
+(1,1)
+
+𝝋𝟏
+
+𝑑=
+
+(−1)2 +(−1)2 = 2
+
+(-1,-1)
+
+𝝋𝟏 =
+
+1/ 2
+1/ 2
+
+Berechnung des 1. Eigenvektors
+3-17
+
+PCA: BEISPIEL (5)
+
+𝝋𝟏 =
+
+1/ 2
+1/ 2
+
+𝑧1 =
+
+− 2
+− 2
+2
+2
+
+− 2
+
+𝝋𝟏
+
+− Rotation des Koordinatensystems
+− Projektion der Datenpunkte auf neue Achse, d.h.
+Berechnung der neuen Koordinate 𝑧i für die 4 Punkte
+
+2
+
+3-18
+
+PCA: BERECHNUNG
+− Der Ladungsvektor 𝝋𝟏 ist der Eigenvektor des größten Eigenwerts
+der Matrix 𝐴𝑇 𝐴 (Kovarianzmatrix von A)
+− Beispiel: 𝐴𝑇 𝐴 =
+
+1
+2
+
+2 3
+1 4
+
+4
+3
+
+1
+2
+3
+4
+
+2
+1
+4
+3
+
+=
+
+30
+28
+
+28
+30
+
+− Sei 𝑀 eine quadratische Matrix. Eine reelle Zahl 𝜆 heißt Eigenwert
+von 𝑀 und ein Vektor 𝑒 ≠ 0 der dazugehörige Eigenvektor, falls
+𝑀𝑒 = 𝜆𝑒
+− Beispiel:
+
+1
+30
+28
+
+1
+
+28
+2
+2
+∙
+= 58
+1
+1
+30
+2
+2
+3-19
+
+EIGENWERTE UND -VEKTOREN
+− Berechnung der Eigenvektoren und –werte einer Matrix M z.B. über die
+Power-Iteration-Methode:
+− Zu Beginn: beliebiger Vektor 𝒙0 ≠ 0
+− Iteration: 𝒙𝑘+1 =
+
+𝑀𝒙𝒌
+, wobei || … || die euklidische Norm | v | =
+| 𝑀𝒙𝒌 |
+
+Σ𝑖 𝑣𝑖2
+
+− Stopp, falls Änderungen in 𝒙𝑘 vernachlässigbar klein
+
+− Beispiel: M =
+
+30
+28
+
+30 28
+28 30
+0.707
+− 𝑥1 =
+0.707
+30 30
+− 𝑀𝑥1 =
+28 28
+− 𝑀𝑥0 =
+
+− 𝑥2 =
+
+28
+1
+und 𝑥0 =
+30
+1
+1
+58
+=
+und 𝑀𝑥0 = 582 + 582 = 82.02
+1
+58
+
+0.707
+41.01
+=
+und 𝑀𝑥1 = 57.997
+0.707
+41.01
+
+1/ 2
+0.707
+≈
+0.707
+1/ 2
+3-20
+
+EIGENWERTE UND -VEKTOREN
+− Die Power-Iteration-Methode berechnet den ersten Eigenvektor 𝒙
+(mit dem größten Eigenwert)
+− Dazugehöriger Eigenwert:  = 𝒙T 𝑀𝒙
+− Beispiel:
+0.707 𝑇 30 28 0.707
+≈ 58
+0.707 28 30 0.707
+− Reduzierung der Matrix 𝑀 um den Anteil, der durch den ersten
+Eigenwert und –vektor generiert/erklärt wird:
+𝑀∗ : = 𝑀 – 𝜆 𝑥 𝑥 𝑇
+− Power-Iteration-Method auf 𝑀∗ berechnet den zweiten Eigenvektor
+von 𝑀 (mit dem zweitgrößten Eigenwert von 𝑀)
+− Analoges Vorgehen für die Berechnung weiterer Eigenvektoren/werte
+3-21
+
+PCA: ZWEITE KOMPONENTE
+− Der zweite Eigenvektor von 𝐴𝑇 𝐴 entspricht dem Ladungsvektor 𝝋2
+der zweiten Hauptkomponente von A
+− Die zweite Komponente der Projektion von A ist gegeben durch den
+Vektor
+− 𝑧∙2 = 𝜑12 𝐴∙1 + 𝜑22 𝐴∙2 + ⋯ + 𝜑𝑛2 𝐴∙𝑛
+1
+2
+2
+mit σ𝑛𝑗=1 𝜑𝑗2
+= 1 und maximaler empirischer Varianz σ𝑚
+𝑖=1 𝑧𝑖2
+𝑚
+
+− Außerdem muss gelten, dass 𝑧∙1 und 𝑧∙2 unkorreliert sind, d.h.
+σ𝑚
+𝑖=1 𝑧𝑖1 ∙ 𝑧𝑖2 = 0
+− Beispiel:
+1
+𝝋𝟐
+(− 2 ,
+
+− 𝑧2 =
+
+1/ 2
+−1/ 2
+1/ 2
+−1/√2
+
+−
+und 𝝋2 =
+
+1
+2
+
+1
+2
+
+2
+
+(− 2 , −
+
+)
+
+1
+2
+
+( 2,
+
+1
+
+𝝋𝟏
+)
+
+( 2 ,−
+
+2
+
+)
+
+1
+2
+
+)
+
+3-22
+
+PCA: HINWEISE
+− Spalten sollten gleiche Skalierung haben: neben Zentrierung des
+Mittelwertes auch gleiche Standardabweichung
+− Proportion Variance Explained (PVE): Anteil der Varianz, welcher
+durch die k-te Hauptkomponenten erklärt wird:
+2
+σ𝑚
+𝑍
+𝑖=1 𝑖𝑘
+𝑃𝑉𝐸𝑘 = 𝑛
+21
+σ𝑗=1 σ𝑚
+𝐴
+𝑖=1 𝑖𝑗
+− Kumulierter Anteil der erklärten Varianz:
+෍ 𝑃𝑉𝐸𝑘
+𝑘
+
+− Wähle die Anzahl der Hauptkomponenten
+so, dass der kumulierte Anteil der erklärten
+Varianz durch eine weitere Komponente
+nicht stark ansteigt
+− Ziel: Mit möglichst wenigen Komponenten
+möglichst viel Varianz erklären
+
+4
+1
+2
+3
+Anzahl Komponenten
+3-23
+
+PCA: BEISPIEL
+Rekonstruktion eines Bildes über die wichtigsten Hauptkomponenten
+
+800 x 633
+Pixel
+0.914 0.914 0.914 0.910 …
+0.929 0.929 0.925 0.918 …
+0.910 0.910 0.902 0.894 …
+0.906 0.902 0.898 0.894 …
+0.898 0.894 0.890 0.866 …
+…
+
+…
+
+…
+
+…
+
+Quelle: https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/
+
+…
+3-24
+
+PCA: BEISPIEL
+Rekonstruktion eines Bildes über die wichtigsten Hauptkomponenten
+
+800 x 633
+Pixel
+0.914 0.914 0.914 0.910 …
+0.929 0.929 0.925 0.918 …
+0.910 0.910 0.902 0.894 …
+0.906 0.902 0.898 0.894 …
+Jede Zeile ist ein Datenpunkt:
+Datensatz mit 633 Datenpunkten mit
+jeweils 800 Werten
+→ 633 Eigenvektoren der Dimension 800
+
+0.898 0.894 0.890 0.866 …
+…
+
+…
+
+…
+
+…
+
+Quelle: https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/
+
+…
+3-25
+
+PCA: BEISPIEL
+𝑘
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+෍ 𝑃𝑉𝐸𝑘
+
+0.37
+
+0.56
+
+0.65
+
+0.70
+
+0.73
+
+0.76
+
+0.79
+
+0.81
+
+0.83
+
+− Hauptkomponententanalyse auf Spalten der Pixel-Matrix:
+𝑘
+
+Quelle: https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/
+3-26
+
+INHALTSVERZEICHNIS
+− Einführung
+− Hauptkomponentenanalyse
+− Singulärwertzerlegung
+− t-SNE - Algorithmus
+
+3-27
+
+SINGULÄRWERTZERLEGUNG
+− alias Singular Value Decomposition (SVD)
+− Verallgemeinerung der PCA
+− Ermöglicht eine Zerlegung der Spalten bzw. Zeilen einer allgemeinen
+(auch rechteckigen) m x n Datenmatrix A
+
+− PCA mit k Hauptkomponenten:
+− Mit 𝒁 ∶= 𝑍∙1 𝑍∙2 … 𝑍∙𝑘 , und
+− 𝝋 ∶= 𝝋𝟏 𝝋𝟐 … 𝝋𝒌
+− gilt:
+
+𝒁 𝒎×𝒌 = 𝑨[𝒎×𝒏] ∙ 𝝋 𝒏×𝒌
+
+3-28
+
+SINGULÄRWERTZERLEGUNG
+− Es existiert eine Zerlegung einer Matrix A in das Produkt dreier Matrizen:
+
+r
+
+n
+
+
+m
+
+A
+
+=
+
+n
+
+r
+
+
+
+
+VT
+
+r
+
+m U
+m: Anzahl der Datenpunkte
+n: Anzahl Dimensionen
+
+𝑨[𝒎×𝒏] = 𝑈 𝑚×𝑟 ∙  𝑟×𝑟 ∙ 𝑉 𝑛×𝑟
+
+𝑇
+
+− r: Rang von A (Anzahl der Faktoren)
+− : Diagonalmatrix mit nicht-negativen Einträgen (Singulärwerte)
+− die Spalten von U und V sind orthonormal
+(d.h. 𝑈 𝑇 ∙ 𝑈 = 𝐼 und 𝑉 𝑇 ∙ 𝑉 = 𝐼)
+3-29
+
+Jill
+Jenny
+Jane
+
+Amelie
+
+Jack
+
+Casablanca
+
+John
+
+Serenity
+
+Jim
+
+Alien
+
+Joe
+
+Matrix
+
+BEISPIEL
+
+1
+3
+4
+5
+0
+0
+0
+
+1
+3
+4
+5
+2
+0
+1
+
+1
+3
+4
+5
+0
+0
+0
+
+0
+0
+0
+0
+4
+5
+2
+
+0
+0
+0
+0
+4
+5
+2
+
+m = 7 (Datenpunkte = Personen)
+n = 5 (Dimensionen = Filme)
+
+Bewertung von 0 bis 5
+
+3-30
+
+6
+
+5
+
+Dimension 2
+
+BEISPIEL
+• Matrix V gibt die Faktoren
+• Abbildung zeigt 2-dimensionale Projektion
+der Datenpunkte
+
+4
+3
+2
+
+v1
+
+1
+
+0
+
+1
+3
+4
+5
+0
+0
+0
+
+1
+3
+4
+5
+2
+0
+1
+
+1
+3
+4
+5
+0
+0
+0
+
+0
+0
+0
+0
+4
+5
+2
+
+0
+0.13 0.02 -0.01
+0
+0.41 0.07 -0.03
+0
+0.55 0.09 -0.04
+0 = 0.68 0.11 -0.05
+4
+0.15 -0.59 0.65
+5
+0.07 -0.73 -0.67
+2
+0.08 -0.29 0.32
+
+0
+
+2
+
+4
+
+6
+
+Dimension 1
+
+x
+v1
+
+12.4 0 0
+0
+9.5 0
+0
+0 1.3
+
+x
+
+0.56 0.59 0.56 0.09 0.09
+0.12 -0.02 0.12 -0.69 -0.69
+0.40 -0.80 0.40 0.09 0.09
+3-31
+
+Dimension 2
+
+BEISPIEL
+
+0.13 0.02 -0.01
+0.41 0.07 -0.03
+0.55 0.09 -0.04
+0.68 0.11 -0.05
+0.15 -0.59 0.65
+0.07 -0.73 -0.67
+0.07 -0.29 0.32
+
+10
+9
+8
+7
+6
+5
+4
+3
+2
+1
+0
+
+0
+
+2
+
+4
+
+6
+
+8
+
+Dimension 1
+
+x
+
+12.4 0 0
+0
+9.5 0
+0
+0 1.3
+
+Projektionen auf die Achse
+des ersten Faktors
+
+=
+
+1.61
+5.08
+6.82
+8.43
+1.86
+0.86
+0.86
+
+0.19 -0.01
+0.66 -0.03
+0.85 -0.05
+1.04 -0.06
+-5.60 0.84
+-6.93 -0.87
+-2.75 0.41
+3-32
+
+U ist Nutzer-FaktorMatrix
+
+Alien
+
+Serenity
+
+Casablanca
+
+Amelie
+
+Nutzer
+
+Matrix
+Romantik
+
+SciFi
+
+BEISPIEL: INTERPRETATION
+
+1
+3
+4
+5
+0
+0
+0
+
+1
+3
+4
+5
+2
+0
+1
+
+1
+3
+4
+5
+0
+0
+0
+
+0
+0
+0
+0
+4
+5
+2
+
+0
+0.13 0.02 -0.01
+0
+0.41 0.07 -0.03
+0
+0.55 0.09 -0.04
+0 = 0.68 0.11 -0.05
+4
+0.15 -0.59 0.65
+5
+0.07 -0.73 -0.67
+2
+0.07 -0.29 0.32
+
+SciFi-Faktor
+
+V ist Film-Faktor-Matrix
+
+Romantik-Faktor
+
+Stärke des SciFi-Faktors
+
+x
+
+12.4 0 0
+0
+9.5 0
+0
+0 1.3
+
+x
+
+0.56 0.59 0.56 0.09 0.09
+0.12 -0.02 0.12 -0.69 -0.69
+0.40 -0.80 0.40 0.09 0.09
+3-33
+
+SVD: DIMENSIONSREDUKTION
+Reduktion der Dimensionen, falls Spaltenrang r kleiner als n
+Zusätzliche Reduktion: Setze kleinste Singulärwerte auf Null
+1
+3
+4
+5
+0
+0
+0
+
+1
+3
+4
+5
+2
+0
+1
+
+1
+3
+4
+5
+0
+0
+0
+
+0
+0
+0
+0
+4
+5
+2
+
+0
+0.13 0.02 -0.01
+0
+0.41 0.07 -0.03
+0
+0.55 0.09 -0.04
+0 ≈ 0.68 0.11 -0.05
+4
+0.15 -0.59 0.65
+5
+0.07 -0.73 -0.67
+2
+0.07 -0.29 0.32
+
+x
+
+Rang-2-Approximation von A (je größer der Rang,
+desto genauer die Approximation)
+
+12.4 0 0
+0
+9.5 0
+0
+0 0
+
+x
+
+0.56 0.59 0.56 0.09 0.09
+0.12 -0.02 0.12 -0.69 -0.69
+0.40 -0.80 0.40 0.09 0.09
+3-34
+
+SVD: DIMENSIONSREDUKTION
+1
+3
+4
+5
+0
+0
+0
+𝐴
+
+B
+
+1
+3
+4
+5
+2
+0
+1
+
+1
+3
+4
+5
+0
+0
+0
+
+0
+0
+0
+0
+4
+5
+2
+
+0
+0.13 0.02 -0.01
+0
+0.41 0.07 -0.03
+0
+0.55 0.09 -0.04
+0 ≈ 0.68 0.11 -0.05
+4
+0.15 -0.59 0.65
+5
+0.07 -0.73 -0.67
+2
+0.07 -0.29 0.32
+
+x
+
+0.92 0.95 0.92 0.01 0.01
+2.91 3.01 2.91 -0.01 -0.01
+3.90 4.04 3.90 0.01 0.01
+= 4.82 5.00 4.82 0.03 0.03
+0.70 0.53 0.70 4.11 4.11
+-0.69 1.34 -0.69 4.78 4.78
+0.32 0.23 0.32 2.01 2.01
+
+12.4 0 0
+0
+9.5 0
+0
+0 0
+
+x
+
+0.56 0.59 0.56 0.09 0.09
+0.12 -0.02 0.12 -0.69 -0.69
+0.40 -0.80 0.40 0.09 0.09
+
+Genauigkeit über
+Frobeniusnorm:
+
+ǁ𝐴 − 𝐵ǁ𝐹
+
+=
+
+Σ𝑖𝑗 (𝐴𝑖𝑗 − 𝐵𝑖𝑗 )2
+3-35
+
+SVD: DIMENSIONSREDUKTION
+− Satz: Sei 𝑘 mit 0 ≤ 𝑘 ≤ 𝑟 die Anzahl der gewünschten Faktoren,
+𝑨 = 𝑼 𝛴 𝑽𝑇 und 𝑩 = 𝑼 𝑺 𝑽𝑇 wobei 𝑺 aus  konstruiert wurde, indem
+die letzten 𝑟 − 𝑘 Diagonalelemente auf Null gesetzt wurden. Dann
+gilt:
+B = argminǁ𝐴 − 𝐵ǁ𝐹
+B
+
+− Für eine gegebene Anzahl an Faktoren k minimiert SVD den Fehler
+ǁ𝐴 − 𝐵ǁ𝐹 , so dass B die beste Rang-k-Approximation für A darstellt
+− Wie klein sollte man k wählen?
+− Behalte 80-90% der „Energie“ σ𝑖 𝜎𝑖2 (Summe über die quadrierten
+Diagonalelemente von )
+− Beispiel: Singulärwerte 12.4, 9.5, und 1.3 → Energie: 245.7
+− Entfernen des letzten Singulärwertes setzt Energie auf 244 (99%)
+− Mit nur dem größten Singulärwert wäre die Energie auf 63% reduziert
+3-36
+
+SVD: BERECHNUNG
+− SVD für eine Matrix 𝑨 = 𝑼𝑽𝑻
+− Es gilt: 𝐴 = 𝑈𝑉
+T
+
+T T
+
+= 𝑉
+
+T T T
+
+ 𝑈 T = 𝑉𝑈 T
+
+− Regel für die Transponierte eines Produkts von Matrizen
+− Zweifache Transposition löst sich auf
+− Transposition einer Diagonalmatrix ergibt die selbe Diagonalmatrix
+
+− Somit gilt: 𝑨T 𝑨 = 𝑽𝑼T 𝑼𝑽T = 𝑽2 𝑽T
+− Da Spalten von U orthonormal: 𝑈 T 𝑈 = I (Identitätsmatrix)
+− 2 ist eine Diagonalmatrix deren i-tes Diagonalelement das Quadrat des
+i-ten Diagonalelements von  ist
+
+− Da auch die Spalten von V orthonormal:
+𝑨T 𝑨𝑽 = 𝑽2 𝑽T 𝑽 = 𝑽2 = 2 𝑽
+D.h. V ist die Matrix aus Eigenvektoren von 𝑨T 𝑨 und die Diagonalelemente
+von 2 sind die dazugehörigen Eigenwerte.
+
+− Analog: 𝑨𝑨T 𝑼 = 𝑼2 = 2 𝑼
+
+3-37
+
+INHALTSVERZEICHNIS
+− Einführung
+− Hauptkomponentenanalyse
+− Singulärwertzerlegung
+− t-SNE - Algorithmus
+
+3-38
+
+t-SNE - Algorithmus
+− t-distributed Stochastic Neighbor Embedding (t-SNA)
+− Nichtlineares Verfahren zur Dimensionsreduktion
+− Unüberwachtes Lernverfahren
+− L. van der Maaten and G. Hinton (2008)
+− Idee:
+− Jeder Punkt aus dem hochdimensionalem Raum wird auf einen Punkt
+im niedrigdimensionalem Raum projektiert.
+− Bei der Projektion in einen niedrig dimensionalen Raum sollen die
+Abstände zwischen den Punkte so gut wie möglich erhalten bleiben.
+− Zur Visualisierung findet häufig eine Projektion in den 2- oder 3dimensionalen Raum statt
+
+3-39
+
+t-SNE - Grundlagen
+Distanzmetrik
+− Definiert den Abstand zwischen zwei Punkten
+− Häufig verwendet werden das euklidische Abstandsmaß, aber auch
+die Manhatten-Metrik oder die Cosinus-Ähnlichkeit sind möglich
+
+Wahrscheinlichkeitsverteilung (WK-Verteilung)
+− Die Abstände werden in Wahrscheinlichkeiten überführt
+− Für jeden Datenpunkt 𝑥𝑖 wird die bedingte Wahrscheinlich zu jedem
+anderen Datenpunkt 𝑥𝑗 ermittelt, dass der Punkt 𝑥𝑖 den Punkt 𝑥𝑗 als
+Nachbarn wählen würde
+→ Stochastic Neighbor Embedding (SNE)
+− Für jeden Datenpunkt 𝑥𝑖 summieren sich die bedingten
+Wahrscheinlichkeiten zu 1 auf.
+3-40
+
+t-SNE - Beispiel
+
+− Hohe WK gibt an, dass Punkte nahe beieinander liegen
+− Niedrige WK gibt an, dass Punkte weit auseinander liegen
+− Originalpaper: WK von Punkt zu sich selbst wird als 0 definiert
+3-41
+
+t-SNE – Berechnung der bedingten WK
+2
+
+𝑥𝑖 − 𝑥𝑗
+𝑒𝑥𝑝 −
+2
+2𝜎
+𝑝(𝑗|𝑖) =
+𝑥𝑖 − 𝑥𝑘 2
+σk≠𝑖 𝑒𝑥𝑝 −
+2𝜎 2
+
+− 𝑥𝑖 , 𝑥𝑗 : Datenpunkte im hochdimensionalen Raum
+− 𝑝(𝑗|𝑖) : WK, dass der Punkt 𝑥𝑖 den Punkt 𝑥𝑗 als direkten Nachbarn
+wählen würde
+−
+
+𝑥𝑖 − 𝑥𝑗 : Distanz zwischen den Punkten 𝑥𝑖 und 𝑥𝑗
+
+3-42
+
+t-SNE – Berechnung der bedingten WK
+2
+
+𝑥𝑖 − 𝑥𝑗
+𝑒𝑥𝑝 −
+2
+2𝜎
+𝑝(𝑗|𝑖) =
+𝑥𝑖 − 𝑥𝑘 2
+σk≠𝑖 𝑒𝑥𝑝 −
+2𝜎 2
+𝑥𝑖 −𝑥𝑗
+
+2
+
+− 𝑒𝑥𝑝 −
+: Die Gauß‘sche Kernelfunktion wandelt die
+2𝜎2
+Distanzen in Wahrscheinlichkeiten um
+− σk≠𝑖 𝑒𝑥𝑝 −
+
+𝑥𝑖 −𝑥𝑘 2
+2𝜎2
+
+: Normalisierungsterm
+
+− Summe aller bedingten Wken zwischen dem Punkt 𝑥𝑖 und allen anderen
+Datenpunkten im Datensatz
+− durch Normalisierungsterm wird Summe der bedingten Wken 1
+
+− Die bedingten WKen müssen nicht gleich sein: 𝑝(𝑗|𝑖) ≠ 𝑝(𝑖|𝑗)
+→ Normalisierung:
+
+𝑝𝑖𝑗 =
+
+𝑝(𝑖|𝑗) +𝑝(𝑗|𝑖)
+2𝑛
+
+3-43
+
+t-SNE - Wahrscheinlichkeitsverteilungen
+− im hochdimensionalem Raum: Gauß‘sche Normalverteilung
+− Im niedrigdimensionalem Raum: t-Verteilung
+− Die Ränder liegen etwas höher („heavy tails“)
+→ weiter entfernte Punkte können noch ausreichend unterschieden werden
+
+3-44
+
+t-SNE – Berechnung der bedingten WK (t-Verteilung)
+
+𝑞𝑖𝑗 =
+
+1 + 𝑦𝑖 − 𝑦𝑗
+
+2 −1
+
+σ𝑘 σk≠𝑙 1 + 𝑦𝑘 − 𝑦𝑙 2 −1
+
+− 𝑞𝑖𝑗 : Ähnlichkeit zwischen den Punkten i und j im
+niedrigdimensionalem Raum
+−
+
+1 + 𝑦𝑖 − 𝑦𝑗
+
+2 −1
+
+: Ähnlichkeit der 2 Punkte (ohne Normalisierung)
+
+− σ𝑘 σk≠𝑙 1 + 𝑦𝑘 − 𝑦𝑙 2 −1 : Normalisierungsterm (Summe über alle
+Paare)
+− Ziel: Gauß‘sche Verteilung im hochdimensionalem Raum in tVerteilung im niedrigdimensionalem Raum überführen
+− Durch t-Verteilung wird das sog. „crowding problem“ minimiert.
+Die Punkte würden sonst zu dicht um den Mittelpunkt herum plaziert. 3-45
+
+t-SNE - Optimierung
+− Ziel: Gauß‘sche Verteilung im hochdimensionalem Raum in t-Verteilung
+im niedrigdimensionalem Raum überführen
+− Dazu wird die Kullback-Leibler (KL) Divergenz berechnet. Diese gibt an, wie
+weit die approximierende WK-Funktion Q von der wahren WK-Funktion P
+abweicht, bzw. wie weit 𝑞𝑖𝑗 von den wahren 𝑝𝑖𝑗 abweicht.
+𝐶 = 𝐷𝐾𝐿 (𝑃ԡ𝑄) = ෍ 𝑃 𝑥 𝑙𝑜𝑔
+𝑥∈𝑋
+
+𝑃(𝑥)
+𝑄(𝑥)
+
+𝑝𝑖𝑗
+𝐶 = ෍ ෍ 𝑝𝑖𝑗 𝑙𝑜𝑔
+𝑞𝑖𝑗
+𝑖
+
+𝑗
+
+− Durch Bildung des Gradienten der Fehlerfunktion kann der Fehler bzw. die
+Divergenz schrittweise minimiert werden.
+𝜕𝐶
+= 4 σ𝑗 𝑝𝑖𝑗 − 𝑞𝑖𝑗
+𝜕𝑦𝑖
+
+𝑦𝑖 − 𝑦𝑗
+
+1 + 𝑦𝑖 − 𝑦𝑗
+
+2 −1
+
+− Man erhält keine festen Koordinaten im niedrigdimensionalem Raum, sondern
+die Datenpunkte 𝑦𝑖 werden verschoben bis Divergenz minimal ist (lokales
+3-46
+Minimum)
+
+t-SNE - Hyperparameter
+− Abstandsmaß
+− Anzahl der Dimensionen des niedrigdimensionalen Raum
+− Perplexität: Gibt an, wie viele Nachbarn bei jedem Punkt berücksichtigt
+werden sollen
+− Initialisierung des Punkte im niedrigdimensionalen Raum: zufällig
+− Lernrate: für das Gradientenabstiegsverfahren
+− Stopp-Kriterium
+
+3-47
+
+t-SNE - Anwendung
+− MNIST Datensatz: Datensatz mit handgeschriebenen Ziffern
+
+− Jede Ziffer ist ein 28x28 Pixel großes Graustufen-Bild
+− Bild wird interpretiert als Merkmalsvektor der Größe 28x28 = 784
+→ 784 dimensionaler Vektorraum
+− Trainingsdatensatz: 60.000 Datenpunkte (Ziffern)
+− Testdatensatz: 10.000 Datenpunkte (Ziffern)
+3-48
+
+t-SNE - Anwendung
+
+Visualisierung mit Sammon mapping
+
+Visualisierung mit t-SNE
+
+Visualisierung mit IsoMap
+
+3-49
+
+t-SNE - Eigenschaften
+− Verfahren gut geeignet für Visualisierung
+− t-SNE ist nicht-deterministisch
+− Auch bei gleichen Hyperparametern kann das Ergebnis unterschiedlich
+ausfallen
+− Insbesondere können die Ergebnisse rotiert sein (wegen zufälliger
+Initialisierung)
+
+− Keine allgemeine Embedding-Funktion
+− Die neuen Achsen haben keine Interpretation.
+− Die WK-Verteilung ist nur für den aktuellen Datensatz gültig.
+
+− Lokale Strukturen werden gut erfasst, globale oft nicht so gut.
+
+3-50
+
+t-SNE – Vergleich zu PCA
+− PCA: lineare Methode zur Dimensionsreduktion, die auf der
+Kovarianzmatrix beruht
+− T-SNE: Nicht-linearer Ansatz mit dem Ziel, die Abstände im Originalund Zielraum möglichst genau bezubehalten
+− Linearität
+− PCA kann nur lineare Zusammenhänge erfassen
+
+− Interpretierbarkeit
+− PCA liefert bessere Interpretierbarkeit: Daten werden lediglich rotiert, die
+einzelnen Komponenten sind Linearkombination der ursprünglichen
+Merkmale
+
+− Rechenzeit
+− Effiziente Methoden für PCA
+− T-SNE ist komplexes, iteratives Optimierungsverfahren
+
+− Hyperparameter
+− PCA benötigt keine Hyperparameter, t-SNE schon
+3-51
+
+t-SNE – Vergleich zu PCA
+− Determinismus
+− PCA ist deterministisch (das Ergebnis ist immer dasselbe)
+− t-SNE ist nicht deterministisch, Ergebnis ist abhängig von Initialisierung und
+Durchführung der Optimierung
+
+− Anwendung auf neue Daten
+− Bei PCA können die gelernten Achsen auf neue Daten angewendet werden
+− Bei t-SNE schwieriger, da lediglich ein WK-Verteilung gelernt wurde
+
+− Dimensionalität
+− t-SNE löst Crowding – Problem, dies hat Vorteile, wenn Daten auf nur 2
+oder 3 Dimensionen (z.B. zur Visualisierung) reduziert werden
+− bei mehr Dimensionen keine Vorteile für t-SNE
+
+− Anwendungsbereiche
+− PCA: dauerhafte Umwandlung in niedrige Dimension und Einsatz auch auf
+neuen Daten, Einsatz z.B. bei der Merkmalsextraktion oder
+Datenkompression
+− t-SNE: explorative Datenanalyse, Visualisierung
+
+3-52
+
+t-SNE - Quellen
+− L. van der Maaten, G. Hinton. Visualizing Data using t-SNE. Journal of Machine
+Learning Research 9(86):2579-2605, 2008
+− https://mbrenndoerfer.com/writing/tsne-dimensionality-reduction-visualization
+− https://databasecamp.de/statistik/tsne
+− https://medium.com/data-science/t-sne-clearly-explained-d84c537f53a
+
+3-53
+
+DIMENSIONSREDUKTION - VERFAHREN
+Principal Component
+Analysis (PCA)
+Reduziert die
+Dimensionen durch
+lineare Transformation.
+Identifiziert
+Hauptkomponenten (PC),
+die die meiste Varianz in
+den Daten erklären.
+
+Linear Discriminant
+Analysis (LDA)
+
+Singulärwertzerlegung
+(SVD)
+Zerlegt Matrix in das
+Produkt von drei Matrizen,
+um die wichtigste
+Informationen zu
+extrahieren.
+Robust und numerisch
+stabil, geeignet für nichtquadratische Matrizen.
+
+Autoencoder (AE)
+
+Wie PCS, aber
+nutztzusätzlich
+Klasseninformationen zur
+Dimensionsreduktion.
+
+Neuronale Netzwerke, die
+lernen, Eingabedaten in
+eine niedrigdimensionale
+Darstellung zu
+komprimieren.
+
+Optimiert die Trennung
+zwischen verschiedenen
+Klassen in den Daten.
+
+Besonders nützlich für
+nichtlineare
+Datenstrukturen.
+
+t-Distributed Stochastic
+Neighbor Embedding
+(t-SNE)
+Effektiv für die
+Visualisierung
+hochdimensionaler Daten.
+
+Uniform Manifold
+Approximation and
+Projection (UMAP)
+Schnelle und skalierbare
+Methode zur
+Dimensionsreduktion.
+
+Erhält lokale Strukturen
+und zeigt Cluster in den
+Daten.
+
+Beibehaltung sowohl
+lokaler als auch globaler
+Strukturen der Daten.
+
+Random Projection (RP)
+
+Feature Selection
+
+Reduziert die
+Dimensionen durch
+zufällige Projektion der
+Daten in einen
+niedrigerdimensionalen
+Raum.
+Beibehaltung der Struktur
+der Daten mit hoher
+Wahrscheinlichkeit.
+
+Auswahl der
+relevantesten Merkmale
+aus den Daten zur
+Reduzierung der
+Dimensionen.
+Methoden wie Filter,
+Wrapper und eingebettete
+Verfahren werden
+verwendet.
+
+3-54
+
+

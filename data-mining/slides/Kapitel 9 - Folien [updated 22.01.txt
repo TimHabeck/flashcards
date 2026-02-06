@@ -1,0 +1,1497 @@
+DATA MINING
+
+Kapitel 9: Centrality
+Dr. Christian Martin
+Wintersemester 2025/26
+
+Abteilung Datenbanken / ScaDS.AI
+Universität Leipzig
+
+THEMENÜBERSICHT
+Hochdimensionale Daten
+
+Graphdaten
+
+Datenströme
+
+Clustering
+
+Dimensionsreduktion
+
+Community
+Detection
+
+Windowing
+
+Empfehlungssysteme
+
+Assoziationsregeln
+
+Centrality
+
+Filtern
+
+Locality Sensitive
+Hashing
+
+Supervised
+Learning
+
+Momente
+
+9-2
+
+INHALTSVERZEICHNIS
+ Einführung
+ Überblick Zentralitätsmaße
+ PageRank
+ Probleme
+ Effiziente Berechnung
+ Themenspezifischer PageRank
+
+9-3
+
+WELCHER KNOTEN IST WICHTIG?
+F
+
+G
+
+H
+I
+J
+C
+
+B
+
+A
+
+E
+D
+
+K
+
+ Kontext ist wichtig
+ Einschränkungen von Zentralitätsmaßen:
+ Jedes Maß funktioniert in einem bestimmten Kontext gut, in einem anderen nicht
+
+ Beispiele:
+ Knoten mit höchsten Graden (d.h. A und B) sind nicht immer die wichtigsten.
+ Knoten C (Grad 2) hat eine zentrale Position und hält die beiden Teile des Netzes
+zusammen
+ Knoten A und B können am meisten andere Knoten im Netz beeinflussen
+9-4
+
+CENTRALITY METRICS
+ Was ist Zentralität (engl. centrality)?
+ Zentralität ist ein quantitativer Wert, der die relative "Wichtigkeit" oder
+"Einfluss" eines Knotens in einem Netzwerk beschreibt
+ Ermöglicht es, Knoten zu ranken oder zu priorisieren, basierend auf
+ihrer Rolle oder Position im Netzwerk
+
+ Warum ist Zentralität wichtig?
+ Hilft, Schlüsselakteure in sozialen Netzwerken,
+Kommunikationsnetzen oder Transportnetzen zu identifizieren
+ Kann auf verschiedene Anwendungsfälle angewendet werden
+ Erkennung von Führungspersonen in Organisationen
+ Erkennung von kritischen Infrastrukturen in Kommunikationsnetzwerken
+ Verbreitung von Krankheiten in Kontaktnetzwerken
+ Ranking von Webseiten anhand ein- und ausgehender Hyperlinks
+
+9-5
+
+ANWENDUNG: SOCIAL NETWORKS
+ User, Posts, Likes, Freundschaften, Autorschaften
+ Degree Centrality
+ Wie viele Personen kann die Person direkt erreichen?
+ Wie viele Likes hat ein Post?
+
+ Betweenness Centrality
+ Wie wahrscheinlich ist es, dass diese Person den direktesten
+Weg zwischen zwei Personen im Netzwerk darstellt?
+
+ Closeness Centrality
+ Wie schnell kann eine Person alle andere Personen erreichen?
+
+ Eigenvector Centrality & Page Rank
+ Welchen Einfluss hat eine Person über direkte Verbindung
+hinaus im gesamten Netzwerk?
+9-6
+
+ANWENDUNG: WORLD WIDE WEB
+ Das Web als ein gerichteter Graph:
+ Knoten: Webseiten
+ Kanten: Hyperlinks
+
+I teach a
+class on
+Networks.
+
+CS224W:
+Classes are
+in the
+Gates
+building
+
+Slides for
+CS224W:
+Introduction
+…
+
+Computer
+Science
+Department
+at Stanford
+
+Stanford
+University
+
+ Wann ist eine Webseite relevant?
+9-7
+
+INHALTSVERZEICHNIS
+ Einführung
+ Überblick Zentralitätsmaße
+ PageRank
+ Probleme
+ Effiziente Berechnung
+ Themenspezifischer PageRank
+
+9-8
+
+ZENTRALITÄTSMAßE
+
+1. Degree Centrality
+2. Closeness Centrality
+3. Betweenness Centrality
+4. Eigenvector Centrality
+5. Page Rank Centrality
+
+9-9
+
+1. Degree Centrality
+ Der In- bzw. Out-Degree (𝑑− 𝑣 , 𝑑 + (𝑣)) eines Knotens 𝑣
+ist die Anzahl der ein- bzw. ausgehenden Kanten
+ Degree 𝑑(𝑣) = Anzahl der ein- und ausgehenden Kanten
+(unabhängig von Richtung)
+
+ Maß über die Verbundenheit eines Knotens
+ Kann auch als "populär" oder "einflussreich" interpretiert werden
+
+ "Lokale" Metrik, betrachtet nur direkte Nachbarn!
+ Keine Aussage über Verbundenheit/Erreichbarkeit im gesamten
+Graphen
+a
+
+𝑑− 𝑎 = 2
+𝑑+ 𝑎 = 3
+𝑑 𝑎 =5
+9-10
+
+1. Degree Centrality
+
+https://www.networkpages.nl/centrality-measures-who-is-the-most-important-in-a-network/
+9-11
+
+2. Closeness Centrality
+
+ Maß für die Reichweite, d.h. die Geschwindigkeit, mit der
+Informationen von einem bestimmten Startknoten 𝑣 aus
+andere Knoten erreichen können
+ die durchschnittliche Länge aller kürzesten Pfade von
+dem Startknoten zu allen anderen Knoten im Netz
+ Wie viele Kanten braucht es im Durchschnitt, um jeden anderen
+Knoten zu erreichen?
+
+ Normalisierte Closeness Centrality 𝐶𝐶 𝑣
+ mit N Knoten im Netz
+ und 𝛿(𝑢, 𝑣) als Distanz zwischen 𝑢 und 𝑣
+
+𝑁−1
+𝐶𝐶 𝑣 =
+σ𝑢 𝛿(𝑢, 𝑣)
+
+9-12
+
+2. Closeness Centrality
+
+https://www.networkpages.nl/centrality-measures-who-is-the-most-important-in-a-network/
+9-13
+
+3. Betweenness Centrality
+
+ Welche Knoten liegen mit größerer Wahrscheinlichkeit in
+Kommunikationspfaden zwischen anderen?
+ Anzahl der kürzesten Pfade zwischen den Knoten 𝑖 und
+𝑗, die durch 𝑣 führen, geteilt durch alle kürzesten Pfade
+zwischen den Knoten 𝑖 und 𝑗
+ Summe der obigen Werte für alle Knotenpaare 𝑖 und 𝑗
+
+ 𝜎𝑖𝑗 = Anzahl der küzesten Pfade zwischen 𝑖 und 𝑗
+
+ 𝜎𝑖𝑗 (𝑣) = Anteil von 𝜎𝑖𝑗 , die durch 𝑣 führen
+
+𝜎𝑖𝑗 (𝑣)
+𝐶𝐵 𝑣 = ෍
+𝜎𝑖𝑗
+𝑖≠𝑗≠𝑣
+
+9-14
+
+3. Betweenness Centrality
+
+https://www.networkpages.nl/centrality-measures-who-is-the-most-important-in-a-network/
+9-15
+
+4. Eigenvector Centrality
+
+ auch: EigenCentrality
+ Bedeutung eines Knotens basierend auf den
+Verbindungen zu anderen wichtigen Knoten
+
+ Knoten hat hohe Eigenvektor-Zentralität, wenn er mit
+anderen Knoten verbunden ist, die ebenfalls eine hohe
+Zentralität aufweisen
+ Relativer Score 𝑥𝑣 von Knoten 𝑣
+ 𝜆 ist der größte Eigenwert der Adjazenzmatrix
+ 𝑎𝑣𝑡 = 1 wenn eine Kante zwischen 𝑣 und 𝑡 besteht
+
+1
+𝑥𝑣 = ෍ 𝑎𝑣𝑡 𝑥𝑡
+𝜆
+𝑡∈𝐺
+
+9-16
+
+4. Eigenvector Centrality
+
+https://www.networkpages.nl/centrality-measures-who-is-the-most-important-in-a-network/
+9-17
+
+INHALTSVERZEICHNIS
+ Einführung
+ Überblick Zentralitätsmaße
+ PageRank
+ Probleme
+ Effiziente Berechnung
+ Themenspezifischer PageRank
+
+9-18
+
+WEB-GRAPH
+ Wie kann das Web organisiert werden?
+ 1. Versuch: Webverzeichnis: Yahoo, Curlie
+ 2. Versuch: Suchmaschine
+ Webcrawler durchlaufen Web
+ Inverted Index für Suchanfragen
+
+ Herausforderungen für Suchmaschinen
+1.
+2.
+
+Welche Seiten sind vertrauenswürdig und enthalten tatsächlich die
+relevanten Informationen zu einer Anfrage?
+Welches ist die „beste“ Antwort auf eine Anfrage?
+
+ Verwendung der Hyperlink-Struktur um
+die Bedeutung einer Webseite zu ermitteln
+z.B. via PageRank
+
+9-19
+
+5. Page Rang Centrality
+ Idee: Webseite ist wichtig, falls sie von vielen Nutzern besucht wird
+ Anstatt das Verhalten direkt zu beobachten, wird angenommen, dass
+Nutzer den Hyperlinks zufällig folgen: Random-Surfer-Model
+ Beginne auf einer beliebigen Seite
+ Wiederhole: Folge einem zufällig ausgewählten Hyperlink dieser Seite
+
+ PageRank einer Webseite: „Neigung“, dass ein Random-Surfer diese
+Webseite besucht
+ Folgerungen:
+ Webseite ist wichtig (hoher PageRank),
+falls viele Hyperlinks auf sie verweisen
+ Hyperlinks von wichtigen Webseiten
+haben höheres Gewicht
+
+ Sonderform der Eigenvector Centrality
+
+9-20
+
+EINFACHER PAGERANK
+ Einfacher PageRank:
+𝑟𝑗
+𝑟𝑖 = ෍ +
+𝑑𝑗
+𝑗→𝑖
+
+ 𝑑𝑗+ : Anzahl der Hyperlinks
+ausgehend von 𝑗 (Outdegree)
+ 𝑗 → 𝑖: Summe läuft über alle Webseiten 𝑗
+die auf 𝑖 verweisen
+
+𝒓𝒋 k
+𝟑 𝒓𝒌
+i
+𝟒
+j
+
+𝒓 𝒋 𝒓𝒌
+𝒓𝒊 = +
+𝟑 𝟒
+
+ Sei 𝑛 die Anzahl der Knoten (Webseiten)
+ Lineares Gleichungssystem aus 𝑛 Gleichungen und 𝑛 Unbekannten
+ Eindeutige Lösung falls Einschränkung, z.B. auf σ𝑖 𝑟𝑖 = 𝑛
+ Gaußsches Eliminationsverfahren (Laufzeit O(𝑛3 ) ) nur bei kleinen
+Graphen möglich
+ Alternative Berechnung für große Graphen notwendig
+9-21
+
+MATRIXFORMULIERUNG
+ Stochastische Adjazenzmatrix 𝑀 (𝑛 × 𝑛)
+1
+𝑗→𝑖
++,
+𝑀𝑖𝑗 = ൞𝑑𝑗
+0,
+sonst
+
+𝑟𝑗
+𝑟𝑖 = ෍ +
+𝑑𝑗
+𝑗→𝑖
+
+ Für den PageRank-Vektor 𝒓 = 𝑟1 , 𝑟2 , … , 𝑟𝑛 𝑇 gilt:
+ Spalten von M summieren sich zu 1 (column stochastic matrix)
+
+𝒓 = 𝑀⋅ 𝒓
+
+j
+
+ri
+
+=
+
+i
+
+.
+
+rj
+9-22
+
+POWER ITERATION METHOD
+ Iterative Berechnung via Power Iteration Method:
+ Zu Beginn: 𝒓(𝟎) = 1,1, … , 1 𝑇
+ Iteration: 𝒓(𝒕+𝟏) = 𝑀 ⋅ 𝒓(𝒕)
+ Stopp, falls 𝒓(𝒕+𝟏) − 𝒓 𝒕
+𝑟𝑖
+
+<𝜺
+
+𝑡
+
+ Vektor 𝒓(𝑡) gibt mit
+die Wahrscheinlichkeit an, dass sich
+𝑛
+der Random-Surfer zum Zeitpunkt 𝑡 auf einer Seite 𝑖 =
+1, … , 𝑛 befindet
+ Falls Algorithmus konvergiert, gilt mit 𝒓 ≔ lim𝑡→∞ 𝑀 ⋅ 𝒓(𝑡)
+𝒓 = 𝑀⋅ 𝒓
+ Vektor 𝒓 gibt den PageRank
+
+9-23
+
+BEISPIEL: MINI-WWW
+
+1
+,
+𝑀𝑖𝑗 = ൞𝑑𝑗+
+0,
+
+𝑗→𝑖
+sonst
+
+𝑀=
+Yahoo
+
+Amazon
+
+𝑦 𝑎 𝑚
+1
+2
+1
+2
+
+0
+
+MSoft
+
+1
+2
+
+0
+
+𝑦
+
+0 1
+
+𝑎
+
+1
+2
+
+𝑚
+
+0
+
+1
+1
+𝑦= 𝑦+ 𝑎
+2
+2
+1
+𝑎 = 𝑦+𝑚
+2
+1
+𝑚= 𝑎
+2
+9-24
+
+BEISPIEL: MINI-WWW
+
+ Iteration 𝒓(𝒕+𝟏) = 𝑀 ⋅ 𝒓(𝒕) mit 𝒓(𝒕) = 𝑦 (𝑡) , 𝑎(𝑡) , 𝑚(𝑡)
+1
+1
+2
+2
+1
+ 𝑎(𝑡+1) = 𝑦 (𝑡) + 𝑚(𝑡)
+2
+1
+ 𝑚(𝑡+1) = 𝑎(𝑡)
+2
+
+ 𝑦 (𝑡+1) = 𝑦 (𝑡) + 𝑎(𝑡)
+
+𝒓(0)
+
+𝑦
+ 𝑎
+𝑚
+
+1
+1
+
+𝑀=
+
+𝒓(2)
+
+1 1
+=
+
+𝑦 𝑎 𝑚
+
+3
+2
+1
+2
+
+5
+4
+
+1
+3
+4
+
+𝒓(≥10)
+9
+8
+11
+8
+1
+2
+
+…
+
+6
+5
+6
+5
+3
+5
+
+1
+2
+1
+2
+
+0
+
+1
+2
+
+0
+
+𝑦
+
+0 1
+
+𝑎
+
+1
+2
+
+𝑚
+
+0
+
+9-25
+
+BEISPIEL: MINI-WWW
+def iterate_equations(x_start, y_start, z_start,
+num_iterations):
+x, y, z = x_start, y_start, z_start
+for i in range(num_iterations):
+# Calculate the next iteration values
+next_x = 0.5 * x + 0.5 * y
+next_y = 0.5 * x + z
+next_z = 0.5 * y
+# Display the iteration step
+print(f"Iteration {i + 1}: x={x:.4f}, y={y:.4f},
+z={z:.4f}")
+
+Iteration 1: x=1.0000, y=1.0000, z=1.0000
+Iteration 2: x=1.0000, y=1.5000, z=0.5000
+Iteration 3: x=1.2500, y=1.0000, z=0.7500
+Iteration 4: x=1.1250, y=1.3750, z=0.5000
+Iteration 5: x=1.2500, y=1.0625, z=0.6875
+...
+Iteration 15: x=1.2064, y=1.1833, z=0.6103
+Iteration 16: x=1.1949, y=1.2135, z=0.5917
+Iteration 17: x=1.2042, y=1.1891, z=0.6067
+Iteration 18: x=1.1966, y=1.2088, z=0.5946
+Iteration 19: x=1.2027, y=1.1929, z=0.6044
+Iteration 20: x=1.1978, y=1.2058, z=0.5964
+
+# Update values for the next iteration
+x, y, z = next_x, next_y, next_z
+# Set the initial values and number of iterations
+x_start = 1.0
+y_start = 1.0
+z_start = 1.0
+num_iterations = 20
+# Perform iterations and display results
+iterate_equations(x_start, y_start, z_start,
+num_iterations)
+
+9-26
+
+INHALTSVERZEICHNIS
+ Einführung
+ Überblick Zentralitätsmaße
+ PageRank
+ Probleme
+ Effiziente Berechnung
+ Themenspezifischer PageRank
+
+9-27
+
+PAGERANK: PROBLEME
+ Konvergenz der Power-Iteration-Method ist nicht sicher
+ Das reale WWW ist komplex
+
+Sackgasse
+
+ Sackgassen: Webseiten ohne Hyperlinks
+ Random-Surfer kann Sackgasse nicht verlassen
+ Gewichtungen "verschwinden" über Sackgasse
+
+ Spider Traps: Gruppen von Webseiten ohne
+ausgehende Hyperlinks
+ Random-Surfer kann Gruppe nicht verlassen
+ Gewichtungen "konzentrieren" sich auf Gruppe
+9-28
+
+PROBLEM: SACKGASSE
+𝑦 𝑎 𝑚
+
+𝑀=
+
+Yahoo
+
+1
+2
+1
+2
+
+0
+
+Amazon
+
+MSoft
+
+1
+2
+
+0
+
+𝑦
+
+0 0
+
+𝑎
+
+1
+2
+
+𝑚
+
+0
+
+1
+1
+𝑦= 𝑦+ 𝑎
+2
+2
+1
+𝑎= 𝑦
+2
+1
+𝑚= 𝑎
+2
+9-29
+
+PROBLEM: SACKGASSE
+
+Yahoo
+
+Amazon
+
+MSoft
+
+9-30
+
+PROBLEM: SPIDER TRAP
+
+𝑦 𝑎 𝑚
+
+𝑀=
+Yahoo
+
+Amazon
+
+1
+2
+1
+2
+
+0
+
+MSoft
+
+1
+2
+
+0
+
+𝑦
+
+0 0
+
+𝑎
+
+1
+2
+
+𝑚
+
+1
+
+1
+1
+𝑦= 𝑦+ 𝑎
+2
+2
+1
+𝑎= 𝑦
+2
+1
+𝑚 = 𝑎+𝑚
+2
+9-31
+
+PROBLEM: SPIDER TRAP
+
+Yahoo
+
+Amazon
+
+MSoft
+
+9-32
+
+PAGERANK (ALLGEMEINE FORM)
+ PageRank [Brin & Page, 1998, http://infolab.stanford.edu/~backrub/google.html]
+𝑟𝑗
+1
+𝑟𝑖 = 𝛽 ෍ + + 1 − 𝛽
+𝑛
+𝑑𝑗
+𝑗→𝑖
+
+ Google Matrix: 𝐴 = 𝛽 𝑀 + 1 − 𝛽
+
+1
+𝑛 𝑛×𝑛
+
+ Interpretation:
+ Mit Wahrscheinlichkeit 𝛽: Folge einem zufällig gewählten Hyperlink
+ Mit Wahrscheinlichkeit 1 − 𝛽: Wechsel zu einer zufälligen Seite
+
+ Gewöhnlich setzt man 𝛽 auf einen Wert zwischen 0.8 und 0.9
+ Annahme:
+Keine Sackgassen
+y
+
+a
+
+y
+
+m
+
+a
+
+m
+9-33
+
+BEISPIEL: MIT SPIDER TRAP
+M
+7/15
+
+y
+
+1 1
+0
+2 2
+1
+0.8
+0 0
+2
+1
+0
+1
+2
+
+[1/n]nxn
+1
+3
+1
++0.2
+3
+1
+3
+
+1
+3
+1
+3
+1
+3
+
+7
+7
+1
+15 15
+3
+7
+1
+1
+=
+15 15
+3
+1
+7
+1
+15 15
+3
+
+1
+15
+1
+15
+13
+15
+
+13/15
+
+a
+
+m
+
+9-34
+
+BEISPIEL: MIT SACKGASSE
+
+M
+
+1 1
+0
+2 2
+1
+0.8
+0 0
+2
+1
+0
+0
+2
+
+7/15
+
+y
+
++ 0.2 ?
+7
+15
+7
+= 𝑎
+15
+1
+𝑚
+15
+𝑦
+
+1/3
+
+a
+
+m
+Ansatz 1: falls Knoten eine
+Sackgasse ist, wechsel mit
+Wahrscheinlichkeit 1/n zu
+einer zufälligen Seite
+
+7
+15
+1
+15
+7
+15
+
+1
+3
+1
+3
+1
+3
+
+Alternative Berechnung
+des PageRank
+(Ansatz 2)
+9-35
+
+PAGERANK: VOLLSTÄNDIGER ALGORITHMUS
+ Eingabe: Gerichteter Graph 𝑮 aus 𝑛 Knoten (inkl.
+Sackgassen und Spider Traps) und Parameter 𝜷
+ Ausgabe: PageRank Vector 𝒓𝒏𝒆𝒘
+ Intitialisiere: ∀𝑖: 𝑟𝑖𝑜𝑙𝑑 = 0, 𝑟𝑖𝑛𝑒𝑤 = 1
+ Wiederhole
+1. Berechne σ𝑗 𝑟𝑗𝑛𝑒𝑤 − 𝑟𝑗𝑜𝑙𝑑 und Abbruch, falls < 𝜀
+2. 𝒓𝑜𝑙𝑑 ← 𝒓𝑛𝑒𝑤
+𝑜𝑙𝑑
+
+3.
+
+𝑟𝑗
+𝑛𝑒𝑤
+σ
+∀𝑖: 𝑟𝑖
+← 𝛽 𝑗→𝑖 𝑑+
+𝑗
+
+4. 𝑆 ← σ𝑖 𝑟𝑖𝑛𝑒𝑤
+𝑆
+
+5. ∀𝑖: 𝑟𝑖𝑛𝑒𝑤 = 𝑟𝑖𝑛𝑒𝑤 + (1 − 𝑛)
+
+9-36
+
+BEISPIEL VOLLSTÄNDIGER ALGORITHMUS
+
+𝑀=
+
+1
+2
+1
+2
+
+0
+
+1
+2
+
+0
+
+0
+
+0
+
+1
+2
+
+0
+
+𝑟 𝑜𝑙𝑑 = 0,0,0
+𝑟 𝑛𝑒𝑤 = 1,1,1
+4
+𝛽 = 0.8 =
+5
+
+2.
+
+𝑟 𝑛𝑒𝑤 =
+
+𝑜𝑙𝑑
+
+𝑟
+∀𝑖: 𝑟𝑖𝑛𝑒𝑤 ← 𝛽 σ𝑗→𝑖 𝑑𝑗 +
+
+3.
+
+𝑗
+
+4. 𝑆 ← σ𝑖 𝑟𝑖𝑛𝑒𝑤
+𝑆
+5. ∀𝑖: 𝑟𝑖𝑛𝑒𝑤 = 𝑟𝑖𝑛𝑒𝑤 + (1 − 𝑛)
+
+4.
+
+1
+𝑜𝑙𝑑
+𝑟
+= 1
+1
+
+3.
+
+Intitialisiere: ∀𝑖: 𝑟𝑖𝑜𝑙𝑑 = 0, 𝑟𝑖𝑛𝑒𝑤 = 1
+Wiederhole
+1. Berechne σ𝑗 𝑟𝑗𝑛𝑒𝑤 − 𝑟𝑗𝑜𝑙𝑑 und Abbruch, falls < 𝜀
+2. 𝒓𝑜𝑙𝑑 ← 𝒓𝑛𝑒𝑤
+
+𝑆=
+
+4 1
+1
+(
++
+)
+5 2
+2
+4 1
+( )
+5 2
+4 1
+( )
+5 2
+
+=
+
+8
+10
+4
+10
+4
+10
+
+5.
+
+8
+4
+4
+16 24
++
++
+=
+=
+10 10 10
+10 15
+
+𝑟 𝑛𝑒𝑤 =
+
+1−
+
+𝑆
+24
+7
+=1−
+=
+𝑛
+15 ∗ 3 15
+
+8
+7
+10
+15
+4
+7
++
+10
+15
+7
+4
+15
+10
+
+|𝑟 𝑛𝑒𝑤 | =
+
+=
+
+19
+15
+13
+15
+13
+15
+
+19 13 13
++
++
+=𝑛=3
+15 15 15
+9-37
+
+INHALTSVERZEICHNIS
+ Einführung
+ Überblick Zentralitätsmaße
+ PageRank
+ Probleme
+ Effiziente Berechnung
+ Themenspezifischer PageRank
+
+9-38
+
+BERECHNUNG DES PAGERANK
+ Stochastische Adjazenzmatrix 𝑴 ist sehr groß und kann verteilt
+vorliegen
+
+ Initialisierung von 𝒓𝒐𝒍𝒅 ∀𝑖: 𝑟𝑖𝑜𝑙𝑑 = 0 und Vektor 𝒓𝒏𝒆𝒘 ∀𝑖: 𝑟𝑖𝑛𝑒𝑤 = 1 im
+Hauptspeicher
+Wiederhole:
+
+1. Berechne σ𝑗 𝑟𝑗𝑛𝑒𝑤 − 𝑟𝑗𝑜𝑙𝑑 und Abbruch, falls < 𝜀
+2.
+
+𝒓𝑜𝑙𝑑 ← 𝒓𝑛𝑒𝑤
+
+3. Matrix-Vektor-Produkt: 𝒓𝑛𝑒𝑤 ← 𝛽 ∙ 𝑴 ∙ 𝒓𝑜𝑙𝑑
+
+4.
+
+𝑆 ← σ𝑖 𝑟𝑖𝑛𝑒𝑤
+
+5.
+
+∀𝑖: 𝑟𝑖𝑛𝑒𝑤 += 1 −
+
+𝑆
+𝑛
+
+9-39
+
+EFFIZIENTE REPRÄSENTATION DER MATRIX 𝑀
+ Effizientere Repräsentation der Matrix 𝑀 möglich, da spärlich besetzt
+und nur zwei verschiedene Werte (0 oder 1/dj) pro Spalte
+ Für jede Spalte: Speichere 𝑑𝑖 (Anzahl der Hyperlinks) und Liste der
+Zeilen mit einem Wert ungleich Null: 𝑑𝑒𝑠𝑡1 , …,𝑑𝑒𝑠𝑡𝑑𝑖
+ Unterteilung Matrix 𝑀 in Spalten:
+𝒊
+0
+1
+2
+3
+4
+5
+
+rnew
+
+𝒅+
+𝒊
+
+𝒅𝒆𝒔𝒕𝟏 , …,𝒅𝒆𝒔𝒕𝒅𝒊
+
+0
+
+3
+
+1, 4, 5
+
+1
+
+4
+
+1,2,3,5
+
+2
+
+2
+
+3,4
+
+...
+
+…
+
+…
+
+rold
+
+0
+1
+2
+3
+4
+5
+9-40
+
+BLOCKMATRIX AUS 3X3 QUADRATE
+𝒊
+
+𝒅𝒆𝒔𝒕𝟏 , …,𝒅𝒆𝒔𝒕𝒅𝒊
+𝒅+
+𝒊
+
+0
+
+3
+
+1, 4, 5
+
+1
+
+4
+
+1,2,3,5
+
+2
+
+2
+
+3,4
+
+...
+
+…
+
+𝒅+
+𝒊
+
+𝒊
+rnew
+
+…
+0
+1
+
+ geeignet für
+MapReduce
+ um 𝑟1𝑛𝑒𝑤 zu berechnen 2
+wird 𝑟 𝑜𝑙𝑑 sowie die
+3
+3 Blöcke von M
+benötigt, die auf
+4
+1 verweisen
+5
+
+…
+
+𝒅𝒆𝒔𝒕𝟏 , …,𝒅𝒆𝒔𝒕𝒅𝒊
+
+0
+
+3
+
+1
+
+1
+
+4
+
+1
+
+rold
+0
+1
+
+0
+
+3
+
+1
+
+4
+
+2,3
+
+0
+
+3
+
+4,5
+
+1
+
+4
+
+5
+
+2
+
+2
+
+3
+
+…
+
+…
+
+2
+
+2
+
+3
+
+3
+
+…
+
+…
+
+2
+3
+
+4
+5
+
+9-41
+
+INHALTSVERZEICHNIS
+ Einführung
+ Überblick Zentralitätsmaße
+ PageRank
+ Probleme
+ Effiziente Berechnung
+ Themenspezifischer PageRank
+
+9-42
+
+THEMENSPEZIFISCHER PAGERANK
+ PageRank misst die allgemeine Beliebtheit einer Webseite und
+vernachlässigt somit evtl. wichtige themenspezifische Quellen
+ Ziel: Bewertung von Webseiten nicht nur nach Popularität, sondern
+auch nach Thema, z.B. Wissenschaft, Kunst, Natur, Motorsport, …
+ Berücksichtigung des Kontexts oder der Interessen eines Nutzers bei
+Suchanfragen
+ Beispiel: Anfrage nach „Jaguar“ soll, je nach Interesse des Nutzers,
+entweder zu Webseiten mit Tieren oder mit Autos führen
+
+ Idee: Höhere Gewichtung für themenspezifische Seiten
+ Menge 𝑺 mit themenspezifischen Seiten
+ Einen PageRank-Vektor 𝒓(𝑺) für jedes 𝑺
+(𝑺)
+
+ Falls 𝒊𝝐𝑺: 𝒓𝒊
+
+𝑟𝑗
+
+= 𝛽 σ𝑗→𝑖 𝑑+ + 1 − 𝛽
+𝑗
+
+𝑟𝑗
+1
+(𝑺)
+σ
+;
+Sonst:
+𝒓
+=
+𝛽
+𝑗→𝑖 𝑑+
+𝒊
+𝑆
+𝑗
+
+ Mit Wahrscheinlichkeit 1 − 𝛽: Wähle zufällig eine Seite aus 𝑺
+ Auch Webseiten „in der Nähe“ von Elementen aus 𝑺 werden höher
+gewichtet
+9-43
+
+ZUSAMMENSTELLEN DER MENGE 𝑺
+ Verwendung der Seiten eines Webverzeichnisses, z.B. Curlie
+ Erweiterung mit ähnlichen Webseiten unter Verwendung typischer Worte
+ Typische Wörter = Wörter, die generell selten aber relative häufig in einem
+Dokument eines bestimmten Themas vorkommen
+ z.B. über Term Frequence – Inverse Document Frequency (TF-IDF) - Maß
+eines Wortes 𝑖 in Dokument 𝑗
+
+ Auch der Kontext bzw. die Interessen eines Nutzers können
+über diese Methode erschlossen werden:
+ Wörter in vergangenen Anfragen
+ Wörter auf Seiten mit Bookmarks
+ Wörter auf aktueller Seite (von wo Anfrage gesendet)
+
+9-44
+
+WEB SPAMMING
+ Web-Spamming: alle Unternehmungen um eine Webseite im
+Ranking einer Suchmaschine zu verbessern ohne die „Bedeutung“
+der Seite für eine Suchanfrage zu erhöhen
+ Term-Spamming: Manipulation des Inhalts einer Webseite
+ Beispiel: ein Verkäufer von T-Shirts lässt seine Webseite so aussehen,
+als ob interessante Informationen zu Sport/Filmen zu finden sind
+ Einfügen von relevanten Wörtern bzw. einer vollständigen Kopie einer
+relevanten Webseite und ändern der Textfarbe auf Hintergrundfarbe
+
+ Lösung von Suchmaschinen: Anstelle des gesamten Textes einer
+Webseite, Verwendung des Textes in und um Verlinkungen zu einer
+Webseite
+ Link-Spamming: Erstellen einer Struktur von Verlinkungen, um
+PageRank zu erhöhen
+ In Linkfarmen werden tausende irrelevante Seiten mit Verlinkungen auf
+Zielseite erstellt.
+9-45
+
+GOOGLE-BOMBE (2006)
+
+9-46
+
+LINK-SPAMMING
+ Aus Sicht des Spammers: 3 Arten von Webseiten
+ Unerreichbare Seiten
+ Erreichbare/editierbare Seiten (z.B. über Kommentare auf
+Blogs/Nachrichtenseiten)
+ Eigene Seiten
+
+ Vorgehen:
+ Möglichst viele Verlinkungen von erreichbaren Seiten zur Zielseite t
+ Erstellen einer Link-Farm um PageRank von t weiter zu erhöhen
+
+Eigene
+
+Erreichbar
+
+1
+t
+
+2
+
+Unerreichbar
+M
+
+Link-Farm
+9-47
+
+FUNKTIONSWEISE DER LINK-FARM
+ PageRank-Gewicht aus den erreichbaren Seiten: 𝒙
+ Unbekannter PageRank der Zielseite t: 𝒚
+ Recap: 𝛽 tbestimmt Teil des PR, der an Nachbarknoten
+weitergegeben wird
+ PageRank einer der insgesamt 𝑀 Farm-Seiten: 𝛽
+
+𝒚
++
+𝑀
+
+1−𝛽
+
+PR der Zielseite
+wird auf alle
+Farm-Seiten
+aufgeteilt
+
+Anteil der an alle
+Seiten des Web
+aufgeteilt wird
+
+1
+n
+
+ Dann:
+𝒚 = 𝒙 + 𝛽𝑀
+
+𝛽𝒚 1 − 𝛽
+1−𝛽
+𝛽 1−𝛽 𝑀
++
++
+= 𝒙 + 𝛽2𝒚 +
+𝑀
+n
+n
+n
+
+𝑥
+𝛽 𝑀
+⇒𝒚=
++
+1 − 𝛽2 1 + 𝛽 n
+ Z.B. mit 𝛽 = 0.85
+1
+𝛽
+=
+3.6
+und
+= 0.46
+2
+1−𝛽
+
+1+𝛽
+
+Vervielfachung
+von x
+
+Beliebig großes y
+durch großes M
+
+9-48
+
+TRUSTRANK
+ Google erkennt das klassische Design einer Link-Farm und wird die
+Webseiten aus dem Index entfernen
+ Außerdem versucht Google neue Designs zu erkennen
+ Krieg zwischen Google und Spammer
+
+ Alternative: Verwendung des TrustRank: Themenspezifischer
+PageRank mit einer Auswahl vertrauenswürdiger Seiten als Menge 𝑺
+ Annahme: Vertrauenswürdige Seiten verlinken selten auf Spam
+ Vertrauen in beliebige Seite nimmt ab mit Entfernung zu
+vertrauenswürdiger Seite
+ Vertrauen wird über alle Verlinkungen aufgeteilt da viele Verlinkungen
+oft mit einer ungenaueren Prüfung dieser einhergeht
+
+ Auswahl der vertrauenswürdigen Seiten (ohne menschliche
+Inspektion):
+ Seiten mit sehr hohem PageRank
+ Verwendung vertrauenswürdiger Domains, z.B. .edu, .gov, …
+9-49
+
+ZUSAMMENFASSUNG
+ Zentralitätsmaße von Knoten als quantitatives Maß deren
+"Wichtigkeit"
+ Wichtigkeit in Abhängigkeit von Maß und Kontext
+
+ Web als Graph: Knoten = Pages, Kanten = Links
+ PageRank
+ Prinzip des "random walk": bildet einen zufällig durch das Netz
+surfenden Benutzer nach
+ Probleme: Spider Traps und Sackgassen
+ Optimierung: alternative Matrix-Repräsentation und
+Partitionierung in Blöcke
+
+ Themenspezifischer PageRank berücksichtigt Kontext
+von Webseiten
+ TrustRank als Strategie zur Vermeidung von Link-Spam
+9-50
+
+

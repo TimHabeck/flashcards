@@ -1,0 +1,2393 @@
+DATA MINING
+
+Kapitel 6: Locality Sensitive Hashing
+Dr. Christian Martin
+Wintersemester 2025/26
+
+Abteilung Datenbanken / ScaDS.AI
+Universität Leipzig
+
+THEMENÜBERSICHT
+Hochdimensionale Daten
+
+Graphdaten
+
+Datenströme
+
+Clustering
+
+Dimensionsreduktion
+
+Community
+Detection
+
+Windowing
+
+Empfehlungssysteme
+
+Assoziationsregeln
+
+PageRank
+
+Filtern
+
+Locality Sensitive
+Hashing
+
+Supervised ML
+
+Web Spam
+
+Momente
+
+6-2
+
+INHALTSVERZEICHNIS
+
+− Einleitung
+− One-Hot-Kodierung
+− Min-Hash Signaturen
+− Locality Sensitive Hashing
+
+6-3
+
+PINTEREST VISUAL SEARCH
+
+− Finde ähnliche Bilder für einen gegebenen Bildbereich
+
+6-4
+
+FUNKTIONSWEISE
+− Sammlung aus Milliarden von Bildern
+− Berechne Repräsentation für jedes Bild (z.B. 4000 Dimensionen)
+− Finde die ähnlichsten Bilder für ein gegebenes Bild
+
+Repräsentation
+2
+
+0
+
+1
+
+5
+
+0
+
+1
+
+0
+
+1
+
+0
+
+0
+
+…
+
+Vergleich
+
+0
+
+2
+
+4
+
+5
+
+0
+
+0 10 1
+
+0
+
+1
+
+2
+
+0
+
+0
+
+2
+
+Ähnlichkeit
+
+Repräsentation
+1
+
+4
+
+0
+
+0
+
+1 11 1
+
+…
+
+1
+
+1 40 0
+
+1
+
+6-5
+
+ANWENDUNGEN
+
+− Viele Probleme können als folgendes Suchproblem
+formuliert werden: Finde die nächsten Nachbarn in einem
+hochdimensionalen Raum
+− Beispiele:
+− Dokumente mit ähnlichen Wörtern
+− Klassifikation
+− Duplikateleminierung, z.B. in der Webseiten-/Nachrichtensuche
+− Plagiaterkennung
+
+− Kunden mit ähnlichem Kaufverhalten
+− Empfehlungen: Musik, Filme, ...
+− Bilder mit ähnlichen Merkmalen, z.B. Bildkomplettierung
+
+6-6
+
+[Hays and Efros, SIGGRAPH 2007,
+http://graphics.cs.cmu.edu/projects/sceneBILDKOMPLETTIERUNG
+completion/scene-completion.pdf]
+
+6-7
+
+ALLGEMEINE BESCHREIBUNG DES PROBLEMS
+− Gegeben einer Menge von 𝑵 hochdimensionalen Datenpunkten
+𝒙𝟏 , 𝒙𝟐 , …, 𝒙𝑁
+− Distanzfunktion 𝒅(𝒙𝑖 , 𝒙j )
+− Ziel: Finde alle Paare (𝒙𝒊 , 𝒙𝒋 ) innerhalb einer Ähnlichkeitsgrenze 𝒔:
+𝒅 𝒙𝒊 , 𝒙𝒋 ≤ 𝒔
+− Naive Lösung: Vergleich aller Paare benötigt 𝑶 𝑵𝟐 Berechnungszeit
+− Bei 𝑵 = 𝟏𝟎𝟔 Punkten bedeutet dies
+
+𝑵 𝑵−𝟏
+𝟐
+
+≈ 𝟓 ∙ 𝟏𝟎𝟏𝟏 Vergleiche
+
+− Mit 𝟏𝟎𝟔 Vergleichen pro Sekunde, benötigt man dazu etwa 5 Tage
+− Über 1 Jahr bei 𝑵 = 𝟏𝟎𝟕 Punkten
+
+− Mit Locality Sensitive Hashing: 𝑶 𝑵 Berechnungszeit möglich
+6-8
+
+BEISPIEL: ÄHNLICHE TEXTDOKUMENTE
+Finde ähnliche Paare in einer riesigen Menge von Textdokumenten
+
+Ut enim ad minim veniam, quis nostrud
+exercitation ullamco laboris nisi ut aliquip
+ex ea commodo consequat.
+
+Lorem ipsum dolor sit amet, consectetur
+adipiscing elit, sed do eiusmod tempor
+incididunt ut labore et dolore magna aliqua.
+
+Lorem ipsum dolor sit amet, consectetur
+Lorem ipsum
+dolor
+amet, consectetur
+adipiscing
+elit, sed
+do sit
+eiusmod
+tempor
+Lorem
+ipsum
+dolor
+sit
+amet,
+consectetur
+adipiscing
+elit,
+sed
+do
+eiusmod
+tempor
+incididunt ut labore et dolore magna
+aliqua.
+Lorem
+ipsum
+dolor
+sit
+amet,
+consectetur
+adipiscing
+elit,
+sed
+do
+eiusmod
+tempor
+incididunt ut labore et dolore magna
+aliqua.
+Lorem
+ipsum
+dolor
+sit
+amet,
+consectetur
+adipiscing
+elit,
+sed
+do
+eiusmod
+tempor
+incididunt
+ut
+labore
+et
+dolore
+magna
+aliqua.
+Ut enim adadipiscing
+minim
+veniam,
+quis
+nostrud
+Lorem
+ipsum
+dolor
+sit
+amet,
+consectetur
+elit,
+sed
+do
+eiusmod
+tempor
+incididunt
+ut
+labore
+et
+dolore
+magna
+aliqua.
+Ut enim ad
+minim laboris
+veniam,
+quis
+nostrud
+exercitation
+ullamco
+nisi
+ut
+aliquip
+adipiscing
+elit,
+sed
+do
+eiusmod
+tempor
+incididunt
+ut
+labore
+et
+dolore
+magna
+aliqua.
+enim ad
+minim laboris
+veniam,nisi
+quis
+nostrud
+ullamco
+ut
+aliquip
+ex exercitation
+eaUt
+commodo
+consequat.
+incididunt
+ut
+labore
+et
+dolore
+magna
+aliqua.
+enim ad
+minim laboris
+veniam,nisi
+quis
+ullamco
+ut nostrud
+aliquip
+ex exercitation
+eaUt
+commodo
+consequat.
+enim ad
+minim laboris
+veniam,nisi
+quis
+ullamco
+ut nostrud
+aliquip
+ex exercitation
+eaUt
+commodo
+consequat.
+Ut
+enim
+ad
+minim
+veniam,
+quis
+laboris nisi
+ut nostrud
+aliquip
+ex exercitation
+ea commodoullamco
+consequat.
+laboris nisi ut aliquip
+ex exercitation
+ea commodoullamco
+consequat.
+ex ea commodo consequat.
+
+Probleme:
+− Textdokumente haben unterschiedliche Länge
+− Repräsentation als (hochdimensionaler) Datenpunkt
+− Gleiche Teile der Dokumente werden in unterschiedlichen Reihenfolgen
+angezeigt
+− Dokumente sind so groß/zahlreich, dass sie nicht in den Hauptspeicher passen
+− Zu viele Dokumente zum Vergleichen aller Paare
+6-9
+
+3 SCHRITTE ZUM FINDEN ÄHNLICHER DOKUMENTE
+− One-Hot-Kodierung: Konvertierung der Dokumente in numerische
+Repräsentationen
+− Min-Hashing: Konvertierung langer (hochdimensionaler)
+Repräsentationen in kurze ähnlichkeitserhaltende Signaturen
+− Locality-Sensitive Hashing: Bestimmen von Paaren an Signaturen,
+die mit hoher Wahrscheinlichkeit sehr ähnlich sind
+
+Dokumente
+
+LocalitySensitive
+Hashing
+
+Kandidatenpaare
+
+6-10
+
+INHALTSVERZEICHNIS
+
+− Einleitung
+− One-Hot-Kodierung
+− Min-Hash Signaturen
+− Locality Sensitive Hashing
+
+6-11
+
+SCHRITT 1: ONE-HOT-KODIERUNG
+Ut enim ad minim veniam, quis nostrud
+exercitation ullamco laboris nisi ut aliquip
+ex ea commodo consequat.
+Lorem ipsum dolor sit amet, consectetur
+adipiscing elit, sed do eiusmod tempor
+incididunt ut labore et dolore magna aliqua.
+
+1 0 1 1 0 1 0 1 0 0 1 0 0 1 1 0 1 1
+
+− Darstellung eines Textdokuments als 0-1-Array
+− Jedes Element des Arrays steht für ein Merkmal
+− 0 bedeutet, dass Merkmal nicht vorhanden ist
+− 1 bedeutet, dass Merkmal vorhanden ist (Alternative: Anzahl der Merkmale zählen)
+
+− Mehrere Möglichkeiten, Merkmale aus Textdokumenten zu extrahieren
+− Beispiel: Merkmal = Wort (Bag-Of-Words)
+John ist häufig übermüdet.
+Lieber häufig übermüdet
+als ständig überwacht.
+6-12
+
+N-GRAMME UND K-SHINGLES
+− Menge aller Wörter (Bag-Of-Words) berücksichtigt nicht die
+Anordnung der Wörter (zu Sätzen)
+− N-Gramm: Folge von Wörtern
+− 2-Gramme: „lieber häufig“, „häufig übermüdet“, „übermüdet als“, „als
+ständig“, „ständig überwacht“
+− 3-Gramme: „ lieber häufig übermüdet“, „häufig übermüdet als“,
+„übermüdet als ständig“, „als ständig überwacht“
+
+− K-Shingle: Teil einer Zeichenkette der Länge k
+− 2-Shingles: “li”, “ie”, “eb”, “be”, “er”, “r “, “ h”, “hä”, “äu”, “uf”, “fi”, “ig”, “g “,
+“ ü”, “üb”, …
+− 3-Shingles: “lie”, “ieb”, “ebe”, “ber”, “er ”, “r h“, “ hä”, “häu”, “äuf”, “ufi”,
+“fig”, “ig ”, …
+6-13
+
+DISTANZMAß
+− Distanz zwischen zwei Mengen 𝑋𝟏 und 𝑋𝟐 :
+Jaccarddistanz
+
+d 𝑋𝟏 , 𝑋𝟐
+
+|𝑋𝟏 ∩ 𝑋2 |
+= 1 −
+|𝑋𝟏 ∪ 𝑋2 |
+
+− Jaccarddistanz beschreibt den Anteil der Elemente, welche nicht in
+beiden Mengen vorkommen
+
+𝑋𝟏
+
+𝑋2
+
+𝑑 𝑋𝟏 , 𝑋𝟐 = 5/8
+
+6-14
+
+JACCARDDISTANZ
+− Berechnung der Jaccarddistanz über One-Hot-Kodierung
+− Seien 𝐶1 und 𝐶2 die Kodierungen zweier Mengen
+− Dann kann die Jaccarddistanz berechnet werden, indem man die
+Elemente beider Kodierungen an jeder Position vergleicht:
+Anzahl der Positionen mit genau einer Eins
+Anzahl der Positionen mit mind. einer Eins
+𝑃𝑜𝑠 𝐶 ∩𝑃𝑜𝑠1 (𝐶2 )
+− Oder d 𝐶𝟏 , 𝐶𝟐 = 1 − 1 1
+mit 𝑃𝑜𝑠1 𝐶
+𝑃𝑜𝑠1 𝐶1 ∪𝑃𝑜𝑠1 (𝐶2 )
+
+− d 𝐶𝟏 , 𝐶𝟐 =
+
+Menge an
+
+Positionen mit 1 besetzt
+
+C1
+𝐶2
+
+1
+1
+
+1
+1
+
+0
+0
+
+0
+0
+
+1
+1
+
+1
+0
+
+𝐶3
+
+0
+
+1
+
+1
+
+1
+
+0
+
+0
+
+1
+
+𝑑 𝐶𝟏 , 𝐶𝟐 = 4
+
+5
+
+𝑑 𝐶𝟏 , 𝐶3 = 6
+
+4
+
+𝑑 𝐶2 , 𝐶3 = 5
+6-15
+
+INHALTSVERZEICHNIS
+
+− Einleitung
+− One-Hot-Kodierung
+− Min-Hash Signaturen
+− Locality Sensitive Hashing
+
+6-16
+
+SCHRITT 2: MIN-HASHING
+1 0 1 1 0 1 0 1 0 0 1 0 0 1 1 0 1 1
+
+2 9 4 1
+
+− Min-Hashing: Konvertierung der Kodierungen in kurze
+ähnlichkeitserhaltende Signaturen
+− Signaturen sind kürzere Repräsentationen
+− Vergleich über Signaturen anstatt über Kodierungen
+
+− Idee: „Hash“ die Kodierungen in Buckets, so dass die meisten
+ähnlichen Paare in dem gleichen Bucket landen
+− Formal: Finde eine Hash-Funktion h(·), so dass:
+− Falls d(C1,C2) klein, dann h(C1) = h(C2) mit hoher Wahrscheinlichkeit.
+− Falls d(C1,C2) groß, dann h(C1) = h(C2) mit niedriger
+Wahrscheinlichkeit.
+
+− Hash-Funktion hängt vom Distanzmaß ab: Min-Hashing für Jaccard
+6-17
+
+MIN-HASHING
+− Anwenden einer Permutation 1 auf die Elemente der Kodierung 𝐶
+1
+
+1 0 0 1 0 1 0 1 0 0 1 0 0 1
+
+3 12 0 5 8 10 1 2 6 13 11 4 9 7
+
+1 0 = 2, 1 1 = 6,
+
+1 2 =7
+
+− Min-Hash-Funktion ℎ1 auf Kodierung 𝐶:
+− ℎ1 (𝐶) := min 1 (𝑖), d.h. der Index der ersten Position der
+𝑖:𝐶𝑖 =1
+
+permutierten Kodierung mit einer 1
+C
+
+1 0 0 1 0 1 0 1 0 0 1 0 0 1
+
+1
+3 12 0 5 8 10 1 2 6 13 11 4 9 7
+
+ℎ1 𝐶 = 2
+
+− Signatur einer Kodierung besteht aus den Min-Hash-Werten
+ℎ1 , ℎ2 , … , ℎ𝑛 mehrerer unabhängiger Permutationen 1 , 2 , … , 𝑛
+6-18
+
+MIN-HASHING: BEISPIEL
+Permutation 
+
+Matrix (Shingles x Dokumenten)
+
+1
+
+2
+
+3
+
+D1
+
+D2
+
+D3 D4
+
+2
+
+4
+
+3
+
+1
+
+0
+
+0
+
+0
+
+Signaturen
+
+3
+
+2
+
+4
+
+1
+
+0
+
+0
+
+1
+
+D1 D2 D3 D4
+
+0
+
+1
+
+0
+
+0
+
+1
+
+0
+
+1
+
+h1
+
+2
+
+0
+
+4
+
+0
+
+6
+
+3
+
+2
+
+0
+
+1
+
+0
+
+1
+
+h2
+
+0
+
+1
+
+0
+
+1
+
+1
+
+6
+
+1
+
+0
+
+1
+
+0
+
+1
+
+h3
+
+3
+
+0
+
+5
+
+0
+
+5
+
+0
+
+6
+
+1
+
+0
+
+1
+
+0
+
+4
+
+5
+
+5
+
+1
+
+0
+
+1
+
+0
+6-19
+
+MIN-HASH: ZENTRALE EIGENSCHAFT
+− Für zwei Mengen mit One-Hot-Kodierung 𝐶 und 𝐷 bezeichne 𝑑(𝐶, 𝐷)
+deren Jaccarddistanz. Für jede Permutation  gilt:
+𝐶 𝐷
+
+𝑃𝑟 ℎ𝜋 (𝐶) ≠ ℎ𝜋 (𝐷) = 𝑑(𝐶, 𝐷)
+2
+0 0
+Begründung:
+
+− Wir betrachten die kleinste Zahl aus 𝜋, die nicht auf
+eine Zeile (0,0) verweist (hier: 1)
+− Die Wahrscheinlichkeit 𝑃𝑟 ℎ𝜋 (𝐶) ≠ ℎ𝜋 (𝐷) bezieht
+sich auf das Ereignis, dass diese Zahl auf eine Zeile mit
+nur einer Eins verweist: (0,1) oder (1,0)
+− Da die Permutation zufällig ist, entspricht dies:
+𝑃𝑟 ℎ𝜋 (𝐶) ≠ ℎ𝜋 (𝐷) =
+
+Anzahl der Positionen mit genauer einer Eins
+= 𝑑(𝐶, 𝐷)
+Anzahl der Positionen mit mind. einer Eins
+
+3
+
+1
+
+1
+
+0
+
+0
+
+0
+
+1
+
+0
+
+1
+
+6
+
+1
+
+1
+
+5
+
+1
+
+0
+
+4
+
+0
+
+1
+
+6-20
+
+ÄHNLICHKEIT DER SIGNATUREN
+− Für jede Permutation  gilt 𝑃𝑟 ℎ𝜋 (𝐶) ≠ ℎ𝜋 (𝐷) = 𝑑(𝐶, 𝐷)
+− Bei mehreren unabhängigen Permutationen 1 , 2 , … , 𝑛 , kann der
+Wert für 𝑑(𝐶, 𝐷) über die relative Häufigkeit von
+ℎ𝜋 𝑖 𝐶 ≠ ℎ𝜋 𝑖 𝐷
+geschätzt werden
+𝐴𝑛𝑧𝑎ℎ𝑙 𝑢𝑛𝑡𝑒𝑟𝑠𝑐ℎ𝑖𝑒𝑑𝑙𝑖𝑐ℎ𝑒𝑟 𝑆𝑖𝑔𝑛𝑎𝑡𝑢𝑟𝑒𝑙𝑒𝑚𝑒𝑛𝑡𝑒
+− 𝑑ሚ 𝐶, 𝐷 =
+≈ 𝑑(𝐶, 𝐷)
+𝐿ä𝑛𝑔𝑒 𝑑𝑒𝑟 𝑆𝑖𝑔𝑛𝑎𝑡𝑢𝑟
+
+− Je länger die Signatur, desto genauer die Schätzung
+(Gesetz der großen Zahlen: Erwartungswert der relativen Häufigkeit
+ist Wahrscheinlichkeit)
+
+6-21
+
+MIN-HASHING: BEISPIEL
+Permutation 
+
+Matrix (Shingles x Dokumenten)
+
+1
+
+2
+
+3
+
+D1
+
+D2
+
+D3 D4
+
+2
+
+4
+
+3 S1
+
+1
+
+0
+
+0
+
+0
+
+3
+
+2
+
+4 S2
+
+1
+
+0
+
+0
+
+1
+
+0
+
+1
+
+0 S3
+
+0
+
+1
+
+0
+
+1
+
+6
+
+3
+
+2 S4
+
+0
+
+1
+
+0
+
+1
+
+6
+
+1 S5
+
+0
+
+1
+
+5
+
+0
+
+6 S6
+
+1
+
+0
+
+4
+
+5
+
+5 S7
+
+1
+
+0
+
+Signaturen
+D1
+
+D2
+
+D3 D4
+
+h1
+
+2
+
+0
+
+4
+
+0
+
+h2
+
+0
+
+1
+
+0
+
+1
+
+h3
+
+3
+
+0
+
+5
+
+0
+
+1
+
+Paar
+
+Jaccard Signatur
+
+0
+
+1
+
+D1-D2
+
+1
+
+1
+
+D1-D3
+
+0.5
+
+2/3
+
+1
+
+0
+
+D1-D4
+
+6/7
+
+1
+
+0
+
+D2-D3
+
+1
+
+1
+
+D2-D4
+
+0.25
+
+0
+
+D3-D4
+
+1
+
+1
+
+1
+
+6-22
+
+MIN-HASHING: SCHNELLE BERECHNUNG
+Permutation 
+
+Matrix (Shingles x Dokumenten)
+
+Signaturen
+
+1
+
+2
+
+3
+
+D1
+
+D2
+
+D3 D4
+
+2
+
+4
+
+3 S1
+
+1
+
+0
+
+0
+
+0
+
+h1
+
+3
+
+2
+
+4 S2
+
+1
+
+0
+
+0
+
+1
+
+h2
+
+0
+
+1
+
+0 S3
+
+0
+
+1
+
+0
+
+1
+
+6
+
+3
+
+2 S4
+
+0
+
+1
+
+0
+
+1
+
+1
+
+6
+
+1 S5
+
+0
+
+1
+
+0
+
+1
+
+5
+
+0
+
+6 S6
+
+1
+
+0
+
+1
+
+0
+
+4
+
+5
+
+5 S7
+
+1
+
+0
+
+1
+
+0
+
+D1
+
+D2
+
+D3 D4
+
+h3
+
+6-23
+
+MIN-HASHING: SCHNELLE BERECHNUNG
+Permutation 
+
+Matrix (Shingles x Dokumenten)
+
+Signaturen
+
+1
+
+2
+
+3
+
+D1
+
+D2
+
+D3 D4
+
+2
+
+4
+
+3 S1
+
+1
+
+0
+
+0
+
+0
+
+h1
+
+2
+
+3
+
+2
+
+4 S2
+
+1
+
+0
+
+0
+
+1
+
+h2
+
+4
+
+0
+
+1
+
+0 S3
+
+0
+
+1
+
+0
+
+1
+
+h3
+
+3
+
+6
+
+3
+
+2 S4
+
+0
+
+1
+
+0
+
+1
+
+1
+
+6
+
+1 S5
+
+0
+
+1
+
+0
+
+1
+
+5
+
+0
+
+6 S6
+
+1
+
+0
+
+1
+
+0
+
+4
+
+5
+
+5 S7
+
+1
+
+0
+
+1
+
+0
+
+D1
+
+D2
+
+D3 D4
+
+6-24
+
+MIN-HASHING: SCHNELLE BERECHNUNG
+Permutation 
+
+Matrix (Shingles x Dokumenten)
+
+Signaturen
+
+1
+
+2
+
+3
+
+D1
+
+D2
+
+D3 D4
+
+2
+
+4
+
+3 S1
+
+1
+
+0
+
+0
+
+0
+
+h1
+
+2
+
+3
+
+3
+
+2
+
+4 S2
+
+1
+
+0
+
+0
+
+1
+
+h2
+
+2
+
+2
+
+0
+
+1
+
+0 S3
+
+0
+
+1
+
+0
+
+1
+
+h3
+
+3
+
+4
+
+6
+
+3
+
+2 S4
+
+0
+
+1
+
+0
+
+1
+
+1
+
+6
+
+1 S5
+
+0
+
+1
+
+0
+
+1
+
+5
+
+0
+
+6 S6
+
+1
+
+0
+
+1
+
+0
+
+4
+
+5
+
+5 S7
+
+1
+
+0
+
+1
+
+0
+
+D1
+
+D2
+
+D3 D4
+
+6-25
+
+MIN-HASHING: SCHNELLE BERECHNUNG
+Permutation 
+
+Matrix (Shingles x Dokumenten)
+
+1
+
+2
+
+3
+
+D1
+
+D2
+
+D3 D4
+
+2
+
+4
+
+3 S1
+
+1
+
+0
+
+0
+
+0
+
+3
+
+2
+
+4 S2
+
+1
+
+0
+
+0
+
+1
+
+0
+
+1
+
+0 S3
+
+0
+
+1
+
+0
+
+1
+
+6
+
+3
+
+2 S4
+
+0
+
+1
+
+0
+
+1
+
+1
+
+6
+
+1 S5
+
+0
+
+1
+
+0
+
+1
+
+5
+
+0
+
+6 S6
+
+1
+
+0
+
+1
+
+0
+
+4
+
+5
+
+5 S7
+
+1
+
+0
+
+1
+
+0
+
+Signaturen
+D1
+
+D2
+
+D3 D4
+
+h1
+
+2
+
+0
+
+0
+
+h2
+
+2
+
+1
+
+1
+
+h3
+
+3
+
+0
+
+0
+
+6-26
+
+MIN-HASHING: SCHNELLE BERECHNUNG
+Permutation 
+
+Matrix (Shingles x Dokumenten)
+
+1
+
+2
+
+3
+
+D1
+
+D2
+
+D3 D4
+
+2
+
+4
+
+3 S1
+
+1
+
+0
+
+0
+
+0
+
+3
+
+2
+
+4 S2
+
+1
+
+0
+
+0
+
+1
+
+0
+
+1
+
+0 S3
+
+0
+
+1
+
+0
+
+1
+
+6
+
+3
+
+2 S4
+
+0
+
+1
+
+0
+
+1
+
+1
+
+6
+
+1 S5
+
+0
+
+1
+
+0
+
+1
+
+5
+
+0
+
+6 S6
+
+1
+
+0
+
+1
+
+0
+
+4
+
+5
+
+5 S7
+
+1
+
+0
+
+1
+
+0
+
+Signaturen
+D1
+
+D2
+
+D3 D4
+
+h1
+
+2
+
+0
+
+0
+
+h2
+
+2
+
+1
+
+1
+
+h3
+
+3
+
+0
+
+0
+
+6-27
+
+MIN-HASHING: SCHNELLE BERECHNUNG
+Permutation 
+
+Matrix (Shingles x Dokumenten)
+
+1
+
+2
+
+3
+
+D1
+
+D2
+
+D3 D4
+
+2
+
+4
+
+3 S1
+
+1
+
+0
+
+0
+
+0
+
+3
+
+2
+
+4 S2
+
+1
+
+0
+
+0
+
+1
+
+0
+
+1
+
+0 S3
+
+0
+
+1
+
+0
+
+1
+
+6
+
+3
+
+2 S4
+
+0
+
+1
+
+0
+
+1
+
+1
+
+6
+
+1 S5
+
+0
+
+1
+
+0
+
+1
+
+5
+
+0
+
+6 S6
+
+1
+
+0
+
+1
+
+0
+
+4
+
+5
+
+5 S7
+
+1
+
+0
+
+1
+
+0
+
+Signaturen
+D1
+
+D2
+
+D3 D4
+
+h1
+
+2
+
+0
+
+5
+
+0
+
+h2
+
+0
+
+1
+
+0
+
+1
+
+h3
+
+3
+
+0
+
+6
+
+0
+
+6-28
+
+MIN-HASHING: SCHNELLE BERECHNUNG
+Permutation 
+
+Matrix (Shingles x Dokumenten)
+
+1
+
+2
+
+3
+
+D1
+
+D2
+
+D3 D4
+
+2
+
+4
+
+3 S1
+
+1
+
+0
+
+0
+
+0
+
+3
+
+2
+
+4 S2
+
+1
+
+0
+
+0
+
+1
+
+0
+
+1
+
+0 S3
+
+0
+
+1
+
+0
+
+1
+
+6
+
+3
+
+2 S4
+
+0
+
+1
+
+0
+
+1
+
+1
+
+6
+
+1 S5
+
+0
+
+1
+
+0
+
+1
+
+5
+
+0
+
+6 S6
+
+1
+
+0
+
+1
+
+0
+
+4
+
+5
+
+5 S7
+
+1
+
+0
+
+1
+
+0
+
+Signaturen
+D1
+
+D2
+
+D3 D4
+
+h1
+
+2
+
+0
+
+4
+
+0
+
+h2
+
+0
+
+1
+
+0
+
+1
+
+h3
+
+3
+
+0
+
+5
+
+0
+
+6-29
+
+MIN-HASH: IMPLEMENTIERUNG
+
+− Problem: Berechnung und Speicherung einer
+Permutation ist aufwendig und Speicher-intensiv
+− Simulation einer Permutation über Zufallshashfunktionen
+− Zufällige Abbildung von N Zahlen auf N Zahlen
+− z.B. ℎ 𝑥 = (𝑎 ∙ 𝑥 + 𝑏 mod 𝑝) mod 𝑁, wobei a, b Zufallszahlen
+und p eine Primzahl mit p > N
+
+− Zufallshashfunktionen ℎ1 , ℎ2 , … , ℎ𝑛
+− Initiale Signaturmatrix: 𝑆𝐼𝐺 𝑖, 𝑐 = ∞ für alle
+Zufallshashfunktionen 𝑖, One-Hot Codierung c
+− Algorithmus: Für jede Zeile 𝑟 der Dokumentenmatrix
+− Berechne ℎ1 𝑟 , ℎ2 𝑟 , … , ℎ𝑛 𝑟
+− Für jede Spalte 𝑐 mit 1: 𝑆𝐼𝐺 𝑖, 𝑐 ← min 𝑆𝐼𝐺 𝑖, 𝑐 , ℎ𝑖 𝑟
+𝑖 = 1, … , 𝑛
+
+für alle
+6-30
+
+IMPLEMENTIERUNG: BEISPIEL
+Dokumentenmatrix
+Zeile r
+
+C1 C2
+
+Sig(i,c)
+
+C1
+
+C2
+
+1
+
+1
+
+0
+
+h1
+
+∞
+
+∞
+
+2
+
+0
+
+1
+
+h2
+
+∞
+
+∞
+
+3
+
+1
+
+1
+
+Signaturmatrix
+
+4
+
+1
+
+0
+
+5
+
+0
+
+1
+
+Zufallshashfunktionen
+h1(x) = ((x) mod 47) mod 5
+h2(x) = ((2x+1) mod 47) mod 5
+
+Sig(i,c)
+
+C1
+
+C2
+
+h1(1)=1 h1
+
+1
+
+∞
+
+h2(1)=3 h2
+
+3
+
+∞
+
+C1
+
+C2
+
+1
+
+2
+
+3
+
+0
+
+C1
+
+C2
+
+h1(3)=3 h1
+
+1
+
+2
+
+h2(3)=2 h2
+
+2
+
+0
+
+C1
+
+C2
+
+h1(4)=4 h1
+
+1
+
+2
+
+h2(4)=4 h2
+
+2
+
+0
+
+C1
+
+C2
+
+1
+
+0
+
+2
+
+0
+
+Sig(i,c)
+h1(2)=2 h1
+h2(2)=0 h2
+Sig(i,c)
+
+Sig(i,c)
+
+Sig(i,c)
+h1(5)=0 h1
+h2(5)=1 h2
+
+6-31
+
+INHALTSVERZEICHNIS
+
+− Einleitung
+− One-Hot-Kodierung
+− Min-Hash Signaturen
+− Locality Sensitive Hashing
+
+6-32
+
+SCHRITT 3: LOCALITY SENSITIVE HASHING
+− Locality Sensitive Hashing (LSH): Beschränkung auf Paare von
+Signaturen, die höchst wahrscheinlich ähnlich sind
+𝑪𝟏
+𝑪𝟐
+𝑪𝟑
+
+2 9 4 1
+4 8 1 2
+7 3 0 5
+
+𝑪𝑵
+
+…
+4 8 1 3
+
+LocalitySensitive
+Hashing
+
+𝑪𝟏 - 𝑪𝟓
+𝑪𝟐 - 𝑪𝟒𝟏
+𝑪𝟑 - 𝑪𝑵
+…
+
+− Nur die Paare von Signaturen, die über LSH ausgewählt wurden,
+werden auf Ähnlichkeit untersucht (Schätzung der Jaccarddistanz)
+− Vorteil: Im Idealfall wird nur ein kleiner Bruchteil von Paaren
+untersucht
+− Nachteil: Es gibt False Negatives
+− Ähnliche Paare, die nicht entdeckt wurden
+− Die Rate der False Negatives gilt es, so klein wie möglich zu halten
+6-33
+
+LSH
+− Ziel: Dokumentenpaare mit Jaccarddistanz kleiner als ein
+Schwellenwert s (z.B. s = 0.2)
+− Idee: Verwende Hash-Funktion, die ähnliche Dokumente in gleiche
+Buckets sortiert und unähnliche Dokumente in unterschiedliche
+Buckets
+− Effektive Methode (zum Beispiel):
+r Zeilen pro
+− Teilung der Signaturmatrix in
+b Bänder mit jeweils r Reihen
+− Eine Hash-Funktion für jedes
+Band, welche einen Vektor aus
+r Zahlen auf eine große Anzahl an
+Buckets verteilt
+− Kandidaten sind zwei Signaturen,
+die mind. einmal in den gleichen
+Bucket sortiert wurden
+− Einstellung von b und r zur Optimierung
+
+Band
+Eine
+Signatur
+
+Signatur-Matrix
+6-34
+
+HASHING DER BÄNDER
+Buckets
+
+Spalten 2 und 6 sind in diesem
+Band wahrscheinlich gleich
+
+Spalten 6 und 7 sind hier
+garantiert unterschiedlich
+
+Annahme: Es gibt genügend Buckets,
+so dass zwei Spalten mit hoher
+Wahrscheinlichkeit nur dann in den
+gleichen Bucket sortiert werden, wenn
+sie in einem Band identisch sind
+
+6-35
+
+HASH-FUNKTION: BEISPIEL
+− Man benötigt eine Hash-Funktion pro Band
+− Wie findet man genügend Hash-Funktionen?
+− MurmurHash mit verschiedenen Seeds
+− Original in C++: https://github.com/aappleby/smhasher/wiki
+− Java Implementierung: z.B. in Guava (https://github.com/google/guava)
+− Python: mmh3 (https://pypi.org/project/mmh3)
+
+− Beliebige Hash-Funktionen und XOR mit Zufallszahl
+− Liste mit Hash-Funktionen:
+https://en.wikipedia.org/wiki/List_of_hash_functions
+− Auch unsichere Hash-Funktionen wie MD5 können verwendet werden
+− Java Implementierung: z.B. in Guava
+(https://github.com/google/guava/wiki/HashingExplained)
+− XOR in Java:
+− int a = 60; /* 60 = 0011 1100 */
+− int b = 13; /* 13 = 0000 1101 */
+− int c = a ^ b; /* 49 = 0011 0001 */
+6-36
+
+BEISPIEL
+•
+•
+
+Signaturmatrix mit 100 Zeilen
+Setze b = 20 und r = 5
+Fall 1: 2 Dokumente mit d(C, D) = 0.2
+− Wahrscheinlichkeit, dass C und D in
+einem bestimmten Band identisch:
+1 − 0.2 5 = 0.328
+− Wahrscheinlichkeit, dass C und D in
+keinem Band identisch:
+1 − 0.328 20 = 0.00035
+− d.h. einer von 3000 Paaren mit 80%Ähnlichkeit werden nicht entdeckt
+(False Negative)
+
+Fall 2: 2 Dokumente mit d(C, D) = 0.7
+− Wahrscheinlichkeit, dass C und D in
+einem bestimmten Band identisch:
+0.3 5 = 0.00243
+− Wahrscheinlichkeit, dass C und D in
+mind. einem Band identisch:
+1 − 1 − 0.00243 20 = 0.0474
+− d.h. 4.74% der Paaren mit 30%Ähnlichkeit werden zu Kandidaten
+(False Positives)
+
+6-37
+
+LSH: ANALYSE
+− Angenommen 𝑡 = 1 − 𝑑(𝐶, 𝐷) , 𝑏 Bänder mit jeweils 𝑟 Zeilen
+− Wahrscheinlichkeit, dass C und D in mind. einem Band identisch:
+1 − 1 − 𝑡𝑟 𝑏
+
+− Wähle (2 aus 3):
+− Die Anzahl der Min-Hashes (Zeilen der Signatur-Matrix)
+− Die Anzahl der Bänder 𝑏
+− Die Anzahl der Reihen pro Band 𝑟
+
+−
+
+um die Raten der False Positives und False Negatives
+anzugleichen
+− Beispiel: Bei b = 10 und r = 10 anstatt b = 20 und r = 5 würde es
+weniger False Positives aber mehr False Negatives geben
+
+6-38
+
+LSH: ANALYSE
+
+Idealfall
+
+Eins falls
+t > 1-s
+Null falls
+t < 1-s
+
+1-s
+
+Wahrscheinlichkeit
+im gleichen Bucket
+zu landen
+
+Ähnlichkeit 𝑡 = 1 − 𝑑(𝐶, 𝐷)
+zweier Dokumente
+6-39
+
+LSH: ANALYSE
+
+1 Zeile und 1 Band: 1 − 1 − 𝑡 𝑟 𝑏 = 𝑡
+
+False
+Negatives
+
+Wahrscheinlichkeit
+im gleichen Bucket
+zu landen
+False
+Positives
+
+1-s
+
+Ähnlichkeit 𝑡 = 1 − 𝑑(𝐶, 𝐷)
+zweier Dokumente
+6-40
+
+LSH: ANALYSE
+
+r Zeilen und b Bänder
+
+Wahrscheinlichkeit
+im gleichen Bucket
+zu landen
+
+1 − 1 − 𝑡𝑟 𝑏
+1
+≈
+𝑏
+
+1
+𝑟
+
+Ähnlichkeit 𝑡 = 1 − 𝑑(𝐶, 𝐷)
+zweier Dokumente
+6-41
+
+ZUSAMMENFASSUNG
+
+− Einleitung
+− One-Hot-Kodierung
+− Min-Hash Signaturen
+− Locality Sensitive Hashing
+
+6-42
+
+

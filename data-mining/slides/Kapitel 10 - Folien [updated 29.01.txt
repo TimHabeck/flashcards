@@ -1,0 +1,1105 @@
+DATA MINING
+
+Kapitel 10: Streams
+Dr. Christian Martin
+Wintersemester 2025/26
+
+Abteilung Datenbanken / ScaDS.AI
+Universität Leipzig
+
+THEMENÜBERSICHT
+
+Hochdimensionale Daten
+
+Graphdaten
+
+Streams
+
+Clustering
+
+Dimensionsreduktion
+
+Community
+Detection
+
+Windowing
+
+Empfehlungssysteme
+
+Assoziationsregeln
+
+Centrality
+
+Filtern
+
+Locality Sensitive
+Hashing
+
+Supervised
+Learning
+
+Momente
+
+10-2
+
+INHALTSVERZEICHNIS
+− Einführung
+− Ziehen einer Stichprobe
+− Anfragen mit Sliding Window
+− Filter
+− Anzahl eindeutiger Elemente
+− Momente von Häufigkeitsverteilungen
+
+10-3
+
+DATA STREAMS
+− In vielen Situationen liegt der Datensatz zum Zeitpunkt
+der Analyse nicht vollständig vor
+− Data Stream (Datenstrom) = Daten sind unbegrenzt und
+die Rate der Eingabe ist nicht kontrollierbar
+− Annahmen
+− Daten treten als „unbegrenzter Stream“ mit einer sehr hohen
+Frequenz über einen oder mehrere Eingänge auf
+− Zugängliche Speicherung der Daten (auf Festplatte) unmöglich
+− Daten werden sofort verarbeitet und danach verworfen
+Wie sind kritische Berechnungen über den Data Stream mit einer
+begrenzten Menge an Speicher möglich?
+
+10-4
+
+DATA STREAM MODEL
+Ad-Hoc
+Anfragen
+
+. . . 1, 5, 2, 7, 0, 9, 3
+
+Stream
+Prozessor
+
+. . . a, r, v, t, y, h, b
+. . . 0, 0, 1, 0, 1, 1, 0
+Eingabe Data Streams
+• Bestehend aus Elementen
+verschiedenen Typs
+• Unterschiedliche Frequenz
+
+Ständige
+Anfragen
+
+Speicher für
+Zwischenergebnisse
+(RAM/Festplatte)
+
+AusgabeStreams
+
+Archive
+
+(schwer zugänglich)
+10-5
+
+BEISPIELE FÜR DATA STREAMS
+− Sensordaten
+− Millionen Sensoren senden Daten an zentrale Einheit
+− z.B. Wasserstand/Temperatur in Flüssen/Seen/Meeren
+− 10 Werte pro Sek. mit 4 Byte: 3.4 Mbyte pro Tag pro Sensor
+
+− Query Beispiele
+− Durchschnittlicher Wert pro Stunde
+− Min, Max und Durchschnittlicher Wert pro Minute übersteigt Threshold
+− Höchster je gemessener Wert eines Sensors
+
+Quelle: https://www.newscientist.com/article/2303899-outsider-wins-darpa-challenge-to-predict-where-floats-drift-at-sea/
+
+10-6
+
+BEISPIELE FÜR DATA STREAMS (2)
+− Anfragen an Suchmaschine
+− Welche Anfragen werden heute häufiger gestellt, als gestern?
+− z.B. Anfragen wie „Symptome Grippe“ können auf Grippewelle
+hinweisen
+
+− Click-Streams
+− Nutzerverhalten (Navigation) auf Webseite
+− Query: Top 10 der meist geklickten Artikel pro Tag, Woche und Monat
+
+− News-Feed auf Sozialen Medien
+− IP/Telefon-Daten
+− Informationen für optimales Routing der Pakete
+− Erkennung von Denial-of-Service-Attacken (DoS)
+
+− Online Machine Learning (z.B., Stochastic Gradient Descent)
+
+10-7
+
+STREAM PROCESSING HERAUSFORDERUNGEN
+− Hohe Frequenz
+− Verarbeitung in Echtzeit
+− Berechnungen im RAM anstatt Disk
+
+− Hohe Anzahl der zu verarbeitenden Streams
+− RAM reicht oft nicht aus, um alle Streams zu verarbeiten
+
+− Ansätze
+− Approximative anstatt exakte Antwort
+− Stichprobe anstatt gesamte Daten
+− Neuste anstatt gesamte Daten
+− Window Processing für aktuellste Ergebnisse
+
+10-8
+
+BEISPIEL: APACHE KAFKA
+− Verteilte Streaming-Plattform
+− Verarbeitung großer Mengen an Datenströmen in Echtzeit
+
+− Hohe Skalierbarkeit
+− Horizontales skalieren = leichtes Erweitern von Ressourcen um mit
+wachsenden Datenmengen umzugehen
+
+− Echtzeit-Datenverarbeitung
+− Producer und Consumer
+− Publish-Subscribe-Modell: Producer senden Daten an Topics,
+Consumer können diese Daten abonnieren und verarbeiten
+
+− Robuste Architektur
+− Gewährleistet hohe Verfügbarkeit und Fehlertoleranz
+
+− Wurde ursprünglich von LinkedIn entwickelt
+− 2011 als Open-Source-Projekt der Apache Software Foundation
+veröffentlicht
+10-9
+
+BEISPIEL: APACHE FLINK
+− Verteiltes Stream- und Batch-Verarbeitungssystem
+− Batch wird als Sonderform von Streaming betrachtet
+
+− Echtzeit-Datenverarbeitung
+− Low-Latency-Analysen auf großen hochfrequenten Streams
+
+− Hohe Skalierbarkeit
+− Zustandsbehaftete Verarbeitung
+− Unterstützt komplexe Event-Verarbeitung mit zustandsbehafteten
+Operationen
+
+− Integrierte Fehlertoleranz
+− Exactly-Once-Semantiken via Checkpointing
+− Entwickelt als Forschungsprojekt an der TU Berlin, 2014 als OpenSource-Projekt veröffentlicht
+− 2024: Release von Version 2.0
+10-10
+
+INHALTSVERZEICHNIS
+− Einführung
+− Ziehen einer Stichprobe
+− Anfragen mit Sliding Window
+− Filter
+− Anzahl eindeutiger Elemente
+− Momente von Häufigkeitsverteilungen
+
+10-11
+
+ZIEHEN EINER STICHPROBE
+− Auswahl und Speicherung einer repräsentativen
+Teilmenge der Daten
+− Anfragen auf Stichprobe anstatt gesamten Daten
+− Zwei Arten
+− Fester Anteil des Datenstroms: z.B. 1 von 10 Elementen, d.h.
+die Stichprobe wächst kontinuierlich mit der Zeit (mit dem
+Datenstrom)
+− Feste Anzahl an Elemente: z.B. 10.000 Elemente, d.h. die
+Stichprobe hat eine feste maximale Größe
+
+10-12
+
+STICHPROBE MIT FESTEN ANTEIL
+− Elemente: (ID, Zeitpunkt, Attribut 1, Attribut 2, …)
+− Implementierung über Hashfunktion:
+− Wähle eine/mehrere Komponenten der Elemente als Schlüssel, z.B. ID,
+Zeitpunkt oder ein Attribut
+𝑎
+
+− Für einen Anteil von 𝑏, verwende 𝑏 Buckets und speichere ein Element,
+falls der Hash-Wert des Schlüssels in einen der ersten 𝑎 Buckets fällt
+− z.B. für eine 30%-Stichprobe:
+
+− Wahl des Schlüssels hängt von Anwendung/Frage ab
+− Beispiel: Anfragen an Suchmaschine
+− Elemente: (ID, Zeitpunkt, Nutzer, Anfrage)
+− Frage: Wie oft stellen die Nutzer die gleiche Anfrage (im Durchschnitt)?
+− Anteil: 10%
+10-13
+
+STICHPROBE MIT FESTEN ANTEIL
+− Naive Lösung: Hash-Funktion auf ID der Elemente
+− Auswahl von 10% der Elemente
+− Problem: Abweichung Erwartungswert der Stichprobe von tatsächlichem Wert
+− Beispiel:
+− Ein Nutzer stellt x einzigartige Anfragen und d Duplikate
+− Exakte Antwort:
+
+𝑑
+𝑑+𝑥
+
+der Anfragen sind Duplikate
+
+− ABER: Erwartungswert der naiven Schätzung:
+
+𝑑
+19𝑑+10𝑥
+
+(Herleitung siehe [1])
+
+− Bessere Lösung: Hash-Funktion auf Nutzer
+− Auswahl von 10% der Nutzer
+− Speichere alle Anfragen der ausgewählten Nutzer
+
+[1] Mining of Massive Datasets – Chapter 4, Leskovec et al.
+
+10-14
+
+STICHPROBE FESTER GRÖSSE
+− Stichprobe darf eine Größe 𝑠 nicht überschreiten, z.B. aufgrund von
+Speicherbeschränkungen
+− Erwünschte Eigenschaft: Nachdem 𝑛 Elemente eintrafen, ist jedes
+𝑠
+dieser Elemente mit Wahrscheinlichkeit Teil der Stichprobe
+𝑛
+
+− Beispiel mit 𝑠 = 2: a b c d e f g h g i…
+2
+7
+
+− Nach n = 7: alle 7 Elemente sind mit Wahrscheinlichkeit Teil der Stichprobe
+− Nach n = 10: alle 10 Elemente sind mit Wahrscheinlichkeit
+(bzw.
+
+4
+für “g”).
+10
+
+2
+Teil der Stichprobe,
+10
+
+Algorithmus (a.k.a. Reservoir Sampling)
+– Speichere die ersten 𝑠 Elemente des Datenstroms
+– Ein neues Element (𝒏-te Element) trifft ein (𝒏 > 𝒔):
+Mit Wahrscheinlichkeit p = s/n,
+• Ersetze eins der vorhandenen 𝒔 Elemente (zufällig ausgewählt
+nach Gleichverteilung) durch das 𝒏-te Element.
+10-15
+
+BEWEIS DER ERWÜNSCHTEN EIGENSCHAFT
+𝑠
+
+− "Nachdem 𝑛 Elemente eintrafen, ist jedes dieser Elemente mit Wahrscheinlichkeit
+𝑛
+Teil der Stichprobe."
+− Beweis durch vollständige Induktion
+− Induktions-Anfang: Nachdem 𝑛 = 𝑠 Elemente eintrafen, sind alle Elemente mit
+𝑠
+Wahrscheinlichkeit = 1 in der Stichprobe
+𝑛
+
+− Induktions-Schritt: Angenommen die erwünschte Eigenschaft (s.o.) gilt für 𝑛
+Elemente. Für das Eintreffen des (𝑛 + 1)ten Elements gilt:
+− Das (𝑛 + 1)te Element wird mit Wahrscheinlichkeit
+
+𝑠
+𝑛+1
+
+in die Stichprobe aufgenommen.
+
+− Jedes der 𝑛 Elemente aus vorherigen Stichprobe bleibt darin, d.h., (n+1)te Element wird nicht
+gewählt oder wird gewählt aber ersetzt nicht 𝑛, mit Wahrscheinlichkeit
+𝑠
+𝑠
+𝑠−1
+𝑛
+1−
++
+∙
+=
+𝑛+1
+𝑛+1
+𝑠
+𝑛+1
+𝑠
+− Also: zum Zeitpunkt 𝑛, sind alle Elemente in s mit einer Wahrscheinlichkeit
+− Nachdem 𝑛 ⟶ 𝑛 + 1, bleiben Elemente in s mit einer Wahrscheinlichkeit
+
+𝑛
+𝑛
+
+𝑛+1
+
+− Jedes der vorherigen 𝑛 Elemente ist in Stichprobe mit Wahrscheinlichkeit
+𝑠
+𝑛
+𝑠
+∙
+=
+𝑛 𝑛+1 𝑛+1
+
+10-16
+
+INHALTSVERZEICHNIS
+− Einführung
+− Ziehen einer Stichprobe
+− Anfragen mit Sliding Window
+− Filter
+− Anzahl eindeutiger Elemente
+− Momente von Häufigkeitsverteilungen
+
+10-17
+
+ANFRAGEN MIT SLIDING WINDOW
+− Anfragen sind auf ein Sliding Window der Länge N, d.h. auf die
+neuesten N Elemente, beschränkt
+− Beispiel mit N = 6:
+
+axcyzkcdegabfgd
+−
+
+Problem: unzureichender Speicherplatz für Sliding Windows, falls
+− N ist zu groß
+− zu viele Datenströme
+
+− Beispiel: Online Händler
+− Ein 0/1-Datenstrom pro Produkt
+− Information, ob das Produkt in der n-ten Transaktion verkauft wurde
+− Anfrage: Wie oft wurde ein Produkt in den letzten k Transaktionen
+verkauft?
+10-18
+
+BITS ZÄHLEN
+− Gegeben ist ein 0/1-Strom, ein Sliding Window der Länge N und
+Anfragen der Form:
+− Wie viele Einsen sind unter den letzten k Bits (k ≤ N)?
+
+N
+
+010011100010100100010110110111001010110011…
+Vergangenheit
+
+|
+
+Zukunft
+
+− Exakte Antwort nur durch Speichern aller N Bits möglich
+− Approximative Antwort durch Speichern aggregierter Daten: Anzahl
+der Einsen in einem festen Bereich
+− z.B. nur 2 Zähler und Annahme der Gleichverteilung (schlechte
+Lösung)
+− S: Anzahl der Einsen seit Beginn
+− Z: Anzahl der Nullen seit Beginn
+𝑺
+
+− Anzahl der Einsen unter den letzten 𝒌 Bits: 𝒌 ∙ 𝑺+𝒁
+10-19
+
+EXPONENTIELL WACHSENDE BEREICHE
+Länge
+der
+Bereiche
+
+16
+8
+4
+2
+1
+
+Bereich aus 16 Bits mit 9 Einsen
+
+9
+6
+
+4
+
+3
+N
+
+2
+2 1
+10
+
+11100010100100010110110111001010110011010
+
+− Idee: Zähler für exponentiell wachsende Bereiche
+− Vorteil: Speicherbedarf
+− Anzahl der Bereiche: 𝑶(log 2 N)
+− Insgesamt: 𝑶(log 22 N) Bits (Speichern der Anzahl der Einsen pro Bereich
+benötigt maximal log 2 𝑁 Bits)
+
+− Nachteil: großer Fehler möglich, z.B. falls alle Einsen im ältesten
+Bereich
+
+10-20
+
+DGIM-METHODE
+− Lösung: Datar-Gionis-Indyk-Motwani-Methode
+− Anstatt von Bereichen mit bestimmter Länge,
+Zusammenfassen von Bereichen mit bestimmter Anzahl
+an Einsen
+2 Bereiche
+der Größe 1
+Mind. 1 Bereich
+der Größe 16
+
+2 Bereiche
+der Größe 8
+
+2 Bereiche 1 Bereich der
+der Größe 4 Größe 2
+
+….01010110001011010101010101011010101010101110101010111010100010110010
+
+N
+
+10-21
+
+DGIM-BEREICHE
+− Jedes Element (Bit) des Datenstroms hat einen Zeitpunkt: 1, 2, …
+− Ein DGIM-Bereich besteht aus
+A: Dem Zeitpunkt des neuesten Eintrags
+B: Anzahl der Einsen im Bereich als Zweierpotenz = die Größe des DGIM-Bereichs
+
+− Regeln:
+− Jedes 1-Bit fällt in genau einen Bereich
+− Das rechte Ende eines Bereichs enthält eine Eins
+− Die Größe eines Bereichs (Anzahl der Einsen) muss eine Zweierpotenz sein
+→ Speicherung der Größe benötigt nur log 2 log 2 N Bits
+− Von dem neuesten zu älteren Bereichen ist dessen Größe monoton steigend
+− Bereiche verschwinden, wenn dessen Zeitpunkt außerhalb des Sliding Windows
+liegt
+− Es gibt entweder einen oder zwei Bereiche einer Größe → 𝑶 log 2 N Bereiche
+
+….01010110001011010101010101011010101010101110101010111010100010110010
+A:34, B:100 A:49, B:011 A:63, B:011 A:71, B:010 A:77, B:010 A:83, B:001 A:84, B:000 A:87, B:000
+10-22
+
+AKTUALISIERUNG DER DGIM-BEREICHE
+− Ankommen eines neuen Bit
+− Evtl. verschwindet ältester Bereich (falls sein Zeitpunkt
+außerhalb des Sliding Window liegt)
+− Falls neues Bit eine 0: keine weiteren Änderungen
+notwendig
+− Falls neues Bit eine 1:
+1. Erstelle neuen Bereich der Größe 1 und aktuellem Zeitpunkt
+2. Falls nun 3 Bereiche der Größe 1: Kombiniere die älteren
+beiden Bereiche zu einem Bereich der Größe 2
+3. Falls nun 3 Bereiche der Größe 2: Kombiniere die älteren
+beiden Bereiche zu einem Bereich der Größe 4
+4. usw.
+
+− Maximal log N Schritte: 𝑶 log 2 N Zeitkomplexität
+10-23
+
+DGIM: BEISPIEL
+1001010110001011010101010101011010101010101110101010111010100010110010
+Ankommen eines 1-Bits
+0010101100010110101010101010110101010101011101010101110101000101100101
+
+Vereinigung zweier Bereiche
+0010101100010110101010101010110101010101011101010101110101000101100101
+Ankommen weiterer Bits
+0101100010110101010101010110101010101011101010101110101000101100101101
+Vereinigung der Bereiche
+0101100010110101010101010110101010101011101010101110101000101100101101
+Vereinigung der Bereiche …
+0101100010110101010101010110101010101011101010101110101000101100101101
+
+10-24
+
+DGIM: ANFRAGEN
+− Wie viele Einsen sind unter den letzten k = 35 Bits?
+A:49, B:011 A:63, B:011 A:71, B:010 A:77, B:010 A:83, B:001 A:84, B:000 A:87, B:000
+
+− Suche den ältesten Bereich B dessen Zeitpunkt noch innerhalb der
+neuesten k Bits liegt
+− Sei aktueller Zeitpunkt 𝑡 = 88
+− Ältester Bereich mit 𝐴 > 𝑡 – 𝑘 = 53: A:63, B:011
+
+− Schätze die Anzahl der Einsen durch:
+− Summe der Größen aller Bereiche, die komplett neuer als B sind
+− plus die Hälfte der Größe von B
+8
+2
+
+− Beispiel: 1 + 1 + 2 + 4 + 4 + = 16
+− Tatsächlich:1 + 1 + 2 + 4 + 4 + 6 = 18
+
+18 Einsen
+
+1101010101011010101010101110101010111010100010110010
+10-25
+
+DGIM: FEHLER
+− Fehler der Schätzung: max. 50 %
+− Sei 2𝑟 die Größe von B und c die tatsächliche Anzahl an Einsen
+− c ≥ Anzahl der Einsen in den vorherigen Bereichen plus Eins,
+c ≥ 1 + 2 + 4 + ⋯ + 2𝑟−1 + 1 = 2𝑟
+− Fall 1: Überschätzung - nur rechtes Bit von B ist in den N
+neusten Bits
+− Es wird also maximal die Hälfte der wahren Anzahl addiert
+1101010101011010101010101110101010111010100010110010
+
+− Fall 2: Unterschätzung - alle Einsen von B sind in den N neusten
+Bits
+− Es fehlt somit maximal die Hälfte von B
+1101010101011010101010101110101010111010100010110010
+10-26
+
+DECAYING WINDOW: MOTIVATION
+− Stream: Weltweiter Verkauf von Kinokarten
+− Ziel: Auflistung der derzeit populärsten Filme
+
+001001
+
+− Mögliche Lösung:
+
+100110
+
+− Ein Bitstream pro Film
+− 1 an Stelle i bedeutet, i-tes verkauftes Ticket war
+für diesen Film
+− Wähle Window der Größe N zur Festlegung der Aktualität
+− Schätze Anzahl von Einsen z.B. via DGIM
+− Bewerte Filme anhand der geschätzten Anzahl
+
+010000
+
+− Funktioniert für Filme, da "geringe" Anzahl an Filmen
+− Nachteil:
+− Gewichtung unabhängig von Aktualität
+− Funktioniert nicht für Amazon-Artikel, X-User, o.ä. da zu viele Elemente bzw. zu
+viel Speicher nötig
+https://gds.techfak.uni-bielefeld.de/_media/teaching/2022summer/bda/lecture7-miningdatastreams2-190522.pdf
+https://www.avatar.com/emojis https://emojis.sh/p/BppZaILr2A https://www.nicepng.com
+10-27
+
+EXPONENTIALLY DECAYING WINDOW
+− Alternative: Exponentially Decaying Window (EDW)
+− Anstatt Festlegung auf die letzten N Elemente, Aggregation über gesamten
+Datenstrom und höhere Gewichtung der neuesten Elemente
+− Je älter Elemente, desto geringer das Gewicht
+− Seien 𝒂𝟏 , 𝒂𝟐 , … , 𝒂𝑡 die Elemente eines Streams für 𝒙, mit 𝒂1 dem ersten und 𝒂𝑡
+dem aktuellsten Element und 𝑐 eine kleine Konstante (z.B. 10−6 oder 10−9)
+− Maß für die Häufigkeit von 𝒙 zum aktuellsten Zeitpunkt 𝑡:
+𝒕
+
+𝑺𝒕 (𝒙) = ෍ 𝒂𝒊 𝟏 − 𝒄 𝐭−𝒊
+𝐢=𝟏
+
+Gewicht
+
+− Einfache Aktualisierung: Bei Ankunft eines neuen Elements 𝒙 (0 oder 1)
+𝑆𝑡+1 𝒙 = 𝟏 − 𝐜 𝑺𝒕 𝒙 + 𝒙
+
+10-28
+
+EXPONENTIALLY DECAYING WINDOW
+
+10-29
+
+EDW THRESHOLD
+− Vorteil: Speicherung von nur einem Zähler pro Element/Strom
+− Außerdem: Löschen von Zählern 𝑺𝒕 𝒙 , welche kleiner als ein
+Schwellenwert 𝒔 sind
+− Annahme: Zu jedem Zeitpunkt gibt es in einem der Streams eine 1
+− Eigenschaft der Summe aller Gewichte:
+
+1
+𝑐
+
+− Bei einem Schwellenwert 𝒔 kann es
+1
+maximal Elemente mit
+𝑐𝑠
+𝑺𝒕 𝒙 ≥ 𝒔 geben
+1
+2
+
+− z.B. 𝑠 = , 𝑐 = 10−6 :
+
+1
+2
+= −6 = 2 ∗ 106
+cs
+10
+
+− Die Anzahl der Elemente,
+für die ein Wert 𝑺𝒕 𝒙 gespeichert
+wird, ist somit begrenzt durch 𝒔
+
+𝒔
+
+10-30
+
+INHALTSVERZEICHNIS
+− Einführung
+− Ziehen einer Stichprobe
+− Anfragen mit Sliding Window
+− Filter
+− Anzahl eindeutiger Elemente
+− Momente von Häufigkeitsverteilungen
+
+10-31
+
+FILTER AUF DATENSTRÖMEN
+− Leicht umsetzbare Filter
+− Attribut Alter > 18
+− Attribut Kategorie == A
+
+− Schwieriger: Attribut ist Element einer Menge S und S ist sehr groß
+− Problem: S passt nicht in Hauptspeicher oder mehrere Millionen
+Filter, die zusammen nicht in Speicher passen
+− Beispiele:
+− E-Mail-Spam-Filter: S ist die Menge von 1 Milliarde E-Mail-Adressen
+− ~30 Zeichen á 2 Byte (UTF-16) ≈ 60GB
+
+− Publish-Subscribe-Systeme: z.B. Newsletter, die aus vielen
+Nachrichten/Blogeinträgen zusammengestellt und an Abonnenten mit
+unterschiedlichen Interessen gesendet werden
+− Content-Filter: Jede Anzeige sollte nur einmal pro Nutzer geschaltet
+werden
+10-32
+
+FILTER ÜBER EINE EINZELNE HASH-FUNKTION
+− Array 𝐵 aus 𝑛 Bits und Hash-Funktion ℎ, welche den Wertebereich
+von S gleichmäßig auf die Menge {0,1, … , 𝑛 − 1} abbildet
+− Initialisierung:
+− Setze alle Bits auf 0
+− Für jedes 𝑠 𝑆, setze 𝐵[ℎ(𝑠)] = 1
+
+− Gegeben ein Element eines Datenstroms mit Attribut a: Wähle
+Element genau dann aus, wenn 𝐵[ℎ(𝑎)] = 1
+
+Element a
+
+HashFunktion h
+
+Ausgabe des Elements, falls
+𝑩[𝒉(𝒂)] = 𝟏
+
+Bit-Array B 0000000000000
+0010001011000
+Verwirf Element, falls 𝑩[𝒉(𝒂)] = 𝟎
+10-33
+
+FILTER ÜBER EINE EINZELNE HASH-FUNKTION
+− Sei S eine Menge von 𝑚 Elementen und B eine Array aus 𝑛 Bits
+(𝑚 < 𝑛)
+− z.B. 𝑚 = 109 Trustful Mail-Adressen, 𝑛 = 8 ∗ 109 𝐵𝑖𝑡 (1 Gbyte) RAM
+
+− Ungefähr ein Anteil
+− ca.
+
+𝑚
+aller Bits sind auf Eins gesetzt
+𝑛
+
+𝑚
+109
+1
+=
+=
+= 0.125 : 12,5% aller Bits in B sind auf 1
+𝑛
+8∗109
+8
+
+− Falls ein Attribut a zu S gehört, dann ist 𝐵[ℎ(𝑎)] = 1 garantiert →
+Keine False Negatives
+− Falls ein Attribut b nicht zu S gehört, wird es mit einer
+Wahrscheinlichkeit von ungefähr 𝟏 – 𝒆−𝒎Τ𝒏 einem Bit mit einer Eins
+zugeordnet
+→ False Positive
+− Füb obiges Beispiel: 1 – 𝑒 −1Τ8 = 0.1175 : Ein Element wird mit einer Wkt. von
+11,75% fälschlicherweise durchgelassen
+
+10-34
+
+ALTERNATIVE: BLOOM FILTER
+− Verwende 𝑘 unabhängige Hash-Funktionen ℎ1 , ℎ2 , …, ℎ𝑘
+− Initialisierung:
+− Setze alle Bits von 𝐵 auf 0
+− Für jedes 𝑠 𝑆 setze 𝐵[ℎ𝑖 (𝑠)] = 1 für alle 𝑖 = 1, . . , 𝑘
+
+− Für ein Element aus dem Datenstrom mit Attribut a:
+− Falls 𝐵[ℎ𝑖 (𝑎)] = 1 für alle 𝑖 = 1, . . , 𝑘, gib Element aus
+− Ansonsten: Verwirf Element
+
+− Wahrscheinlichkeit, dass ein gegebenes Bit in B auf Eins
+𝑘𝑚
+gesetzt wurde:
+1
+1− 1–
+
+𝑛
+
+≈ 1 – 𝑒 −𝑘𝑚Τ𝑛
+
+− Wahrscheinlichkeit eines False-Positive:
+Τ𝑛 𝑘
+−
+𝑘𝑚
+1– 𝑒
+10-35
+
+BLOOM FILTER: OPTIMIERUNG
+− Beispiel: 1 Milliarde E-Mail-Adressen und 1 GB Array
+− d.h. 𝑚 = 109 und 𝑛 = 8 ∙ 109
+0.2
+
+− 𝑘 = 1: 1 – 𝑒 −1Τ8 ≈ 0.12
+2
+
+≈ 0.05
+
+− 𝑘 = 3:
+
+3
+1 – 𝑒 −3Τ8 ≈ 0.03
+
+− 𝑘 = 4:
+
+Τ2 4
+−
+1
+1– 𝑒
+≈ 0.024
+
+− …
+𝑛
+− Optimum: 𝑘𝑜𝑝𝑡 = ln 2
+𝑚
+
+− Beispiel: 𝑘𝑜𝑝𝑡 = 8 ln 2 ≈ 6
+− Fehler für 𝑘 = 6: 1 – 𝑒
+
+−6Τ8 6
+
+False Positive Rate
+
+− 𝑘 = 2: 1 – 𝑒 −1Τ4
+
+0.18
+0.16
+0.14
+0.12
+0.1
+0.08
+0.06
+0.04
+0.02
+0
+
+2
+
+4
+
+6
+
+8
+
+10
+
+12
+
+14
+
+16
+
+18
+
+Anzahl Hash-Funktionen k
+
+≈ 0.0216
+10-36
+
+20
+
+ZUSAMMENFASSUNG BLOOM FILTER
+− keine "False Negatives"
+− "False Positives" möglich
+− Speicher-Effizient
+− Ideal für „schnelle“ Vorverarbeitung des Streams
+− aufwendigere Nachbearbeitung dann auf deutlich weniger
+Elementen
+
+− Berechnung der Hash-Funktion kann leicht parallelisiert
+werden
+
+10-37
+
+INHALTSVERZEICHNIS
+− Einführung
+− Ziehen einer Stichprobe
+− Anfragen mit Sliding Window
+− Filter
+− Anzahl eindeutiger Elemente
+− Momente von Häufigkeitsverteilungen
+
+10-38
+
+ANZAHL EINDEUTIGER ELEMENTE
+− Frage nach Anzahl der eindeutigen Elemente, die bisher auftraten
+− Wie viele verschiedene Nutzer haben eine Webseite im letzten Monat
+besucht?
+− Wie viele verschiedene Webseiten wurden von einem Nutzer
+aufgerufen?
+− Wie viele verschiedene Produkte wurden letzte Woche verkauft?
+
+− Cardinality-Estimation problem
+− Welches Vorgehen eignet sich, wenn die bisher gesehenen
+Elemente nicht in den Hauptspeicher passen bzw. tausende
+Datenströme gleichzeitig verarbeitet werden?
+− Ziel
+− Schätzung der Anzahl mit möglichst geringem Fehler
+10-39
+
+FLAJOLET-MARTIN ALGORITHMUS
+− Hash-Funktion ℎ, die eine Menge von m verschiedenen Elementen
+auf eine Sequenz von mind. log 2 m Bits abbildet
+− z.B. ℎ 𝑒 = 10100
+
+− Für jedes Element 𝑒, sei 𝑟(𝑒) die Anzahl der hinteren Nullen von ℎ(𝑒)
+− z.B. falls ℎ 𝑒 = 10100, dann ist 𝑟 𝑒 = 2
+
+− Speichere 𝑅 als das Maximum von 𝑟 𝑒 über alle bisherigen
+Elemente
+− Schätzer für die Anzahl der eindeutigen Element: 𝟐𝑹
+
+10-40
+
+FLAJOLET-MARTIN ALGORITHMUS
+INTUITION
+
+− Je mehr verschiedene Elemente beobachtet werden (je größer m),
+desto mehr unterschiedliche Hash-Werte werden berechnet
+− Je mehr unterschiedliche Hash-Werte berechnet werden, desto
+wahrscheinlicher ist das Auftreten eines sehr seltenen Hash-Wertes
+
+10-41
+
+FLAJOLET-MARTIN SCHÄTZER: BEGRÜNDUNG
+− Die Werte von ℎ 𝑒 haben gleiche Wahrscheinlichkeit
+− Die Wahrscheinlichkeit einen Hash-Wert mit r hinteren Nullen zu
+berechnen is 2−𝑟
+− Ungefähr 50% der Werte haben die Form ***0
+− Ungefähr 25% der Wert haben die Form **00
+− …
+
+− Wahrscheinlichkeit mindestens einen Hash-Wert mit 𝑟 hinteren
+Nullen durch die Eingabe von 𝑚 verschiedenen Elementen zu
+beobachten ist
+1 − 2−𝑟 𝑚 = 1 −
+
+1−
+− Beispiel: 𝑚 = 1000
+
+− Beste Schätzung: 𝑅 = 10
+
+→
+
+𝑚
+𝑟 𝑚2−𝑟
+− 𝑟
+−𝑟
+2
+1−2
+≈1−𝑒 2
+
+2𝑅 = 210 = 1024
+
+𝑚
+
+𝑟 = 9: 1 − 𝑒
+
+−2𝑟
+
+𝑚
+
+= 0.85
+
+𝒓 = 𝟏𝟎: 1 − 𝑒
+
+−2𝑟
+
+= 0.62
+
+𝑚
+
+𝑟 = 11: 1 − 𝑒
+
+−2𝑟
+
+= 0.38
+
+Problem: Überschätzung
+10-42
+
+FLAJOLET-MARTIN SCHÄTZER: PROBLEME
+− Simulation mit 𝑚 = 1000 und
+Bit-Array der Größe 20
+− 10 000 Wiederholungen
+− Falls 𝑅 = 10 (24% der
+Fälle), dann Schätzung
+von 𝑚 durch 2𝑅 = 1024
+− Aber extreme Überschätzung, falls 𝑅 > 10 (38% der Fälle) durch z.B.
+211 = 2048 (17%) oder 212 = 4096 (9%)
+− Lösung: Verwendung mehrerer Hash-Funktionen
+− Mittelwert: anfällig gegenüber Ausreißern (Simulation: 5243)
+− Median: nur Zweierpotenzen (Simulation: 1024)
+− Alternative: Unterteilung in kleine Gruppen von Hash-Funktionen und
+Mittelwert der Mediane (Simulation mit Gruppen aus 50 HashFunktionen: 1048)
+10-43
+
+FLAJOLET'S WEITERENTWICKLUNG
+− 1984: Flajolet-Martin Algorithmus, 2003: LogLog
+− 2007: HyperLogLog (HLL)
+− Segmentierung des Bitarrays, Zählen der hinteren
+Nullen, harmonisches Mittel bilden
+− Höhere Genauigkeit, weniger Speicherbedarf
+𝑂(log(log(𝑛))
+− Industrielle Anwendung z.B. von Redis Labs zur
+Komprimierung großer Datensätze und von Google zur
+Zählung täglicher Suchanfragen
+− Anwendung in Elasticsearch und AWS Redshift
+Paper: https://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf
+10-44
+
+INHALTSVERZEICHNIS
+− Einführung
+− Ziehen einer Stichprobe
+− Anfragen mit Sliding Window
+− Filter
+− Anzahl eindeutiger Elemente
+− Momente von Häufigkeitsverteilungen
+
+10-45
+
+HÄUFIGKEITSVERTEILUNG
+− Gegeben: Datenstrom aus natürlichen Zahlen
+− Sei 𝑚𝑖 die Anzahl des Vorkommens von 𝑖 ∈ ℕ im
+Datenstrom
+− Häufigkeitsverteilung
+
+25
+
+− Darstellung als Histogramm:
+
+3
+
+20
+15
+
+1
+
+4
+
+2
+5
+
+10
+6
+5
+0
+10-46
+
+MOMENTE
+− Betrachtung des Falls: Alle 𝑚𝑖 passen nicht in den Hauptspeicher
+− Charakterisierung der Häufigkeitsverteilung über deren Momente
+− Sei 𝐴 ⊂ ℕ die endliche Menge der tatsächlich vorkommenden Zahlen
+− Das 𝐤-te Moment 𝜇𝑘 ist definiert als
+1
+𝜇𝑘 =
+෍ 𝑚𝑖 𝑘
+|𝐴|
+𝑖∈𝐴
+
+− 1te Moment = Arithmetisches Mittel 𝑚
+ഥ=
+
+1
+σ 𝑚
+|𝐴| 𝑖∈𝐴 𝑖
+
+− 2te Moment = Maß der Ungleichheit
+− z.B. Datenstrom aus 100 Elementen mit 𝐴 = 1, 2, . . , 11
+− 𝑚𝑖 : 10, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9 → 2tes Moment: 82.7
+− 𝑚𝑖 : 90, 1, 1, 1, 1, 1, 1, 1 ,1, 1, 1 → 2tes Moment: 737.3
+
+− Anmerkung: Empirische Varianz: (2te Moment) – (1te Moment)2
+10-47
+
+ALON-MATIAS-SZEGEDY (AMS) ALGORITHMUS
+− Schätzung des 2-ten Moments
+− Speicherung einer großen (durch den Hauptspeicher begrenzten)
+Anzahl an Variablen 𝑋1 , 𝑋2 , …, 𝑋𝑙 mit 𝑋𝑗 = 𝑋𝑗 . 𝑒𝑙𝑒𝑚, 𝑋𝑗 . 𝑣𝑎𝑙
+− Sei 𝑛 die Länge des Datenstroms (eigentlich unbekannt)
+− Für jede Variable 𝑋𝑗
+− Wähle (gleichmäßig) zufällig einen Zeitpunkt 𝑡 (𝑡 ≤ 𝑛)
+− 𝑋𝑗 . 𝑒𝑙𝑒𝑚 = 𝑖, wobei 𝑖 ∈ 𝐴 das Element des Datenstroms zum Zeitpunkt 𝑡
+− 𝑋𝑗 . 𝑣𝑎𝑙 = 𝑐𝑡 , wobei 𝑐𝑡 die Anzahl des Vorkommens von 𝑖 ab Zeitpunkt 𝒕
+𝒄𝒕 : 𝟏 𝟏 𝟐 𝟑
+
+…
+
+(𝒎𝒃 −𝟏) (𝒎𝒂 −𝟐) 𝒎𝒃 (𝒎𝒂 −𝟏)
+
+𝒎𝒂
+
+− Sei 𝑓 𝑋𝑗 = 𝑛(2 ∙ 𝑋𝑗 . 𝑣𝑎𝑙 – 1)
+
+− Schätzer des 2-ten Moments:
+1 1 𝑙
+𝑆=
+∗ ෍ 𝑓 𝑋𝑗
+|𝐴| 𝑙
+𝑗=1
+10-48
+
+ALON-MATIAS-SZEGEDY ALGORITHMUS
+− Momente höherer Ordnung
+− Für das k-te Moment:
+
+𝑓 𝑋 = 𝑛 (𝑐 𝑘 − 𝑐 − 1 𝑘 ), wobei X. 𝑣𝑎𝑙 = 𝑐
+− Beispiel: k = 3
+
+𝑓 𝑋 = 𝑛 (3𝑐 2 − 3c + 1)
+− In Praxis: Anstatt Mittelwert über alle Variablen, Median über
+Mittelwerte von kleineren Gruppen von Variablen
+− Unbegrenzte Daten (𝑛 unbekannt): Lösung über Reservoir Sampling
+− Stichprobengröße 𝑙
+− Wähle ersten 𝑙 Zeitpunkte für die Variablen
+𝑙
+
+− Wenn das 𝑛-te Element (𝑛 > 𝑙) auftritt, wähle es mit Wahrscheinlichkeit 𝑛
+
+− Falls das 𝑛-te Element als neue Variable gewählt wird, entferne eine
+1
+existierende Variable mit Wahrscheinlichkeit 𝑙
+10-49
+
+ZUSAMMENFASSUNG
+− Data Stream Model
+− Ein- und Ausgabe als Stream, Standing Queries, begrenzter
+Zwischenspeicher (State)
+
+− Stichprobe (Sampling)
+− Feste Größe (Reservoir Sampling) oder fester Anteil
+
+− Abschätzen der Einsen in einem Window
+− z.B. via DGIM und EDW
+
+− Speichereffizientes Filtern via Bloom-Filter
+− Geringer Speicherbedarf und keine False-Negatives, aber FalsePositives möglich
+
+− Zählen eindeutiger Elemente: z.B. via Flajolet-Martin Alg.
+− Charakterisierung der Häufigkeitsverteilung durch Momente
+− Schätzung des 2. Moments z.B. via Alon-Matias-Szegedy
+Algorithmus
+
+10-50
+
+

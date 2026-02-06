@@ -1,0 +1,416 @@
+DATA MINING
+
+Kapitel 1: Organisation/Einführung
+Dr. Christian Martin
+Wintersemester 2025/26
+
+Abteilung Datenbanken, Universität Leipzig
+KI-Kompetenzzentrum ScaDS.AI Dresden/Leipzig
+
+INHALTSVERZEICHNIS
+− Organisation
+− Einführung Data Mining
+− Themenübersicht
+
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+ScaDS.AI Dresden/Leipzig
+
+1-2
+
+ORGANISATION
+− Anmeldung über AlmaWeb
+− 10-201-2224.VS02 Data Mining WS25/26
+
+− Moodle Kurs: https://moodle2.uni-leipzig.de/course/section.php?id=973117
+−
+−
+−
+−
+
+Sämtliche Materialien werden dort bereitgestellt
+Weiterverteilen/Kopieren/Veröffentlichen von Vorlesungsvideos ist nicht gestattet!
+Automatischer Zugriff für eingeschriebene Studierende im Almaweb
+Forum für News, Ankündigungen und Fragen
+
+− Vorlesung
+− Freitags 09:15 Uhr, Hörsaal 1
+
+− Übungsaufgaben
+− Bereitstellung im Moodle nach der Vorlesung
+− Besprechung: am Anfang der Vorlesung, keine separate Übungsveranstaltung
+
+− Prüfung
+− Klausur: 60 Minuten
+− Termin wird noch bekannt gegeben, vsl. Februar 2026, evtl. 10.02.2026
+
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+ScaDS.AI Dresden/Leipzig
+
+1-3
+
+LEHRVERANSTALTUNGEN WS 2025/26
+− Lehrveranstaltungen: https://dbs.uni-leipzig.de/study/semester/ws-2025
+− Vorlesungen
+− Datenbanksysteme 1 (DBS1)
+− Data Mining
+− Data Warehousing
+
+− Seminare
+− Trends in Data Analytics and Machine Learning
+− Oberseminar (Vortrag über laufende Bachelor-/Masterarbeit)
+
+− Verwendung der Data-Mining-Vorlesung:
+− Data-Science-Modul "Skalierbare Datenbanktechnologien (SDBT) 1"
+(10LP, 2 Vorlesungen + Seminar)
+− Bachelor-Modul „Realisierung von Informationssystemen“ (5LP, 2 Vorlesungen)
+− Master-Modul „Moderne Datenbanktechnologien”
+− (kleines) Kernmodul (5LP, 2 Vorlesungen)
+
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+ScaDS.AI Dresden/Leipzig
+
+1-4
+
+LITERATUR
+− „Mining of Massive Datasets“
+von Leskovec, Rajaraman und Ullman, Stanford
+University
+− Buchkapitel, Originalfolien und Videos: http://www.mmds.org/
+
+− „Introduction to data mining”
+von Tan, Steinbach & Kumar (2006)
+
+− „Data Mining: Concepts and Techniques”
+von Han, Kamber & Pei (2012)
+
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+ScaDS.AI Dresden/Leipzig
+
+DATA MINING: DEFINITION
+− „Data mining is the process of discovering interesting
+patterns and knowledge from large amounts of data.”
+(Han, Kamber & Pei)
+− „Data mining is the process of automatically discovering
+useful information in large data repositories” (Tan,
+Steinbach & Kumar)
+− „Data mining is the process of discovering insightful,
+interesting, and novel patterns, as well as descriptive,
+understandable, and predictive models from large-scale
+data.” (Zaki, Meira)
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+ScaDS.AI Dresden/Leipzig
+
+1-6
+
+DATA MINING: DEFINITION (2)
+− Data Mining beschäftigt sich mit der Möglichkeit, in Datenbeständen
+versteckte Muster und Strukturen aufzudecken. Das geschieht
+mittels systematischer Anwendung statistischer Methoden und
+verfolgt das Ziel, neue Erkenntnisse, Querverbindungen und
+Trends zu erkennen.
+− Anwendungen
+− Kaufverhalten mittels Warenkorbanalysen untersuchen
+− Banken und Versicherungen: Ist der Kunde kreditwürdig? Kann man ihm/ihr eine
+Kfz- oder Lebensversicherung anbieten? Liegt ein Betrugsversuch vor?
+− Pharmaindustrie: Entwicklung von personalisierten Medikamenten,
+Nebenwirkungen erkennen
+− Medizin/Bioinformatik: Muster in Genaktivitäten und –mutationen erkennen
+
+Quelle: https://www.tableau.com/de-de/learn/articles/what-is-data-mining
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+ScaDS.AI Dresden/Leipzig
+
+1-7
+
+DIE WURZELN VON DATA MINING
+− Data Mining kombiniert Ansätze aus verschiedenen
+Bereichen
+− Datenbanken
+− Statistik und Datenanalyse
+− Maschinelles Lernen
+
+− Herausforderungen:
+− Große Datenmenge
+− Hohe Dimensionalität
+− Heterogenität
+− Komplexität
+− Verteiltheit
+
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+Statistik
+
+Maschinelles
+Lernen
+Data
+Mining
+
+Datenbank
+
+ScaDS.AI Dresden/Leipzig
+
+1-8
+
+DATENQUELLE: INTERNET
+
+2022
+
+https://www.domo.com/data-never-sleeps
+
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+ScaDS.AI Dresden/Leipzig
+
+1-9
+
+DATENQUELLE: INTERNET
+− 2013 vs. 2022
+
+https://www.domo.com/data-never-sleeps
+
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+ScaDS.AI Dresden/Leipzig
+
+1-10
+
+DATENQUELLE: SENSOREN
+
+https://www.electronicproducts.com/designers-guide-to-industrial-iot-sensor-systems/
+
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+ScaDS.AI Dresden/Leipzig
+
+1-11
+
+DATENQUELLE: SENSOREN
+
+https://www.researchgate.net/publication/349942119_Internet_of_Things_in_the_implementation_of_a_Smart_City
+
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+ScaDS.AI Dresden/Leipzig
+
+1-12
+
+DATA MINING PROZESS
+DOI: https://doi.org/10.1609/aimag.v17i3.1230
+
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+ScaDS.AI Dresden/Leipzig
+
+1-13
+
+DATA MINING PROZESS (2)
+
+DOI: https://doi.org/10.1609/aimag.v17i3.1230
+
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+ScaDS.AI Dresden/Leipzig
+
+1-14
+
+CROSS-INDUSTRY STANDARD PROCESS FOR DATA
+MINING (CRISP-DM)
+
+https://en.wikipedia.org/wiki/Cross-industry_standard_process_for_data_mining#/media/File:CRISP-DM_Process_Diagram.png
+
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+ScaDS.AI Dresden/Leipzig
+
+1-15
+
+ERGEBNIS: MUSTER
+− Deskriptive
+(beschreibende)
+Methoden
+− Clustering
+− Assoziationsregeln
+
+− Prediktive (vorhersagende)
+Methoden
+− Regression (quantitativ)
+− Klassifikation (qualitativ)
+
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+ScaDS.AI Dresden/Leipzig
+
+1-16
+
+THEMENÜBERSICHT
+Hochdimensionale Daten
+
+Graphdaten
+
+Datenströme
+
+Clustering
+
+Dimensionsreduktion
+
+Community
+Detection
+
+Windowing
+
+Empfehlungssysteme
+
+Assoziationsregeln
+
+PageRank
+
+Filtern
+
+Locality Sensitive
+Hashing
+
+Supervised ML
+
+Web Spam
+
+Momente
+
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+ScaDS.AI Dresden/Leipzig
+
+1-17
+
+HOCHDIMENSIONALE DATEN
+− "Hochdimensionale Daten bezieht sich auf einen Datensatz,
+bei dem die Anzahl der Merkmale p größer ist als die Anzahl
+der Beobachtungen N."
+− p = 10.000.000 Produkte, N = 10.000 Kunden
+− p = 10.000 Gene, N = 100 Patienten
+− Problematisch um Beziehungen zu erkennen
+
+− Clustering: Gruppierung der Datenpunkte in Cluster
+− z.B. Kundengruppen, Produktgruppen
+
+− Aufdeckung versteckter Korrelationen
+− Dimensionsreduktion
+− Assoziationsregeln
+
+− Locality Sensitive Hashing (LSH):
+− Abbildung von ähnlichen Entitäten in gleiche "Buckets"
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+ScaDS.AI Dresden/Leipzig
+
+1-18
+
+P
+
+GRAPHDATEN
+
+A
+
+B
+P
+
+− Entitäten und ihre Beziehungen zueinander können als
+Graph modelliert werden
+− Menge von Knoten (Entitäten) und Kanten (Beziehungen)
+− Kanten können gerichtet und gewichtet sein
+
+− Anwendungen
+− Soziale Netzwerke: Vorschlag von Posts/Freundschaften
+− Finanzsektor: Betrug und Anomalien
+− Website-Ranking: Relevante Websites bspw. via Page Rank
+
+− Community Detection als wichtige Graphanalyse
+− Auffinden von Gruppen worin Entitäten stärker miteinander
+verbunden sind als Entitäten außerhalb der Gruppe
+− Aufdecken unbekannter Strukturen und Zusammenhänge
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+ScaDS.AI Dresden/Leipzig
+
+1-19
+
+DATENSTRÖME
+− Daten werden kontinuierlich erzeugt
+− Soziale Netzwerke, E-Commerce, Supply Chains, Sensoren, etc.
+
+− Problem: unendlich viele Daten nicht speicherbar
+− Lösung: Stichprobe oder Stream Processing
+− Stream Processing
+− Kontinuierliche Verarbeitung und Analyse
+− Erzeugung von Live-Resultaten (real-time)
+− Verarbeitung der aktuellsten Daten (windowing)
+− Filtern von Datenströmen
+− Anzahl eindeutiger Elemente: via Schätzung
+− Häufigkeitsverteilung: Charakterisierung über Momente
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+ScaDS.AI Dresden/Leipzig
+
+1-20
+
+LERNZIELE
+− Kenntnis skalierbarer Algorithmen zur Analyse von Daten
+− Einblick in verschiedene Bereiche und Fragestellungen
+− Nachvollziehen der Funktionsweise der Algorithmen
+− Anwendung der Algorithmen an Beispieldaten
+− Beurteilung der Anwendbarkeit von Algorithmen (Komplexität,
+Engpässe)
+− Vergleich verschiedener Algorithmen
+
+Abteilung Datenbanken
+
+Data Mining | WiSe 2025/2026
+
+ScaDS.AI Dresden/Leipzig
+
+1-21
+
+
