@@ -1,1 +1,6 @@
-id,front,back,source_file,tag
+"id","front","back","source_file","tag"
+"20260206-1105-21-1","Was ist Data Mining?","Der Prozess, aus großen Datenmengen interessante Muster und nützliches Wissen zu entdecken.","Kapitel 1 - Folien.txt","week-1 wise-25-26 definition data-mining source::kapitel-1-folien"
+"20260206-1105-21-2","Welches Ziel verfolgt Data Mining?","Versteckte Muster und Strukturen in Datenbeständen mit statistischen Methoden aufdecken, um neue Erkenntnisse, Querverbindungen und Trends zu erkennen.","Kapitel 1 - Folien.txt","week-1 wise-25-26 goal data-mining source::kapitel-1-folien"
+"20260206-1105-21-3","Nenne typische Anwendungen von Data Mining.","Warenkorbanalysen, Kreditwürdigkeits- und Betrugserkennung in Banken/Versicherungen, personalisierte Medikamente und Nebenwirkungsanalyse in der Pharmaindustrie, Muster in Genaktivitäten/-mutationen (Medizin/Bioinformatik).","Kapitel 1 - Folien.txt","week-1 wise-25-26 applications data-mining source::kapitel-1-folien"
+"20260206-1105-21-4","Aus welchen Bereichen speist sich Data Mining?","Datenbanken, Statistik/Datenanalyse und Maschinelles Lernen.","Kapitel 1 - Folien.txt","week-1 wise-25-26 roots data-mining source::kapitel-1-folien"
+"20260206-1105-21-5","Welche Herausforderungen sind typisch für Data Mining?","Große Datenmenge, hohe Dimensionalität, Heterogenität, Komplexität, Verteiltheit.","Kapitel 1 - Folien.txt","week-1 wise-25-26 challenges data-mining source::kapitel-1-folien"
