@@ -1,0 +1,2 @@
+course_name: Data Warehousing
+semester: WS25/26
