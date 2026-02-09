@@ -26,6 +26,16 @@ This document defines the rules for creating the content and structure of each f
 
 This section dictates how to use HTML to format the content on the back of a card.
 
+-   **Mathematical Notation (LaTeX)**:
+    -   Use `\(...\)` for inline expressions and `\[...\]` for display expressions.
+    -   **CRITICAL**: Do NOT use `$...$` or `$$...$$`.
+    -   **LaTeX Robustness**:
+        -   Write LaTeX as **raw backslashes** (no escaping for CSV/JSON).
+        -   Avoid sequences that can be interpreted as escapes (`\t`, `\f`, `\r`, `\n`) by keeping them inside valid LaTeX commands (e.g., `\text{...}`, `\frac{...}`, `\right`).
+        -   Never emit double backslashes in the final field (e.g., `\\frac` or `\\(`).
+        -   Use explicit LaTeX for spacing and text in math (`\text{...}`) so spaces render correctly.
+        -   Prefer standard commands for structure (`\frac`, `\left...\right`, `\lvert...\rvert`) over ad‑hoc ASCII approximations.
+
 -   **Definitions:**
     -   Place concise definitions inside a `<blockquote>`.
     -   **Example:** `<blockquote>A model that processes data in sequences, using its internal memory to remember previous inputs.</blockquote>`

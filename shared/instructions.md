@@ -80,6 +80,12 @@ To ensure high-quality, readable, and consistent flashcards, the following tools
     - **Display math**: Use `\[...\]` for display/block expressions (e.g., `\[\sum_{i=1}^{n} x_i\]`)
     - **CRITICAL**: Do NOT use `$...$` or `$$...$$` - these will not render in Anki
     - **Example**: `\(f(x) = w \cdot x + b\)` for inline, `\[\text{RMSE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}\]` for display
+    - **LaTeX Safety**:
+        - Treat LaTeX as **raw text**. Do not "escape" backslashes for JSON/CSV/string literals.
+        - Never introduce double backslashes like `\\frac` or `\\(` in the final CSV fields.
+        - Avoid accidental escape sequences: `\t`, `\f`, `\r`, `\n` must remain **literal** inside LaTeX commands (e.g., `\text`, `\frac`, `\right`).
+        - Do not allow control characters (TAB/FORMFEED/CR) inside LaTeX; these corrupt commands and spacing.
+        - Prefer explicit, standard LaTeX for norms and fractions (e.g., `\frac{1}{\lvert w \rvert}` rather than `1/\|w\|`).
 -   **Code Blocks**: Code snippets will be formatted using `<pre><code class="hljs language-xyz">...</code></pre>` tags. This dual-class approach ensures compatibility with both standard CSS and Highlight.js. The agent will attempt to infer the correct language (e.g., 'python', 'bash', 'json') from the context. If the language is unknown, use `plaintext`.
 -   **Diagrams (Mermaid.js)**: Diagrams will be generated using Mermaid.js syntax. The user must include the rendering script from `setup/anki_scripts.html` in their Anki card template. This ensures diagrams render correctly on all devices.
 ## 5. "Exam-Ready" Content Principles
