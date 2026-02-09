@@ -1,0 +1,1926 @@
+Grundlagen der IT-Sicherheit
+Kapitel 6 – Mobile Security
+
+Lehrstuhl: Data Privacy and Security,
+Center for Scalable Data Analytics and Artificial Intelligence
+Kontakt: buchmann@informatik.uni-leipzig.de
+
+Lernziel und Aufbau dieses Kapitels
+▪
+
+Sicherheitsprobleme und Sicherheitsmodell von Android-Geräten
+
+▪
+
+Absicherung und Rechtemanagement der Android-Plattform
+
+▪
+
+Authentifizierung im 4G/5G-Mobilfunknetz und der eSIM
+
+▪
+
+Lernziele
+−
+−
+
+Sie können erklären, welche spezifischen Sicherheitsanforderungen für
+Mobilgeräte oder Embedded Devices auf Smartphone-Basis bestehen.
+Sie können erklären, wie diese Sicherheitsanforderungen in Geräten auf
+der Basis des Android-Betriebssystems umgesetzt wurden, und können
+diese Umsetzung auch kritisch reflektieren.
+
+Prof. Buchmann - Mobile Security
+
+2
+
+Bedrohungen für eingebettete/mobile
+Geräte auf Smartphone-Basis
+
+Prof. Buchmann - Mobile Security
+
+4
+
+Mobilgeräte sind ein Angriffsziel
+
+Prof. Buchmann - Mobile Security
+
+5
+
+Zahlreiche bösartige APK-Packages für Android
+Quelle:
+Kaspersky,
+https://secu
+relist.com/
+malware-re
+port-q3-202
+5-mobile-st
+atistics/118
+013/
+
+Prof. Buchmann - Mobile Security
+
+9
+
+Number of detected
+malicious installation
+packages, Q2 2023 –
+Q2 2024
+AdWare: Fake-Apps, die
+Reklame nachladen
+●
+RiskTools: können
+Textmessages an
+kostenpflichtige PremiumNummern senden
+●
+
+Quelle:
+Kaspersky,
+https://securelist.com/it-threat
+-evolution-q2-2024-mobile-st
+atistics/113678/
+
+Prof. Buchmann - Mobile Security
+
+12
+
+Number of detected
+malicious installation
+packages, Q3 2024 –
+Q3 2025
+AdWare: Fake-Apps, die
+Reklame nachladen
+●
+RiskTools: können
+Textmessages an
+kostenpflichtige PremiumNummern senden
+●
+
+Quelle:
+Kaspersky,
+https://securelist.com/it-threat
+-evolution-q2-2024-mobile-st
+atistics/113678/
+
+Prof. Buchmann - Mobile Security
+
+13
+
+Trotzdem sind Android-Geräte überraschend sicher
+
+PSA: Potentiell
+Schädliche Apps
+
+seit Aug'22: Größere
+Versuche für RechteAusweitung bei Apps
+mit Displaywerbung
+
+Prof. Buchmann - Mobile Security
+
+Quelle:
+https://transp
+arencyreport
+.google.com/
+android-secu
+rity/store-app
+-safety
+
+14
+
+Die meisten Bedrohungen sind Vorbereitungshandlungen
+
+Prof. Buchmann - Mobile Security
+
+16
+
+Android Plattform Security Model [1]
+
+Mobilgeräte kennen dieselben Bedrohungen wie PCs
+▪
+
+Network level
+−
+
+▪
+
+Application level
+−
+
+▪
+
+Sicherheitsprobleme wie Browser-Angriffe, Tracken und Ausspionieren
+des Nutzers, Viren, Trojaner, Cross-Site Scripting, etc.
+
+User level
+−
+
+▪
+
+Denial of Service, Man-in-the-middle Angriffe, Angriffe auf die
+Authentifizierung, Abhören von Netzwerkpaketen, etc.
+
+Social Engineering, den Nutzer dazu bringen, Malware oder Spyware zu
+instgallieren („Supermegacool Hellokitty Virus Scanner!“)
+
+Host level
+−
+
+Angriffe auf die physische Hardware, z.B. über Keylogger,
+Auslesen von vorhandenen Sensoren
+
+Prof. Buchmann - Mobile Security
+
+18
+
+Mobilgeräte haben weitere einzigartige Eigenschaften
+1) Physische Exponiertheit
+−
+
+Mobilgeräte können nicht weggeschlossen werden
+
+2) Begrenzte Ressourcen
+−
+
+Insbes. Batterie-Lebensdauer, aber auch Speicher, Netzwerkbandbreite
+
+3) Usability
+−
+
+Neue Arten der Benutzung und Authentifizierung, z.B. Authentifizierung
+über Gesichtserkennung, Mobilgeräte als Einweg-/Wegwerf-Geräte, etc.
+
+4) Ort und Nutzerkontext
+−
+
+Mobilgeräte bewegen sich, daher Standort als wichtige Eigenschaft
+
+5) Enge Kopplung mit Dienstleistern, Herstellern, Geräten
+−
+−
+
+Telco kennt den Ort des Geräts, OS-Hersteller kennt Apps und Patches
+Syncronisierung mit Mietwagen-Navi per Bluetooth, etc.
+
+6) Pay-per-Use Dienste
+−
+
+Premium-Anrufe, SMS, In-App Käufe
+Prof. Buchmann - Mobile Security
+
+19
+
+Bedrohungsmodell aus [1]
+Autoren: Google-Entwickler
+
+Android-Threat Model (1/2)
+Physische Nähe des Angreifers
+[T.P1] Gerät in der Nähe des Angreifers
+−
+
+z.B. Entsperrgesten beobachten oder Gespräche mithören
+
+[T.P2] Abgeschaltetes Gerät unter Kontrolle des Angreifers
+−
+
+z.B. Diebstahl oder Beschlagnahme
+
+[T.P3] Gesperrtes Gerät unter Kontrolle des Angreifers
+[T.P4] Entsperrtes Gerät unter Kontrolle eines Dritten
+−
+
+z.B. Partner kennt Entsperrcode oder Vorzeigen bei Grenzkontrolle
+
+Unsichere Netzwerke
+[T.N1] Passives Belauschen des Netzwerkverkehrs
+−
+−
+
+Angreifer schneidet WLAN, LTE, Bluetooth, NFC etc. passiv mit
+Auch Tracking des Geräts über MAC, Bluetooth-ID etc.
+
+[T.N2] Aktiver Eingriff in den Netzwerkverkehr
+−
+
+z.B. Man-in-the-Middle Angriffe, dazu zählt auch das Bereitstellen eines
+öffentlichen WLAN-Hotspots unter Kontrolle des Angreifers
+Prof. Buchmann - Mobile Security
+
+20
+
+Bedrohungsmodell aus [1]
+Autoren: Google-Entwickler
+
+Android-Threat Model (2/2)
+Nicht vertrauenswürdiger Code
+[T.A1] Mißbrauchen der API-Schnittstellen des Betriebssystems (OS)
+−
+
+z.B. durch Spyware oder für Tracking über legitime API-Zugriffe
+
+[T.A2] Mißbrauchen der API-Schnittstellen von anderen Apps
+[T.A3] Nicht vertrauenswürdiger Code aus dem Internet
+z.B. Java-Script oder aktive Multimedia-Inhalte
+[T.A4] Gefälschte Benutzerschnittstelle, z.B. Systemdialoge nachahmen
+−
+
+[T.A5] Bildschirminhalte einer anderen App im Hintergrund auslesen
+[T.A6] Aus dem Hintergrund Nutzereingaben fälschen
+−
+
+z.B. für Systemdialoge oder andere Apps
+
+[T.A7] Ausnutzen von Softwarefehlern
+−
+
+im Betriebssystem, in Treibern oder in vom Benutzer installierten Apps
+
+Nicht vertrauenswürdiger Inhalt
+[T.D1] Mißbrauch von Identifikatoren von Nutzer oder Gerät durch App
+−
+
+z.B. Email-Adresse, Geräte-IDs oder Standort des Geräts
+
+[T.D2] Mißbrauch des Betriebssytems oder anderer Apps
+−
+
+z.B. wenn Inhalte aus dem Internet eine App zum Absturz bringen
+Prof. Buchmann - Mobile Security
+
+21
+
+Das Android-Sicherheitsmodell
+Fünf Sicherheitsprinzipien für Android
+aus dem Bedrohungsmodell:
+1) Multi-Party Consent
+2) Open Ecosystem Access
+3) Security is a Compatibility Requirement
+4) Factory Reset Restores a Safe State
+5) Applications are Security Principals
+
+Prof. Buchmann - Mobile Security
+
+22
+
+(1) Multi-Party-Consent
+"No action should be executed unless all main parties agree."
+▪
+
+Beteiligte:
+−
+−
+−
+
+▪
+
+Keine Aktivität wird ohne Zustimmung aller Beteiligten durchgeführt.
+−
+
+−
+−
+▪
+
+User (Besitzer des Geräts)
+Plattform (OS/API-Entwickler, Gerätehersteller, LTE-Provider)
+Developer (App-Entwickler, Content-Producer, Service-Provider)
+
+Zustimmung heißt:
+App-Entwickler sieht Funktion vor
+UND Nutzer gibt der App Rechte bzw. drückt Button
+UND Content-Producer schickt entsprechende Daten
+UND Betriebssystem ermöglicht Vorgang
+Übergreifendes Design-Prinzip für OS, Hardware, APIs, Apps
+Hat nichts mit Besitz (der App, der Daten, des Content) zu tun
+
+Vgl. PC: eine App kann ungefragt die Daten einer anderen einsehen/löschen,
+User kann sein Betriebssystem um Funktionen ergänzen und seine Apps ändern
+Prof. Buchmann - Mobile Security
+
+23
+
+(2) Open Ecosystem Access
+"Users and developers are part of an open ecosystem."
+▪
+
+Es muss möglich sein, dass Anwender / Entwickler auch ohne
+den App-Store eines Herstellers Apps installieren
+−
+
+▪
+
+Wenn sie das wirklich wollen ;-)
+
+Eher Design-Philosophie von Android-Geräten
+−
+
+Andere Hersteller, z.B. Apple, sehen das anders
+
+▪
+
+Sicherheitsmechanismen müssen berücksichtigen, dass Gerät auch
+Code ausführen kann, der nicht vom OS-Hersteller legitimiert wurde.
+
+▪
+
+Vgl. viele Smart Home-Geräte: Hersteller legt fest, was darauf läuft,
+kein freier Zugang für Entwickler eigener Apps
+
+Prof. Buchmann - Mobile Security
+
+24
+
+(3) Security is a Compatibility Requirement
+"The security model is part of the Android specification."
+▪
+
+Geräte oder Apps, die dieses Sicherheitsmodell nicht umsetzen, sind
+per Definition keine Android-Geräte
+−
+−
+
+z.B. wenn ein Anwender sein Gerät "rootet", damit es Apps ohne
+Signatur oder mit Root-Rechten startet
+Es wird von Apps nicht erwartet, dass sie darauf laufen müssen,
+keine zugesicherte Funktion oder Garantie
+
+▪
+
+Deshalb funktionieren Verified Boot oder Hardware-Keys als TrustBase zur Herstellung von Vertrauen in das Gerät.
+
+▪
+
+Vgl. PC: Kompatibilität nur an Betriebssystem und Hardware gebunden
+
+Prof. Buchmann - Mobile Security
+
+25
+
+(4) Factory Reset Restores a Safe State
+"Wiping/reformating all writable partitions returns a device to a state that
+depends only on integrity-protected partitions."
+▪
+
+Wenn das Gerät ein Sicherheitsproblem hat (Malware, Spyware, …)
+genügt ein Factory Reset, um ein nicht infiziertes Gerät zu erhalten.
+(Anm.: Sicherheitspatches des Herstellers landen in integrity-protected partition)
+
+▪
+
+Es gibt einen einfachen Weg, von einem kompromittierten Gerät zu
+einem sicheren Gerät zu kommen.
+
+▪
+
+Vgl. PC: Nach dem Formatieren ist Betriebssystem weg, Gerät erst mal funktionslos
+
+Prof. Buchmann - Mobile Security
+
+26
+
+(5) Applications are Security Principals
+"Apps are not considered to be fully authorized agents for user actions."
+▪
+
+Apps laufen mit App-Rechten, nicht mit User-Rechten
+
+▪
+
+Jede App darf im Default-Zustand nur unkritische Dinge tun (z.B.
+etwas rechnen oder eigene Daten lesen und schreiben)
+
+▪
+
+Für alles andere siehe Multi-Party Consent
+
+▪
+
+Eine App kann einen Nutzer nicht leicht so austricksen, dass sie
+unbegrenzt Schaden anrichten kann.
+
+▪
+
+Vgl. PC: Ransomware darf alle Dateien des Users verschlüsseln.
+
+Prof. Buchmann - Mobile Security
+
+27
+
+Plattform-Sicherheit
+●
+
+●
+
+Nicht vertrauenswürdiger Code
+(Bedrohungsmodell T.A1 – T.A7)
+Nicht vertrauenswürdiger Inhalt
+(Bedrohungsmodell T.D1 – T.D2)
+Den ausgeführten Code kontrollieren
+
+Die Android Open System Platform
+▪
+
+Linux-Kernel und native
+Treiber und Bibliotheken
+laufen mit Root-Rechten
+
+▪
+
+HAL (Hardware Abstraction
+Layer) vermittelt zwischen
+Diensten und Hardware
+
+▪
+
+Android Runtime:
+Java-Laufzeitumgebung
+
+▪
+
+Alles darüber ist Java-Code
+in der Sandbox
+
+▪
+
+Und wenn die Plattform
+Fehler oder manipulierten
+Code enthält?
+−
+−
+
+Plattform darf alles
+User hat Plattform-Zugriff
+Quelle: https://source.android.com/docs/core/architecture
+Prof. Buchmann - Mobile Security
+
+29
+
+Wie kommt man zu einer vertrauenswürdigen Plattform?
+▪
+
+Vertrauenswürdig heißt
+−
+−
+
+▪
+
+Problem
+−
+−
+−
+−
+
+▪
+
+Ablaufumgebung hält Sicherheitskonzept ein
+Kein manipulierter/fehlerhafter Code, keine fehlerhaften Sicherheitsregeln
+erlauben unberechtigten Apps Zugriff auf Programm/Speicher einer App
+
+Software ist komplex (Bootloader, Kernel, Treiber, Bibliotheken, Apps)
+Sicherheitsregeln zwischen Prozessen sind komplex (Apps, Bibliotheken)
+Authentifizierung auf mehreren Ebenen (Zertifizierter/signierter Code,
+User-Authentifizierung, Hardware-IDs zur Authentifizierung ggü. Netz)
+Wie sicherstellen, dass Apps in vertrauenswürdiger Umgebung laufen?
+
+Lösung
+1) Verified Boot, das nachweisbar unmanipulierten Code startet
+2) Trusted Execution Environment für unbedingt zuverlässige Dienste
+Prof. Buchmann - Mobile Security
+
+30
+
+Android Verified Boot 2.0 (AVB)
+▪
+
+Boot-Prozess ist eine Herausforderung für die Sicherheit
+−
+−
+
+▪
+
+Wenn Angreifer das Boot-Image manipulieren kann, hat er Zugriff, bevor
+Sicherheitsregeln des OS-Kernels geladen sind
+Booten lädt Krypto-Bibliotheken zum Prüfen von Signaturen,
+zum Ver- und Entschlüsseln oder zum Zugriff auf Krypto-Hardware
+
+Aufgabe des AVB: Vertrauenswürdiger Boot-Prozess
+−
+−
+−
+−
+−
+
+"Root of Trust": public key des Geräteherstellers, der in einem Nur-LeseSpeicher des Geräts abgelegt ist
+Nutzer darf eigene Root of Trust anlegen
+Nutzer darf gerootetes Gerät starten ("UNLOCKED"-state)
+Bootloader nutzt Root of Trust, um Signatur des OS-Images zu prüfen
+Unterschiedliche Szenarien möglich
+▪
+▪
+▪
+
+Endnutzer mit Online-Banking benötigen sicheres Gerät
+Entwickler möchten neue Funktionen testen
+...
+Prof. Buchmann - Mobile Security
+
+31
+
+Gültige OS-Signatur, aber trotzdem Schwachstellen?
+▪
+
+Signaturen zu prüfen ist nicht ausreichend
+
+▪
+
+Stellen Sie sich vor, ein Angreifer
+−
+−
+−
+−
+
+verschafft sich Zugang zum Gerät
+löscht das aktuelle Betriebssytem-Image
+installiert älteres Betriebssystem-Image
+mit bekannter Schwachstelle
+nutzt Schwachstelle aus um Rootkit zu
+installieren und Updates zu verhindern
+
+→ Älteres Betriebssystem-Image kommt vom Hersteller, also
+mit private key des Herstellers gültig signiert
+▪
+
+Android Verified Boot 2.0 Rollback-Schutz:
+Versionsnummer des letzten OS-Images in geschütztem Speicher,
+kein Booten eines Images mit niedrigerer Versionsnummer
+Prof. Buchmann - Mobile Security
+
+32
+
+Android Bootvorgang
+
+EIO: LeseFehler beim
+OS-Image
+
+Be
+isp
+iel
+
+Ist es das
+aktuelle OS?
+
+LOCKED:
+Gerät nicht
+gerootet
+
+Quelle: https://source.android.com/docs/security/features/verifiedboot/boot-flow
+Prof. Buchmann - Mobile Security
+
+33
+
+Be
+isp
+iel
+
+Welcher Code
+womit signiert?
+▪
+
+Es gibt nicht nur
+einen Key, und wir
+sind noch nicht
+mal bei Apps ;-)
+
+▪
+
+Nur dieser Key
+ist schreibgeschützt
+−
+
+−
+
+Verlust des privaten
+Schlüssels vom
+Gerätehersteller:
+maximale
+Katastrophe
+die Sicherheit
+von allem anderen
+hängt davon ab
+
+Quelle: https://blog.csdn.net/rikeyone/article/details/80606147
+Prof. Buchmann - Mobile Security
+
+34
+
+Trusted Execution Environment (TEE) für Android
+▪
+
+TEE läuft strikt separat vom eigentlichen Betriebssystem
+−
+−
+
+▪
+
+OS als "unsicher" betrachtet (kann Fehler enthalten)
+Vorzugsweise eigene Hardware (s. TPM), bei Android auf der CPU
+
+Aufgabe: Vertrauenswürdige Anwendungen und Dienste
+−
+−
+−
+−
+−
+−
+−
+−
+−
+
+Code für das Generieren von Schlüsseln oder Zufallszahlen
+Code für das Prüfen und Erstellen von Signaturen
+Code für das Ver- und Entschlüsseln von Daten
+Kapselung von Schlüsseln, die nicht gelesen, sondern nur zum
+Ver/Entschlüsseln benutzt werden dürfen ("Keymaster")
+Verwaltung besonders gesicherter Speicherbereiche, z.B. für Logs
+Speichern von Fingerabdrücken und Face-ID
+Digitales Rechtemanagement
+Vertrauliche Kommunikation mit Hardware-Kryptoprozessoren
+und vieles mehr…
+Prof. Buchmann - Mobile Security
+
+35
+
+Quelle: https://source.android.com/docs/security/features/trusty
+
+Beispiel für eine Android-TEE: Trusty
+1) Winziger OS-Kernel
+−
+
+Lesen/Schreiben, Scheduling,
+Inter-Prozess-Kommunikation
+
+2) Linux Kernel-Treiber
+−
+
+zur Kommunikation mit
+Android-Kernel
+
+3) Android-Bibliothek
+−
+
+zur Kommunikation mit
+Android-Apps
+
+4) Trusty-Libs
+−
+−
+−
+
+▪
+
+Realisieren die auf der letzten Folie genannten Anwendungen
+Sammlung von ausführbare Dateien, Ressourcendateien,
+Manifest-Datei und kryptografischer Signatur
+Laufen isoliert und unprevilegiert außerhalb des Trusty-Kernels
+
+Android unterstützt auch andere TEE-Implementierungen
+Prof. Buchmann - Mobile Security
+
+36
+
+Sandboxing und Rechteverwaltung
+●
+
+●
+
+Nicht vertrauenswürdiger Code
+(Bedrohungsmodell T.A1 – T.A7)
+Nicht vertrauenswürdiger Inhalt
+(Bedrohungsmodell T.D1 – T.D2)
+Ausnutzen von Fehlern durch Isolation verhindern
+
+Apps in der Sandbox
+▪
+
+Sandbox: Eine virtuelle Maschine mit virtuellem Adressraum ohne
+direkten Zugriff auf die Außenwelt (Hardware, ext. Speicher, etc.)
+„Hardware Abstraction Layer“ (HAL)
+1) Isoliert eine Anwendung von den anderen
+2) Definierte, kontrollierte Schnittstellen zu Betriebssystem-Aufrufen
+3) Striktes Berechtigungs-Framework für den Zugriff auf Ressourcen
+−
+
+Prof. Buchmann - Mobile Security
+
+38
+
+Androids Sandbox
+▪
+
+Jede App als Prozess in eigener Sandbox
+
+▪
+
+Wenn neue App das erste Mal startet,
+fragt Sandbox nach Berechtigungen
+−
+−
+−
+
+▪
+
+Daten von anderen Apps
+Systemressourcen wie GPS, Kamera, Kontakte
+Als Vorgabe darf eine App sehr wenig
+(s. Abschnitt "Rechte-Modell")
+
+Sandboxing stellt sicher, dass
+−
+−
+
+es keine Möglichkeit gibt, am Rechtemodell vorbei auf Ressourcen zuzugreifen
+Apps nicht aus ihrem reservierten
+Adressraum ausbrechen
+(vgl. Buffer Overflow, Privilege Escalation)
+
+Prof. Buchmann - Mobile Security
+
+39
+
+Technische Umsetzung (1/2)
+▪
+
+Android ist ein Linux mit dem SELinux-Kernelpatch
+−
+
+Zugriffskontrollen auf Ressourcen als Mandatory Access Control,
+d.h. nicht Prüfung der Rechte des Users, sondern Prüfung von Regeln
+
+▪
+
+Jeder Prozess hat eine eigene Android User-ID (AID)
+−
+−
+−
+−
+
+▪
+
+Mandatory Access Control auf Basis von AIDs
+AID = (App-ID * 10.000) + (User-ID * 100.000)
+Betriebssytem-Prozesse haben AID < 10.000
+Kernel hat AID = 0 (üblicher UNIX root-User), aber nur
+sehr wenige Prozesse mit AID = 0, die alles dürfen
+
+Auf Ressourcen, die kein Mandatory Access Control
+können (z.B. das FAT-Filesystem)
+−
+
+Package-Name der App vom Betriebssystem unveränderlich
+in den Zugriffspfad der Ressource einkodiert, z.B.
+/sdcard/Android/data/<Packagename>
+Prof. Buchmann - Mobile Security
+
+40
+
+Technische Umsetzung (2/2)
+▪
+
+Sandboxing von System-Anwendungen
+−
+
+−
+
+Prozesse, die mit Daten "von außen" (= untrusted) arbeiten, haben
+immer eigene Sandbox, viele andere auch
+z.B. Systembibliothek Bluetooth: AID = 1002
+Aber: Hardware-Treiber müssen mit Kernel-Rechten arbeiten
+
+Alternative:
+MicrokernelAnsätze, vgl. Ihre
+Betriebssystem-VL
+
+Prof. Buchmann - Mobile Security
+
+41
+
+An welcher Stelle werden Rechte geprüft?
+▪
+
+Kernel verwaltet
+Systemressourcen
+
+▪
+
+Jeder Ressourcenzugriff aus der
+JVM-Sandbox
+wird überwacht
+
+▪
+
+Zwei Kategorien
+−
+
+−
+
+normal
+(Low risk
+Resources)
+dangerous
+(High risk
+Resources)
+Quelle: [2]
+spezieller
+Permission Controller
+Prof. Buchmann - Mobile Security
+
+42
+
+Android-Schutzlevel
+▪
+
+Normal
+−
+
+▪
+
+Dangerous
+−
+−
+
+▪
+
+Potenziell gefährlich, Nutzer MUSS zur Laufzeit explizit gefragt werden
+oder sogar selbst aktiv einen speziellen Permission-Dialog aufsuchen
+Rechte müssen in Manifest-Datei der APK-Package deklariert sein
+
+Signature
+−
+
+▪
+
+Keine große Gefahr für Sicherheit/Privacy des Nutzers, dürfen zur
+Installationszeit automatisch eingefordert werden
+
+Rechte für Anwendungen mit der selben Signatur wie der Code, der die
+Funktion bereitstellt (wenn eine Anwendung auf mehrere Prozesse
+aufgeteilt ist, z.B. VPN-App und zugehörige Schlüsselverwaltung)
+
+Signature or System
+−
+
+Entweder dieselbe Signatur wie der Code, der Funktion bereitstellt, oder
+dieselbe Signatur wie das OS-Image (Systemdienste, z.B. Reboot)
+
+Prof. Buchmann - Mobile Security
+
+43
+
+Beispiele für die Schutzlevel
+▪
+
+Normal
+−
+−
+−
+−
+−
+−
+−
+−
+−
+
+▪
+
+▪
+
+ACCESS_NETWORK_STATE
+ACCESS_WIFI_STATE
+BLUETOOTH
+CHANGE_WIFI_STATE
+EXPAND_STATUS_BAR
+GET_PACKAGE_SIZE
+INSTALL_SHORTCUT
+INTERNET
+…
+
+Signature
+−
+−
+−
+−
+−
+
+−
+−
+−
+−
+−
+−
+−
+−
+−
+
+▪
+
+SET_PREFERRED_APPLICATIONS
+WRITE_SETTINGS
+SYSTEM_ALERT_WINDOW
+CHANGE_CONFIGURATION
+...
+
+Dangerous
+READ_CALENDAR, WRITE_CALENDAR
+CAMERA
+READ_CONTACTS, WRITE_CONTACTS
+ACCESS_FINE_LOCATION
+ACCESS_COARSE_LOCATION
+RECORD_AUDIO
+CALL_PHONE
+PROCESS_OUTGOING_CALLS
+…
+
+Signature or System
+−
+−
+−
+−
+−
+
+MODIFY_PHONE_STATE
+REBOOT
+SET_PROCESS_LIMIT
+DELETE_PACKAGES
+...
+
+Prof. Buchmann - Mobile Security
+
+44
+
+So erfolgt die Rechtevergabe
+▪
+
+Install-time Permissions
+−
+
+▪
+
+Runtime Permissions
+−
+
+▪
+
+Rechte für Schutzlevel "dangerous", bei denen einfache Nachfrage nicht
+ausreicht (z.B. Dateimanager mit Zugriff auf alle Dateien aller Apps)
+
+Signature Permissions
+−
+
+▪
+
+Rechte für Schutzlevel "dangerous", für die der Nutzer zur Laufzeit
+gefragt werden MUSS (z.B. Zugriff auf Fotos, Standort, Dateien)
+
+Special Permissions
+−
+
+▪
+
+Rechte für Schutzlevel "normal", dürfen bei Installation vergeben werden
+(z.B. Zugriff auf das Internet, Einsehen der aktiven Netzwerke)
+
+Rechte für Anwendungen mit Schutzlevel "signature" oder
+"signatureorsystem", die nicht vom Nutzer vergeben werden
+
+Außerdem: Permission Groups
+− Gemeinsam verwaltete Rechte, um Zahl der Systemdialoge zu
+reduzieren, z.B. Senden und Empfangen von SMS
+Prof. Buchmann - Mobile Security
+
+45
+
+Rechte-Management von Runtime Permissions
+
+Figure from Android Arsenal
+Prof. Buchmann - Mobile Security
+
+46
+
+Erweiterungen der Rechtevergabe
+▪
+
+Seit Android 10
+−
+
+▪
+
+Seit Android 11
+−
+−
+
+▪
+
+−
+
+Timeline, wann manche Permissions benutzt wurden
+Begründungen, warum Permission angefragt
+
+Seit Android 13
+−
+
+▪
+
+One-time Permissions für einmalige Erlaubnis
+Permissions Auto-Reset, OS setzt Rechte von
+Apps zurück, die monatelang nicht benutzt wurden
+
+Seit Android 12
+−
+
+▪
+
+Unterscheidung "Allow", "Deny", "While in use":
+Permission daran gebunden, ob die App
+im Vordergrund aktiv ist
+
+Apps dürfen Permissions an System zurückgeben
+
+Seit Android 14
+−
+
+Permissions nur für bestimmte Daten, z. B. nur ein Teil der Fotos
+Prof. Buchmann - Mobile Security
+
+47
+
+LTE+/4G/5G Authentifizierung
+●
+
+Unsichere Netzwerke
+(Bedrohungsmodell T.N1 – T.N2)
+Data Origin Authentication –
+kommt die Nachricht von einem bestimmten Gerät?
+
+Mobilfunkstandards im Überblick
+1G: Analoger Mobilfunk
+Generation
+
+Technologie
+
+Maximale
+Bandbreite
+
+2G
+
+GSM
+
+9,6 KBit/s
+
+2.5G
+
+GPRS
+
+54 KBit/s
+
+2.75G
+
+EDGE
+
+220 KBit/s
+
+3G
+
+UMTS
+
+384 KBit/s
+
+3.5G
+
+HSPA
+
+7,2 MBit/s
+
+-
+
+HSPA+
+
+42 MBit/s
+
+3.9G
+
+LTE (bis CAT 4)
+
+150 MBit/s
+
+4G
+
+LTE Advanced (LTE-A ab CAT 6)
+
+300 MBit/s
+
+4.5G
+
+LTE Advanced Pro (LTE-AP ab CAT 11)
+
+600 MBit/s
+
+5G
+
+baut auf LTE auf, Network Slicing
+
+10 GBit/s
+
+6G
+
+erweitertes 5G + AI-based physical layer*
+
+1 TBit/s
+
+Hier hat sich
+die Systemarchitektur
+grundlegend
+geändert
+
+*) AI entscheidet über Signalling, Spektrum, Übertragungsraten, Kanäle etc. nach Bedarf
+
+Tabelle: https://www.sparhandy.de/mobiles-internet/info/mobilfunkstandards/
+Prof. Buchmann - Mobile Security
+
+49
+
+Sicherheitsmerkmale der einzelnen Standards
+▪
+
+GSM, GPRS, EDGE (2G)
+−
+−
+−
+−
+
+▪
+
+UMTS, ursprüngliches LTE (3G)
+−
+−
+−
+
+▪
+
+Netzwerk authentifiziert sich nun auch gegenüber den Mobilgerät
+USIM: Prozessorchip auf Karte in dem Security-Algorithmen laufen
+128 Bit-Schlüssel, verschlüsselte Steuerdaten (IMSI-Catcher unmöglich)
+
+LTE Advanced, LTE+ (4G) und 5G
+−
+
+▪
+
+Kommunikation ist stromverschlüsselt (Steuerdaten nicht)
+Mobilgerät authentifiziert sich, Netzwerk wird nicht authentifiziert
+IMSI-Catcher erlauben Man-in-the-Middle-Angriff, können International
+Mobile Subscriber Identity und Inhalt der SIM (Speicherkarte) kopieren
+Komplexe Architektur aus Switching Centers, Home- und Visitor
+Location Register, Mobile Station International Subscriber Directory, ...
+
+Einfachere Architektur, stärkere Schlüssel, bessere Authentifizierung
+
+Abwärtskompatibilität
+−
+
+Wenn LTE+ nicht verfügbar, wird unsichereres 3G genutzt, und so weiter
+Prof. Buchmann - Mobile Security
+
+50
+
+Bestandteile von 4G (LTE+, LTE Advanced)
+▪
+
+UE: User Equipment mit USIM-Karte, auf der USIM-Anwendung läuft
+
+▪
+
+HSS: Teilnehmerdatenbank, speichert Rufnummer, Schlüssel, Netze
+
+▪
+
+MME: Speichert Ort (=Funkzellen) und Daten aller eingebuchten UEs
+
+▪
+
+eNode-B: Funkverbindung zum UE
+
+▪
+
+S-GW: Router, der
+Pakete zum
+passenden P-GW
+vermittelt
+
+▪
+
+P-GW: Gateway
+ins Internet, in
+andere Mobilfunknetze oder ins
+digitale Festnetz
+Bild: https://gaia.cs.umass.edu
+Prof. Buchmann - Mobile Security
+
+51
+
+Verwaltung vom User Equipment im 4G-Netz
+▪
+
+Home Subscriber Service (HSS) speichert zu User Equpiment (UE)
+−
+−
+
+Rufnummer, Mobilfunkkennung (IMSI), Schlüssel zur Authentifizierung,
+Netze, in denen UE telefonieren darf, Sequenznummer
+aktuell erreichte Mobilfunkzellen (Location Area), sowie für
+das UE zuständiges Mobility Management Entity (MME)
+
+1) UE betritt Funkzelle einer Basisstation oder wird neu eingeschaltet
+2) Netz sucht im HSS die Daten des UEs
+3) Befindet sich das UE in einem fremden Netz (Roaming), wird
+das HSS des Heimatnetzes gesucht und Daten des UE angefragt
+4) Darf UE in Netz der Funkzelle aktiv sein, wird es authentifiziert und eingebucht
+5) MME erhält dazu Kopie der Teilnehmerdaten aus dem HSS
+6) Will ein UE telefonieren oder Internetzugriff, sagen Teilnehmerdaten, ob es das darf
+7) Bewegt sich das UE, findet das HSS heraus, ob ein anderes MME zuständig ist, und
+sendet dem neuen MME eine Kopie der Teilnehmerdaten
+
+Prof. Buchmann - Mobile Security
+
+52
+
+Daten zur Authentifizierung bei 4G (und 5G)
+▪
+
+USIM speichert auf Karte
+−
+−
+−
+−
+
+▪
+
+International Mobile Subscriber Identity, Teilnehmerkennung
+Operator Key des zugeordneten Netzes
+der eigene Subscriber Authentication Key des Nutzers
+Sequence Number
+
+HSS speichert in Datenbank
+−
+−
+−
+
+▪
+
+IMSI
+OPc
+K
+SQN
+
+OPc
+K
+SQN
+
+der eigene Operator Key
+Subscriber Authentication Key, der zu einer IMSI gehört
+Sequence Number, die zu einer IMSI gehört
+
+SQN zählt in USIM und in HSS die Authentifizierungen hoch
+−
+
+keine Pakete aus vorangegangener Authentifizierung ungültig, da deren
+SQN "verbrannt" ist → verhindert Replay-Attacken
+
+Quelle: https://nickvsnetworking.com/hss-usim-authentication-in-lte-nr-4g-5g/
+Prof. Buchmann - Mobile Security
+
+53
+
+Authentifizierungsvorgang bei 4G (und 5G)
+
+Be
+isp
+iel
+
+1) USIM-Anwendung sendet IMSI an HSS
+
+OPc Operator Key
+
+2) HSS
+
+K
+
+−
+−
+−
+−
+
+holt anhand der IMSI die Werte K, SQN aus Datenbank
+erzeugt Zufallszahl RAND
+generiert einen Schlüssel AUTN = fcryptoA(K, SQN, RAND)
+sendet AUTN und RAND an USIM
+
+Subscriber
+Authentication
+Key
+SQN Sequence
+Number
+
+3) USIM
+−
+−
+−
+
+berechnet ebenfalls einen Schlüssel XAUTN = fcryptoA(K, SQN, RAND)
+wenn AUTN == XAUTN, dann war HSS im Besitz eines gültigen
+Wertepaares {IMSI, K, SQN} → Netz erfolgreich authentifiziert
+sendet RES = fcryptoB(OPc, SQN, RAND) an HSS
+
+4) HSS
+−
+−
+
+berechnet XRES = fcryptoB(OPc, SQN, RAND)
+wenn XRES == RES, dann USIM im Besitz des
+Wertepaares {OPc, SQN} → USIM erfolgreich authentifiziert
+
+5) HSS und USIM erhöhen SQN
+Quelle: https://nickvsnetworking.com/hss-usim-authentication-in-lte-nr-4g-5g/
+Prof. Buchmann - Mobile Security
+
+54
+
+Be
+isp
+iel
+
+Authentifizierungsvorgang, grafisch
+
+AUTN - Result
+of mixing keys
+
+Quelle: https://nickvsnetworking.com/hss-usim-authentication-in-lte-nr-4g-5g/
+Prof. Buchmann - Mobile Security
+
+55
+
+So verteilt sich der Prozess über die Stationen
+User Equipment
+UE
+
+Base Station
+eNode-B
+
+Mobility Management
+Entity
+
+Home Subscriber
+Service
+
+Quelle: https://nickvsnetworking.com/hss-usim-authentication-in-lte-nr-4g-5g/
+Prof. Buchmann - Mobile Security
+
+56
+
+Warum ist das sicher?
+▪
+
+Seitens des Netzbetreibers
+−
+−
+
+▪
+
+K
+
+Subscriber
+Authentication
+Key
+SQN Sequence
+Number
+
+Seitens des Anwenders
+−
+−
+−
+
+▪
+
+OPc, K, SQN verbleiben beim HSS, desgleichen
+die zwei Krypto-Funktionen fcryptoA, fcryptoB
+MME erfährt nur IMSI, RES, XRES, AUTH, RAND,
+aber keine Keys
+
+OPc Operator Key
+
+OPc, K, SQN verbleiben innerhalb der USIM-Karte
+USIM-Karte führt die beiden Krypto-Funktionen im Chip aus,
+können nicht durch den Anwender manipuliert werden
+UE des Anwenders leitet nur IMSI, AUTH, RAND, RES durch
+
+Annahme, dass SQN, RAND nicht erraten werden kann
+
+Prof. Buchmann - Mobile Security
+
+57
+
+Wie sicher ist dann die eSIM?
+▪
+
+Wenn der Mobilfunkprovider keine physische USIM-Karte ausliefert,
+kann er keinen Operator Key (OPc) seines Netzes und den
+Subscriber Authentication Key (K) des Nutzers darauf speichern?
+
+▪
+
+Lösung
+−
+−
+
+−
+
+▪
+
+eSIM ist fest eingelötete USIM-Hardware
+Neue Rolle Subscription Manager – Discovery
+Server (SM-DP+) generiert verschlüsselte
+Kommunikationsprofile
+eSIM kennt die Zertifkate der SM-DP+
+
+Pro und Contra
+−
+−
+
+keine physischen Attacken auf USIM, (Diebstahl, Zerstörung im Gerät
+oder bei Logistik, …), remote Lock-and-Wipe auf eSIM
+neue Angriffsmöglichkeiten
+(Nutzer überreden, gefälschten QR-Code zu akzeptieren)
+(Memory Exhaustion, Inflated Profile, Locking Profile Attacks, ...)
+Prof. Buchmann - Mobile Security
+
+58
+
+„Kann ich mein Telefon bei dir laden?“
+●
+
+Physische Nähe des Angreifers
+(Bedrohungsmodell T.P1-T.P4)
+Beispiel: BadUSB-Angriff
+
+Physische Nähe des Angreifers
+▪
+
+Wesentliche Eigenschaft von
+Mobilgeräten ist
+lokale Konnektivität
+−
+
+▪
+
+Mobilgerät kann sich
+mit vielen Geräten
+verbinden, aber...
+−
+−
+−
+
+▪
+
+USB, WiFi,
+Bluetooth, NFC
+
+Image: Wikimedia
+
+Alle aktuellen drahtlosen Protokolle sind verschlüsselt
+Viele drahtgebundene Protokolle sind nicht verschlüsselt
+Viele Protokolle sind nicht authentifiziert
+
+Beispiel: BadUSB
+
+Prof. Buchmann - Mobile Security
+
+60
+
+Grundlagen des BadUSB-Angriffs
+▪
+
+USB-Protokoll unterstützt verschiedene Gerätetypen
+−
+−
+−
+−
+−
+−
+−
+
+▪
+
+USB-Gerät kann sich als beliebiges Gerät beim USB-Master melden
+−
+
+▪
+
+Multimedia (Mikrofon, Lautsprecher, ...)
+Human Interface Device (Keyboard, Maus, Grafiktablet, Joystick, ...)
+Kamera (Videoconferencing-System, Webcam, Videokamera, ...)
+Netzwerkadapter (WLAN, LTE…)
+Massenspeicher (USB-Stick, externe Festplatte, Kamera-Speicher, ...)
+Drucker
+https://learn.microsoft.com/de-de/windows-hardware/drivers/usbcon/sup
+ported-usb-classes
+
+Sogar als zwei gleichzeitig
+
+Virus-Scanner können Firmware im USB-Controller nicht scannen
+−
+
+Nur die vom Controller an den USB-Master übermittelten Daten aus dem
+öffentlich sichtbaren Speicher des USB-Geräts
+Prof. Buchmann - Mobile Security
+
+61
+
+USB-Speicher enthalten einen Microcontroller
+USB controller
+
+8051 CPU
+Bootloader
+
+Flash
+
+Controller
+ﬁrmware
+
+Mass storage
+
+The only part
+visible to the user
+
+Folien: K. Nohl, S. Krißler, J. Lell, Black Hat Security Conference 2014
+Prof. Buchmann - Mobile Security
+
+62
+
+Initialisierungsroutine von USB beim Einstecken
+USB device
+
+Devices can have
+several identities
+
+USB plug-‐and-‐play
+Register
+Power-‐on +
+Firmware init
+
+Set address
+Send descriptor
+Set conﬁguration
+
+Load driver
+
+Normal operation
+Optional: deregister
+Register again …
+
+Load another
+driver
+
+Prof. Buchmann - Mobile Security
+
+A device indicates
+its capabilities
+through a
+descriptor
+A device can have
+several
+descriptors if it
+supports multiple
+device classes; like
+webcam +
+microphone
+Device can
+deregister and
+register again as a
+diﬀerent device
+
+63
+
+Firmware des Microcontrollers lässt sich patchen
+A
+
+Document ﬁrmware
+update process
+
+1. Find leaked ﬁrmware and
+ﬂash tool on the net
+2. Sniﬀ update
+communication using
+Wireshark
+3. Replay custom SCSI
+commands used for
+updates
+4. (Reset bricked devices
+through short-‐circuiting
+Flash pins)
+
+B
+
+Reverse-‐engineer ﬁrmware
+
+1. Load into disassembler
+(complication: MMU-‐like
+memory banking)
+2. Apply heuristics
+– Count matches between
+function start and call
+instructions for diﬀerent
+memory locations
+– Find known USB bit
+ﬁelds such as descriptors
+3. Apply standard software
+reversing to ﬁnd hooking
+points
+
+C
+
+Patch ﬁrmware
+
+1. Add hooks to ﬁrmware to
+add/change functionality
+2. Custom linker script compiles
+C and assembly code and
+injects it into unused areas of
+original ﬁrmware
+Other possible targets
+We focused on USB sticks,
+but the same approach
+should work for:
+ External HDDs
+ Webcams, keyboards
+ Probably many more …
+
+Prof. Buchmann - Mobile Security
+
+64
+
+Beispiel: USB-Gerät "kapert" DHCP
+DNS assignment in
+DHCP over spoofed
+USB-‐Ethernet
+adapter
+
+All DNS
+queries go to
+attacker’s DNS
+server
+
+ALack steps
+
+Result
+
+1. USB stick spoofs
+Ethernet adapter
+
+3. Internet traﬃc is still routed
+through the normal Wi-‐Fi
+connection
+4. However, DNS queries are sent to
+the USB-‐supplied server, enabling
+redirection attacks
+
+2. Replies to DHCP query
+with DNS server on the
+Internet, but without
+default gateway
+
+Prof. Buchmann - Mobile Security
+
+65
+
+Beispiel: USB-Gerät "kapert" Netzwerkschnittstelle
+DHCP overrides
+default gateway
+over USB-‐Ethernet
+Computer sends all
+Internet traﬃc
+through phone
+
+Proof-‐of-‐concept
+released at:
+srlabs.de/badusb
+
+Preparation – Android comes with an Ethernet-‐
+over-‐USB emulation needing little conﬁguration
+
+Hacked by the second factor?
+
+ALack
+Attack – Phone supplies default route over USB,
+eﬀectively intercepting all Internet traﬃc
+
+This compromises the
+“second factor” security
+model of online banking.
+
+Prof. Buchmann - Mobile Security
+
+Using keyboard emulation, a
+virus-‐infected smartphone
+could hack into the USB-‐
+connected computer.
+
+66
+
+Beispiel: USB-Gerät sendet Virus beim Booten
+
+Fingerprint
+OS/BIOS.
+Patched/ USB
+stick ﬁrmware
+can distinguish
+Win, Mac,
+Linux, and the
+BIOS based on
+their USB
+behavior
+
+Hide rootkit from OS/AV.
+When an OS accesses the
+stick, only the USB
+content is shown
+
+USB content,
+for example
+Linux install
+image
+
+Infect machine when
+booting.
+When the BIOS accesses
+the stick, a secret Linux is
+shown, booting a root kit,
+infecting the machine,
+and then booting from
+the USB content
+
+Secret Linux
+image
+
+Prof. Buchmann - Mobile Security
+
+67
+
+Warum funktionieren diese Angriffe?
+▪
+
+Standardmäßig ist USB kein authentifiziertes Protokoll
+−
+
+▪
+
+Erwünschte Anwendungsfälle für eben diskutiertes Verhalten
+−
+−
+−
+
+▪
+
+Jeder USB-Stick, den Sie ins Gerät einstecken, wird ohne
+Authentifizierung vom USB-Master angeschlossen und ausgelesen
+
+USB-Netzwerkadapter meldet sich zuerst als Speicherstick, installiert die
+Treiber, meldet sich dann als Netzwerkgerät
+Hotplug-Fähigkeit allgemein, d.h., Gerät einstecken und läuft
+Multimedia-Gerät meldet sich als mehrere Geräte gleichzeitig an
+z.B. Kamera, Mikrofon
+
+Lösungsmöglichkeiten
+−
+−
+−
+
+Zusatzsoftware, die unbekannte USB-Geräte verbietet
+USB-Speichersticks generell verbieten (geht mit Windows-Bordmitteln)
+USB Type-C Authentication (optional, kaum verbreitet)
+(Anm: das passiert, wenn man Sicherheit nicht von Anfang an einplant)
+Prof. Buchmann - Mobile Security
+
+68
+
+Abschluss
+
+Zusammenfassung
+▪
+
+Mobile Geräte erheben, verarbeiten und übertragen
+−
+−
+−
+
+▪
+
+Viele Herausforderungen für die IT-Sicherheit
+−
+−
+
+▪
+
+persönliche Daten, z.B. Interessen, Aufenthaltsorte, Gewohnheiten
+Daten mit Geld-Bezug, z.B. Käufe im App-Shop, Online-Banking
+kritische Anwendungsdaten, z.B. aus dem Unternehmen
+
+(Fast) alle traditionellen Sicherheitsprobleme von stationären Hosts
+Zusätzlich besondere Merkmale, die neue Angriffe
+auf Geräteebene, Netzwerkebene, Benutzerebene usw. erlauben
+
+Komplexes Zusammenspiel von Sicherheitslösungen
+−
+−
+−
+
+Auf der organisatorischen Ebene: ausgefeiltes Sicherheitsmodell
+Auf der Geräteebene: Sichere Ablaufumgebung, Berechtigungskonzept
+Auf der Netzwerkebene: Authentifizierung, Verschlüsselung
+
+Prof. Buchmann - Mobile Security
+
+70
+
+Mögliche Prüfungsfragen
+▪
+
+Da die heutigen Smartphones ein ausgeklügeltes
+Berechtigungsmodell verwenden: Warum ist eine Sandbox
+überhaupt notwendig?
+
+▪
+
+In welchen Aspekten ist die Anforderung "Vertraulichkeit" bei
+mobilen Geräten wichtiger als bei stationären Hosts?
+
+▪
+
+Erläutern Sie, weshalb die Offenlegung der Daten auf der USIMKarte ein erhebliches Sicherheitsproblem wäre.
+
+▪
+
+Erklären Sie, auf welche Weise ein Android-Gerät eine
+vertrauenswürdige Umgebung für Apps herstellt.
+
+Prof. Buchmann - Mobile Security
+
+71
+
+Literatur
+[1] Mayrhofer, René, et al.: The android platform security model
+ACM Transactions on Privacy and Security (TOPS), 2021
+[2] Almomani, Iman M., and Aala Al Khayer. A comprehensive analysis of
+the android permissions system. IEEE Access; 2020
+
+Prof. Buchmann - Mobile Security
+
+72
+
+

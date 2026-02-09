@@ -1,0 +1,1246 @@
+Grundlagen der IT-Sicherheit
+Kapitel 1 – Motivation & Abgrenzung
+
+Lehrstuhl: Data Privacy and Security,
+Center for Scalable Data Analytics and Artificial Intelligence
+Kontakt: buchmann@informatik.uni-leipzig.de
+
+Erik Buchmann
+▪
+
+1996-2006 Studium und Promotion an
+der TU Magdeburg
+
+▪
+
+2007-2015 Leiter der Forschergruppe
+„Privacy Awareness in Information Systems“,
+Karlsruher Institut für Technologie
+
+▪
+
+2013 Gastdozent TU Kaiserslautern
+
+▪
+
+2015 Lehrstuhlvertretung an der TU Saarbrücken
+
+▪
+
+2016 Habilitation in Karlsruhe
+
+▪
+
+2016-2022 Professur an der HfT Leipzig
+
+▪
+
+Seit 1. April 2022 Professur an der Uni Leipzig / ScaDS.AI
+Lehrstuhl “Data Privacy and Security“
+Prof. Buchmann - IT-Sicherheit
+
+2
+
+Aktuelle Forschungsschwerpunkte (1/3)
+Auswirkungen des KI-Einsatzes
+▪
+
+KI klassisch: Lösungsweg oder Ziel kann
+formalisiert werden
+
+▪
+
+KI heute: Bei Bard, ChatGPT, Gemini,
+MS Copilot etc. ist alles offen, Qualität
+der Lösung schwer quantifizierbar, KI
+halluziniert
+
+▪
+
+Forschungsfragen
+−
+
+−
+
+−
+
+Für welche Anwendungen ist
+der Einsatz von Large Language
+Models o.ä. mit Risiken verbunden?
+Mit welchen interdisziplinären
+Ansätzen lassen sich Risiken
+wie Bias, Fairness, Diskriminierung,
+etc. quantifizieren?
+Was kann man dagegen tun?
+Prof. Buchmann - IT-Sicherheit
+
+3
+
+Aktuelle Forschungsschwerpunkte (2/3)
+Risiken im Internet of Things
+▪
+
+IoT ist nützlich
+−
+−
+
+▪
+
+Automatisieren von
+„lästigen“ Tätigkeiten
+neue Anwendungen
+
+IoT sammelt viele
+persönliche Daten
+−
+
+−
+
+▪
+
+Bild: Patent von Amazon, 2018
+
+Daten in der Cloud, die mit
+Interessen, Gewohnheiten,
+etc. korreliert sind
+KI/Data Mining in der Cloud
+
+Forschungsfragen
+– Welche Risiken (Datenschutz, Cybersicherheit, Langzeitbetrieb, …)
+
+existieren beim Einsatz von IoT-Geräten?
+– Mit welchen Maßnahmen lassen sich diese Risiken beherrschen?
+Prof. Buchmann - IT-Sicherheit
+
+4
+
+Aktuelle Forschungsschwerpunkte (3/3)
+Cybersicherheit im Smart Home
+▪
+
+Viele IoT-Komponenten kommunizieren (WLAN) in die Cloud
+−
+−
+−
+
+▪
+
+Auf einmal hat Zahnbürste/Türklingel/... ein Sicherheitsproblem
+Hersteller lässt keine Einblicke in die Software zu
+Nutzer ist kein Spezialist in Netzwerksicherheit
+
+Forschungsfragen
+−
+
+−
+
+Wie muss eine
+Firewall / ein
+Intrusion
+Detection Syst.
+für Smart Home
+aussehen?
+Wie gut sind KI/ML
+Ansätze geeignet?
+
+Internet /
+Cloud
+
+Prof. Buchmann - IT-Sicherheit
+
+5
+
+Organisatorisches
+▪
+
+Vorlesung jeden Freitag 11:15 Uhr im HS4
+
+▪
+
+Übungen Mittwochs bzw. Donnerstags 09:15 – 12:45 Uhr
+im Pool A-414 (Kümmern Sie sich um Ihren Zugang!)
+−
+−
+−
+
+Jeweils große, vierstündige Übungseinheiten
+Übung in 4 Gruppen im ungefähr 2-wöchigen Wechsel
+Beginn der ersten Übung am 29.10.2025
+▪
+
+▪
+
+Aktuelle Termine siehe Moodle-Seite
+
+Prüfungsleistung
+−
+−
+
+Klausur 60 Min. zu Inhalten der Vorlesung und Übung
+Probeklausur in der letzten Vorlesungseinheit des Semesters
+
+Prof. Buchmann - IT-Sicherheit
+
+6
+
+Materialien
+▪
+
+Foliensätze zur Vorlesung
+−
+
+▪
+
+werden in Moodle bereitgestellt
+(akt. Semester → Informatik → IT-Sicherheit)
+
+Am Ende jedes Vorlesungskapitels
+−
+−
+
+Zusatzliteratur zur Vertiefung
+Mögliche Prüfungsfragen
+→ zur Reflektion des Gelernten
+wenn Sie Fragen dieser Art spontan beantworten können,
+müssen Sie keine Angst vor der Klausur haben ;-)
+
+Prof. Buchmann - IT-Sicherheit
+
+7
+
+Gliederung der Vorlesung
+▪
+
+Grundlagen der IT-Sicherheit
+−
+
+▪
+
+Anwendungsschicht
+−
+
+▪
+
+Krypto-Protokolle, Tracking, Browser-Sicherheit,
+sichere Programmierung
+
+Übertragungsschicht
+−
+
+▪
+
+Zugriffskontrolle, Verschlüsselung
+
+Firewalls, Angriffe auf die Infrastruktur, Netzwerkarchitekturen
+
+Management-Ebene
+−
+−
+
+Basis-Absicherung und Security Engineering
+Mobile Security
+
+Prof. Buchmann - IT-Sicherheit
+
+8
+
+Lernziel dieses Kapitels
+▪
+
+Verständnis der allgemeinen Ziele der IT-Sicherheit
+−
+
+Entwickle IT-Systeme mit so wenig Schwachstellen wie möglich
+
+−
+
+Identifiziere/behebe Schwachstellen in existierenden Systemen
+
+−
+
+Berücksichtige verschiedene Perspektiven
+▪
+▪
+▪
+
+Ist es besser, den Geschäftsprozess zu ändern, anstelle das unsichere
+Programm zu überarbeiten?
+Führt eine Sicherheitsmaßnahme tatsächlich zu einem Gewinn an
+Sicherheit, oder ist sie so komplex das die Nutzer sie sabotieren?
+…
+
+Prof. Buchmann - IT-Sicherheit
+
+9
+
+Was ist unser Anliegen?
+▪
+
+Mit begrenzten Ressourcen sinnvolles Schutzniveau erreichen
+−
+−
+−
+
+Zahllose Schwachstellen vs. begrenztes Personal in der
+Sicherheitsabteilung
+Angreifer entwickeln ständig neue Formen von Angriffen
+Es braucht Zeit, Maßnahmen gegen neue Angriffe zu entwickeln
+
+▪
+
+Problem: Wie kann man sich auch gegen einen neuen, unbekannten
+Angriff schützen?
+
+▪
+
+Allgemeine Idee:
+−
+−
+−
+
+Minimiere die genutzten Bibliotheken/Schnittstellen/Codezeilen/...
+Mache alles richtig (Software Engineering, System Design, Tests,
+Bug Fixes einspielen, etc.)
+Berücksichtige Risiko eines Angriffs und Wert eines System, um
+kritische Ressourcen auch am besten zu schützen
+Prof. Buchmann - IT-Sicherheit
+
+10
+
+Was ist das Problem dabei?
+▪
+
+Es reicht nicht, ein System vor bekannten oder besonders
+populären Schwachstellen zu schützen
+−
+
+Komplexe Systeme → hohe Wahrscheinlichkeit, etwas zu übersehen
+
+▪
+
+Problem: Wie lässt es sich erreichen, das ein Angriff keinen
+ernsthaften Schaden anrichtet?
+
+▪
+
+Allgemeine Idee:
+−
+−
+
+IT-Sicherheit als
+Management-Aufgabe
+Realisiere eine umfassende
+Sicherheitsstrategie von der
+Angriffserkennung bis zum
+Umgang mit erfolgreichen
+Angriffen über alle Prozesse,
+Systeme, Fachabteilungen, ...
+
+Screenshot from March 16th, 2019
+
+Prof. Buchmann - IT-Sicherheit
+
+11
+
+Absolute vs. Praktische Sicherheit
+▪
+
+Absolute Sicherheit
+−
+−
+
+Das System kann nicht beeinträchtigt werden
+Schwierig, teuer und/oder unpraktisch zu erreichen
+▪
+
+▪
+
+siehe One-Time Pad, Kapitel „Verschlüsselung“
+
+Praktische Sicherheit
+−
+
+Wenn eine der folgenden Eigenschaften gilt, dann
+ist das System sicher (genug)
+▪
+▪
+▪
+
+Aufwand zum Eindringen in ein System > Gewinn durch den Einbruch
+Zeit zum Eindringen in ein System > Zeit, in der der Einbruch einen Wert hat
+Menge/Wert der dafür nötigen Daten > Menge/Wert der gewonnenen Daten
+
+Prof. Buchmann - IT-Sicherheit
+
+12
+
+Was ist IT-Sicherheit eigentlich?
+
+Definition
+▪
+
+IT-Sicherheit ist der Schutz der Assets eines IT-Systems
+– Hardware, Software, Daten, Mitarbeiter, Prozesse
+– Kombinationen davon
+
+Prof. Buchmann - IT-Sicherheit
+
+14
+
+IT-Systeme
+▪
+
+Hardware
+–
+
+▪
+
+Software
+–
+
+▪
+
+Betriebsysteme,
+Anwendungen, Werkzeuge,
+Spezialsoftware, ...
+
+Daten
+–
+
+▪
+
+Computer, Geräte,
+Netzwerktechnik, ...
+
+Inhalt, Kommunikation,
+Metadaten, ...
+
+Prozesse
+–
+
+Organisation, Abläufe, Geschäftseinheiten, Personen, ...
+
+Prof. Buchmann - IT-Sicherheit
+
+15
+
+Wert
+▪
+
+▪
+
+Wertbasierte Entscheidungen sind etwas altbekanntes...
+–
+
+Sie lassen Handtuch und Schuhe offen am Strand liegen, aber
+nicht Handy und Brieftasche
+
+–
+
+Je teurer Ihr Fahrrad, desto mehr Geld geben Sie für das
+Fahrradschloss aus
+
+–
+
+Ein altes Familienfoto hat sehr viel Wert für Sie, aber keinen Wert
+für jemand anderen
+
+Dasselbe gilt für IT-Systeme
+–
+
+Je mehr Wert ein IT-System für Sie hat, desto besser
+sollte es geschützt sein
+
+Prof. Buchmann - IT-Sicherheit
+
+16
+
+Wert Ihrer Assets
+▪
+
+Marktübliche Hardware
+–
+
+▪
+
+Individuelle Anwendungen und Spezialhardware
+–
+
+▪
+
+▪
+
+Schwer zu ersetzen, Ersatz kostet viel Zeit
+
+Daten
+–
+
+Üblicherweise einzigartig, oft nicht ersetzbar
+
+–
+
+Daten aus dem Front-end sind oft wertvoller als Backups
+
+Prozesse
+–
+
+▪
+
+Leicht zu ersetzen, aber Ersatz kostet Zeit
+
+Können einzigartig sein, Ersatz kostet Zeit
+
+Der Wert der Assets hängt von Besitzer und Zeit ab, ist oft unpräzise
+
+Prof. Buchmann - IT-Sicherheit
+
+17
+
+Schwachstelle vs. Bedrohung
+▪
+
+Schwachstelle: Kann ausgenutzt werden, um einen Schaden zu
+verursachen
+
+▪
+
+Bedrohung: Umstände, die einen Schaden verursachen können
+Bedrohung
+
+Asset
+
+}
+Prof. Buchmann - IT-Sicherheit
+
+Schwachstelle
+
+18
+
+(Gegen)Maßnahmen
+▪
+
+Eine Maßnahme ist
+−
+
+eine Aktion
+
+−
+
+ein Gerät
+
+−
+
+ein Prozess oder
+
+−
+
+eine Technik
+
+Maßnahme
+
+die eine Schwachstelle
+entfernt oder
+deren Schaden
+reduziert
+
+▪
+
+Maßnahmen verhindern, das Bedrohungen die vorhandenen
+Schwachstellen ausnutzen, um einen Schaden zu verursachen
+
+Prof. Buchmann - IT-Sicherheit
+
+19
+
+Möglichkeiten, um Schaden zu verursachen
+▪
+
+Abfangen
+
+▪
+
+Modifizieren
+
+▪
+
+Unterbrechen
+
+▪
+
+Einschleusen
+
+Prof. Buchmann - IT-Sicherheit
+
+20
+
+Ziele der IT-Sicherheit
+▪
+
+„Security triad“
+–
+
+Vertraulichkeit: Asset ist nur Autorisierten zugänglich
+Integrität: Asset kann nur von Autorisierten modifiziert werden
+
+−
+
+Verfügbarkeit: Asset kann von Autorisierten genutzt werden
+
+−
+
+▪
+
+▪
+
+ISO 7498-2 fügt hinzu
+–
+
+Authentisierung: Identität eines Senders wird überwacht
+
+–
+
+Nichtabstreitbarkeit: Sender kann nicht abstreiten, das eine
+Nachricht von ihm kam
+
+US Department of Defense fügt hinzu
+–
+
+Auditierbarkeit: Alle Aktionen mit dem Asset sind nachvollziehbar
+
+Prof. Buchmann - IT-Sicherheit
+
+21
+
+Vertraulichkeit
+▪
+
+Nur autorisierte Personen dürfen auf geschützte Daten zugreifen
+–
+
+▪
+
+Im wesentlichen Zugriffskontrolle
+
+Das ist weniger trivial als es aussieht!
+Unautorisierte Person kann herausfinden:
+–
+
+die Daten selbst
+
+–
+
+den Wertebereich der Daten
+
+–
+
+Metadaten (Sprache, Länge, Erstellzeit, ...)
+
+–
+
+das auf Daten zugegriffen wurde
+
+–
+
+das Daten überhaupt existieren
+
+–
+
+das jemand anderes darauf zugreifen möchte
+
+–
+
+...
+
+Prof. Buchmann - IT-Sicherheit
+
+22
+
+Zugriffskontrolle
+▪
+
+Subjekt, Art des Zugriffs, Objekt und Regel
+Art des Zugriffs
+(Wie soll das passieren)
+
+Subjekt
+(Wer möchte zugreifen)
+
+Objekt
+(Was wird zugegriffen)
+
+Regel:
+f(Wer + Was + Wie) → {Ja|Nein}
+
+Prof. Buchmann - IT-Sicherheit
+
+23
+
+Integrität
+▪
+
+Kann je nach Kontext etwas anderes bedeuten!
+
+▪
+
+Eine oder mehr dieser Eigenschaften
+–
+
+objektiv korrekt
+
+–
+
+nur auf erlaubte Weise verändert
+
+–
+
+nur von autorisierten Personen verändert
+
+–
+
+konsistent mit anderen Daten
+
+–
+
+in sich konsistent
+
+–
+
+für die Anwendung bedeutsam und nützlich
+
+–
+
+...
+
+Prof. Buchmann - IT-Sicherheit
+
+24
+
+Beispiel
+▪
+
+In Datenbanksystemen üblicherweise drei Anforderungen
+–
+
+Jedes Attribut bleibt innerhalb
+seines definierten Wertebereichs
+
+–
+
+Jedes Datentupel kann durch einen
+Primärschlüssel (oder row id)
+eindeutig identifiziert werden
+
+–
+
+Jedes Datentupel kann über eine
+Fremdschlüsselbeziehung
+referenziert werden
+
+(die anderen auf der letzten Folie genannten Eigenschaften liegen
+außerhalb des Datenbanksytems)
+
+Prof. Buchmann - IT-Sicherheit
+
+25
+
+Verfügbarkeit
+Performance Capacity
+▪
+▪
+
+Hier gemeint: Daten und Prozesse
+Ein Prozess ist verfügbar wenn
+−
+−
+−
+−
+
+Availability
+
+Fault
+Tolerance
+
+er sich in einer nützlichen Form darstellt
+er die nötige Kapazität hat, um die an ihn gestellten
+Usability
+Anforderungen zu erfüllen
+er sichtbar und zuverlässig Rückmeldung zum
+Bearbeitungsfortschritt anzeigt
+er in einer für die Aufgabe akzeptablen Zeit fertig wird
+
+Prof. Buchmann - IT-Sicherheit
+
+26
+
+Verfügbarkeit, Integrität, Vertraulichkeit
+▪
+
+Illustration aus den 70ern:
+
+Prof. Buchmann - IT-Sicherheit
+
+27
+
+Umgang mit Bedrohungen
+▪
+
+Die Abwesenheit von Bedrohungen lässt sich
+praktisch nicht beweisen, nur die Anwesenheit
+von Bedrohungen, die bereits gefunden wurden
+Natürliche
+Ursache
+Feuer, Stromausfall
+Überschwemmung
+
+Bedrohung
+
+Menschliche
+Ursache
+
+Gute
+Absichten
+
+Menschliches
+Versagen
+
+Schlechte
+Absichten
+
+Zufällig
+Schadcode auf
+einer Webseite
+
+Prof. Buchmann - IT-Sicherheit
+
+Gezielt
+Personalisierter
+Schadcode an eine
+Email-Adresse
+28
+
+Einige Bedrohungen sind schwieriger als andere
+▪
+
+Natürliche Ursachen, menschl. Versagen
+−
+−
+
+Bedrohungen entwickeln sich nicht
+Maßnahmen können „nach Handbuch“
+eingeführt und geprüft werden
+▪
+▪
+
+▪
+
+Schutz gegen Erdbeben, Fluten, Stomausfälle, Feuer ist gut verstanden
+Häufige Backups, redundante Anlagen auf „hot standby“ etc.
+
+Zufällige oder gezielte Angriffe
+−
+
+Hacker entwickeln sich weiter
+▪
+
+−
+
+Sicherheitsupdates schließen nur Lücken, nachdem sie bekannt wurden
+→ es existiert ein Zeitfenster für Angriffe!
+
+Botnetze, organisiertes Verbrechen bis hin zu quasistaatlichen Gruppen
+können über sehr große Ressourcen verfügen
+▪
+
+Wissen um Schwachstellen,
+Hardware zum brute-force Knacken von Schlüsseln
+
+Prof. Buchmann - IT-Sicherheit
+
+29
+
+Risikomanagement
+▪
+
+Schaden: Negative Konsequenz aus einer Bedrohung
+– Kann quantifiziert werden als
+●
+
+Monetärer Wert: Kosten für Ersatz, Kosten für Service-Ausfall, ...
+
+●
+
+Nichtmonetärer Wert:
+Allgemeine Skala (sehr hoch, … mittel, … sehr niedrig)
+– Beispiel: Der Wert Ihrer Kreditkarte ist für Sie geringer als der Wert einer
+
+Bachelor-Arbeit, die morgen abgegeben werden muss
+▪
+
+Risikomanagement: Entscheiden, welche Bedrohungen am meisten
+Aufmerksamkeit und Ressourcen benötigen
+– Ganz einfach: Mehr Aufwand für den Schutz wertvollerer Assets
+– Doch nicht so einfach: Anzahl und Art der Bedrohungen sind praktisch
+unbegrenzt, Wert der Assets verändert sich mit der Zeit
+– Restrisiko: Risiko, das Sie ohne Maßnahmen akzeptieren
+
+Prof. Buchmann - IT-Sicherheit
+
+30
+
+Risiken und Wahrscheinlichkeiten
+
+Schaden
+
+Existenzbedrohendes
+Risiko
+
+Mittleres Risiko
+
+Geringes Risiko
+Eintrittswahrscheinlichkeit
+
+Prof. Buchmann - IT-Sicherheit
+
+31
+
+Risiko von Extremereignissen
+▪
+
+Extreme schwere Bedrohungen
+−
+
+▪
+
+Verursacht unbegrenzt Schaden, aber Sie haben nur begrenzt
+Ressourcen zur Abwehr zur Verfügung
+(Roboter am Fließband tötet Monteure, Erdbeben zerstört komplette IT
+incl. Backups und Stromversorgung, …)
+
+Extrem seltene Ereignisse
+−
+
+Wahrscheinlichkeit und
+Kosten schwer schätzbar
+(Wahrscheinlichkeit, das
+eine regelmäßig geprüfte Brücke einstürzt)
+
+Bild: Stadt Dresden
+
+→ Verzerrte, unrealistische
+Risikowahrnehmung und
+Risikobewertung
+Prof. Buchmann - IT-Sicherheit
+
+32
+
+Risiko externalisieren?
+▪
+
+Der größte deutsche Rückversicherer mag nicht mehr.
+
+Prof. Buchmann - IT-Sicherheit
+
+33
+
+Abschätzen der Eintrittswahrscheinlichkeit
+▪
+
+Methode
+–
+
+▪
+
+Möglichkeit
+–
+
+▪
+
+Genügend Zeit und Zugangsmöglichkeiten
+für einen erfolgreichen Angriff
+
+Motiv
+–
+
+▪
+
+Fähigkeiten, Wissen, Ressourcen
+für einen erfolgreichen Angriff
+
+Ein Grund für den Angriff
+
+Methode, Möglichkeit und Motiv müssen
+gemeinsam gegeben sein, damit ein Angriff
+erfolgreich ist!
+–
+
+Motiv kann auch sein „Weil es Spaß macht“!
+Prof. Buchmann - IT-Sicherheit
+
+34
+
+Umgang mit Angriffen
+Sie können folgendes tun:
+1) verhindern: blockieren des Angriffs
+2) erschweren: die Erfolgswahrscheinlichkeit reduzieren
+3) umlenken: die Motivation für einen Angriff auf ein Asset reduzieren
+4) abmildern: die Auswirkungen eines erfolgreichen Angriffs reduzieren
+5) erkennen: herausfinden ob ein Angriff stattfindet
+6) erholen: den Schaden eines erfolgreichen Angriffs beheben
+
+Prof. Buchmann - IT-Sicherheit
+
+35
+
+Arten von Maßnahmen
+▪
+
+Physisch
+−
+
+▪
+
+Prozessual oder administrativ
+−
+
+▪
+
+Stoppen von Angriffen an physischen
+Grenzen, z.B. durch einen Pförtner oder
+einen abgeschlossenen Serverraum
+
+Erschweren oder umenken von Angriffen durch Regulierung, Gesetze,
+Richtlinien etc., beispielsweise durch eine Vorschrift, das Passwörter
+nicht aufgeschrieben werden oder Daten nur auf Firmenhardware
+gespeichert werden
+
+Technisch
+−
+
+Passwörter, kryptografische Protokolle, Firewalls
+(den meisten Laien fällt diese Kategorie von Maßnahmen als erstes ein)
+
+Prof. Buchmann - IT-Sicherheit
+
+36
+
+Abgrenzung Datenschutz
+
+Worum geht es beim Datenschutz? (1/2)
+▪
+
+Regeln für das sammeln, verarbeiten, speichern, abrufen, auswerten
+und weitergeben von personenbezogenen Informationen
+
+▪
+
+Datenschutz: juristische/technische Umsetzung sozialer Normen
+−
+−
+
+Wenn ich Ihnen meine Privatanschrift gebe, würden Sie sie weitergeben?
+Wenn ich befürchte, dass Sie meine Privatanschrift weitergeben, würde
+ich sie Ihnen überlassen?
+
+→Gesellschaft: Klare Regeln über „meine“ und „deine“ Informationen
+(Jurisprudenz: „Treu und Glauben“)
+▪
+
+Zentrales Problem:
+Computer kennen keine gesellschaftliche Regeln / Moral / Anstand
+−
+
+Es sei denn der Systementwickler hat daran gedacht
+→ Datenschutz als Handlungsanweisung
+Prof. Buchmann - IT-Sicherheit
+
+38
+
+Worum geht es beim Datenschutz? (2/2)
+▪
+
+Zentrales Anliegen:
+Schaden von natürlichen Personen abzuwenden, der durch die
+Sammlung, Verarbeitung, Speicherung, (…) personenbezogener
+Informationen entstehen kann
+
+▪
+
+Art. 4 Abs. 1 DSGVO:
+„personenbezogene Daten“ (sind) alle Informationen, die sich auf
+eine identifizierte oder identifizierbare natürliche Person beziehen; als
+identifizierbar wird eine natürliche Person angesehen, die direkt oder
+indirekt, insbesondere mittels Zuordnung zu einer Kennung wie
+einem Namen, zu einer Kennnummer, zu Standortdaten, zu einer
+Online-Kennung oder zu einem oder mehreren besonderen
+Merkmalen identifiziert werden kann, die Ausdruck der physischen,
+physiologischen, genetischen, psychischen, wirtschaftlichen,
+kulturellen oder sozialen Identität dieser natürlichen Person sind.
+Prof. Buchmann - IT-Sicherheit
+
+39
+
+Informationelle Selbstbestimmung
+▪
+
+Ziel: Die individuelle Selbstdarstellung gegenüber anderen selbst
+definieren
+−
+−
+
+Ausprägung des allgemeinen Persönlichkeitsrechts, abgeleitet vom
+Grundgesetz
+selbst festlegen, wer über welche persönlichen Informationen verfügt
+▪
+
+−
+
+keine Unterscheidung zwischen mehr oder weniger sensiblen Informationen
+→ es gibt keine belanglosen persönlichen Daten!
+
+Selbstbestimmung mit Einschränkungen
+▪
+
+bei überwiegendem Allgemeininteresse,
+Kriminalität, Terrorismus, Steuererklärung, Fahrzeugregister,
+Einwohnermeldeamt,
+Wählerregister etc.
+
+Prof. Buchmann - IT-Sicherheit
+
+40
+
+IT-Sicherheit
+
+vs.
+
+Datenschutz
+
+▪
+
+Schutzziel:
+Schaden vom Unternehmen
+abwenden, das die Daten
+speichert
+
+▪
+
+Schutzziel:
+Schaden von der Person
+abwenden, die die Daten
+betreffen
+
+▪
+
+Vorgaben:
+KRITIS, ISO2700x, (…)
+
+▪
+
+Vorgaben:
+EU-DSGVO, BDSG, (…)
+
+▪
+
+Leistungen:
+Vertraulichkeit, Verfügbarkeit,
+Integrität, Authentisierbarkeit,
+Nichtabstreitbarkeit,
+Auditierbarkeit
+
+▪
+
+Leistungen:
+Vertraulichkeit, Verfügbarkeit,
+Integrität, Datensparsamkeit,
+Transparenz, Intervenierbarkeit,
+Nichtverkettbarkeit
+
+Prof. Buchmann - IT-Sicherheit
+
+41
+
+Abschluss
+
+Zusammenfassung
+▪
+
+Sicherheitsprobleme entstehen täglich
+–
+
+▪
+
+Einige Probleme sind schwieriger als andere
+
+Eine Bedrohung für das Ausnutzen einer Schwachstelle führt zu
+einem Schaden an einem Asset
+–
+
+▪
+
+Viele Möglichkeiten, dies zu vermeiden
+Perfekte Sicherheit ist nicht zu erreichen
+–
+
+▪
+
+Begrenzte Ressourcen, Abwesenheit von Schwachstellen nicht
+beweisbar
+
+Angreifer benötigt eine Methode, eine Möglichkeit und ein Motiv
+–
+
+Erlaubt eine systematische Abschätzung der Wahrscheinlichkeit
+für einen erfolgreichen Angriff → Risikomanagement
+
+Prof. Buchmann - IT-Sicherheit
+
+43
+
+Mögliche Prüfungsfragen
+▪
+
+Erläutern Sie die Begriffe Schwachstelle, Bedrohung, Risiko und
+Maßnahme.
+
+▪
+
+Geben Sie drei Arten von Schäden an, die ein Unternehmen durch
+Bruch der Vertraulichkeit für Unternehmensdaten erleiden kann.
+
+▪
+
+Gegen welche Arten von Bedrohungen helfen Backups, und gegen
+welche nicht?
+
+▪
+
+Auf welche Weise beeinflusst die Zeit den Wert eines Assets? Geben
+Sie drei eigene Beispiele an.
+
+▪
+
+Eine Firma stellt Programme für Tele-Medizin her. Wer könnte über
+Motive und Methoden verfügen, um dieses Programm anzugreifen?
+
+Prof. Buchmann - IT-Sicherheit
+
+44
+
+Literatur
+▪
+
+Pfleeger, Charles P. et al.: Security in Computing,
+Prentice Hall, 2015
+
+▪
+
+Eckert, Claudia. IT-Sicherheit: Konzepte-Verfahren-Protokolle. Walter
+de Gruyter, 2018
+(Die Auflage ist für Grundlagenkapitel egal, falls Sie eine alte Version
+besitzen oder als PDF im Netz finden)
+
+Prof. Buchmann - IT-Sicherheit
+
+45
+
+

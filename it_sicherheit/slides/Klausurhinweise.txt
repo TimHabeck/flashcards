@@ -1,0 +1,67 @@
+Allgemeine Hinweise
+Drei Arten von Fragestellungen
+- Nennen Sie -> das richtige Stichwort oder ein Stichpunkt genügen, wenn der nicht einfällt dann
+einfach umschreiben
+- Erläutern Sie, erklären Sie, warum ist das so -> hier ist mehr als nur ein Stichwort gefragt, hier
+will der Prüfer wissen ob Sie's verstanden haben und nicht nur auswendig kennen
+- Wenn Sie einen Ablauf erklären sollen:
+nennen Sie die Akteure, Reihenfolge der Aktivitäten, die dabei ausgetauschten Informationen
+Der Prüfer will nicht Stichworte abhaken, der Prüfer will wissen was Sie verstanden haben.
+- Lesen Sie die Frage genau. Lesen Sie nicht nur grob drüber und schreiben Sie alles auf was Ihnen
+zu einem Stichwort in der Frage einfällt. Wenn Sie auf eine Frage mit 10 verschiedenen Dingen
+antworten, und das richtige ist darunter, dann gibts darauf keine volle Punktzahl.
+- Antworten Sie präzise! Wenn Sie auf die Frage „Was sind die Vorteile von Passkey“ mit „Das ist
+sicherer als Passwörter“ antworten und nicht im Ansatz verraten, warum das so ist, rechnen Sie
+nicht mit vielen Punkten ;-)
+- Wenn Sie die Antwort wissen, aber Ihnen der richtige Fachbegriff nicht einfällt und Sie die
+Lösung mit eigenen Worten beschreiben, gibts darauf aber sehr wohl volle Punktzahl
+- Wenn Sie sich unsicher sind, ob Sie eine Frage richtig verstanden haben, schreiben Sie auf wie Sie
+die Frage interpretieren, zusammen mit Ihrer Antwort. Wenn Ihre Antwort ganz nicht genau zur
+Frage passt, aber für den Prüfer ersichtlich ist wie Sie die Frage verstanden haben, kann es durchaus
+auch volle Punktzahl geben.
+- Wenn der Lösungsweg erkennbar ist, werden auch falsche Antworten aufgrund von Folgefehlern
+wenigstens teilweise gewertet
+- Klausur hat 60 Punkte. Die zu erzielenden Punkte stehen über jeder Frage. Das heißt, Sie können
+direkt ablesen wieviel Zeit Sie für jede Aufgabe verwenden sollten.
+- Wenn Sie am Ende der Klausur den Eindruck haben, dass Sie's lieber nochmal versuchen wollen,
+geben Sie entweder nichts ab oder machen Sie eindeutig kenntlich, dass Sie Ihre Abgabe mit einer 5
+bewertet haben wollen.
+- Wir prüfen das Verständnis von Konzepten ab, d.h., illustrierende Beispiele, Implementierungen
+von Ansätzen und dergl. Nicht
+Wenn Sie mich fragen, worauf Sie Schwerpunkte beim Lernen setzen sollten:
+a) Schauen Sie sich an, welche Konzepte und Themen häufiger aufgegriffen wurden.
+b) Schauen Sie sich an, welche Themen für die IT-Sicherheit zentral sind (Begriffe im
+Einleitungskapitel, Annahmen, uter denen Verschlüsselungsverfahren sicher sind, grundlegende
+Access-Control-Verfahren, Zertifikate, Firewall-Regeln, Abläufe beim IT-Grundschutz, etc.)
+
+Themeneingrenzung
+Kapitel 1: Einführung
+Grundlegende Begriffe erklären können, die in den anderen Kapiteln wieder auftauchten
+Kapitel 2: Kryptographie
+Angreifermodelle, grundsätzlicher Ablauf bei One-Time-Pad, Blockchiffrierung, AES, RSA, was ist
+die Idee hinter Stromverschlüsselung, probabilistischer Verschlüsselung, Secure Multiparty
+Computation, etc. – Sie werden’s aber nicht vorrechnen müssen
+Kapitel 3: Zugriffskontrolle
+Worum gehts, kritischer Umgang mit Abläufen, Stärken, Schwächen von Passwörtern, SingleSignon Verfahren, Passkey, Self-Sovereign Identities
+Kapitel 4: Web-Sicherheit
+Welche Herausforderungen sind hier speziell → Angriffe auf Browser, Benutzer, Server
+Unterschied Data Origin Authentication und Entity Authentication, Abläufe/Stärken/Schwächen bei
+Diffie-Hellmann, Zertifikaten, OCSP, OCSP Stapling, Kerberos
+Kapitel 5: Netzwerk-Sicherheit
+Was leisten Firewalls? Firewall-Architekturen. Aufgaben der Art „Erstellen Sie einen PaketfilterRegelsatz, der folgende Protokolle und Ports durchlässt“, Funktionsweise/Stärken/Schwächen WebApplication Firewalls, Next Generation Firewalls, Intrusion Detection
+Kapitel 6: Mobile Security
+Android Threat Model, das zugehörige Sicherheitsmodell und wie dies bei Plattform-Sicherheit,
+Rechteverwaltung, Authentifizierung jeweils umgesetzt wurde. Die Konzepte reichen, lernen Sie
+nicht die 15 Threats oder den exakten Ablauf beim Bootvorgang oder der Rechtevergabe auswendig
+Kapitel 7: Grundschutz
+Was soll der Grundschutz leisten? Warum sind Security/Compliance Theater ein Problem? Was ist
+ein ISMS? Wie ist die allgemeine Vorgehensweise nach BSI-Standard 200-2 und 200-3? Fragen der
+Art „Was passiert bei der Modellierung, und welche Informationen werden dafür aus der
+vorhergehenden Phase gebraucht?“
+Kapitel 8: Insecure Coding
+(nur soweit wir in der Vorlesung gekommen sind!)
+Was sind technische Schulden? Wie funktioniert ein Buffer Overflow, und was kann man dagegen
+tun? Welchen Beitrag kann eine Programmiersprache leisten? Welche Probleme stammen aus dem
+Bereich der Business Logic? – Sie werden nicht programmieren müssen, lernen Sie nicht Rust
+
+

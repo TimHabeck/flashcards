@@ -1,0 +1,1946 @@
+Grundlagen der IT-Sicherheit
+Kapitel 4 – Web-Sicherheit
+
+Lehrstuhl: Data Privacy and Security,
+Center for Scalable Data Analytics and Artificial Intelligence
+Kontakt: buchmann@informatik.uni-leipzig.de
+
+Gliederung der Vorlesung
+▪
+
+Grundlagen der IT-Sicherheit
+−
+
+▪
+
+Anwendungsschicht
+−
+
+▪
+
+Krypto-Protokolle, Tracking, Browser-Sicherheit,
+sichere Programmierung
+
+Übertragungsschicht
+−
+
+▪
+
+Zugriffskontrolle, Verschlüsselung, Anonymisierung
+
+Firewalls, Angriffe auf die Infrastruktur, Netzwerkarchitekturen
+
+Management-Ebene
+−
+
+Basis-Absicherung und Security Engineering
+
+Prof. Buchmann - Web-Sicherheit
+
+2
+
+Lernziel und Aufbau dieses Kapitels
+▪
+
+Internet-Anwendungen
+−
+
+▪
+
+Angriffe
+−
+
+▪
+
+auf den Browser, Benutzer oder Server
+
+Kryptographische Protokolle
+−
+
+▪
+
+allgemeiner Ablauf beim HTTP-Zugriff
+
+Schlüsselaustausch, Authentifizierung
+über Zertifikate, Signaturen
+
+Lernziele
+−
+−
+−
+
+Sie wissen, welche unterschiedlichen Angriffsziele auf Anwendungen mit
+Internet-Anbindung existieren.
+Sie können erläutern, wieso dies praktisch immer etwas mit der
+Authentifizierung von Rechnern oder Personen zu tun hat.
+Sie können Lösungsmöglichkeiten auf der Basis von kryptographischen
+Protokollen, Zertifikaten oder Signaturen bewerten und einsetzen.
+Prof. Buchmann - Web-Sicherheit
+
+3
+
+Web-Anwendungen
+
+Webbrowser sind einfach
+▪
+
+Sende einen Request an den Webserver
+
+▪
+
+Zeige das Ergebnis auf dem Bildschirm
+
+▪
+
+Verarbeite Links, Buttons, Textfelder,
+eingebettete Medien entsprechend
+
+▪
+
+Speichere Bookmarks und Cookies
+als Annehmlichkeit für den Nutzer
+
+Prof. Buchmann - Web-Sicherheit
+
+5
+
+Webbrowser sind kompliziert
+▪
+
+Herausforderungen für den Entwickler
+−
+−
+−
+
+▪
+
+Zahllose Plugins und Addons
+Passive und aktive Inhalte in unterschiedlichen Sprachen (ActiveX,
+JavaScript,…) und Dialekten (HTML 1.0, XML, XHTML, HTML5,...)
+Unterschiedliche Browser-, Betriebssytem und Plugin-Versionen
+
+Herausforderungen für die IT-Sicherheit
+−
+−
+−
+
+Private Informationen aus Online-Banking, Beruf, Schule, Hobby
+Browser kommuniziert über öffentliches Netz, darf auf jede Hardware
+und jede Ressource im Rechner mit den Rechten des Nutzers zugreifen
+Mittlerweile bindet eine Webseite aktive Inhalte von hunderten von
+dritten Servern ein (Verhaltensanalyse, Werbe-Monitoring, Profiling, ...)
+
+Prof. Buchmann - Web-Sicherheit
+
+6
+
+Laden einer Webseite
+Input lines are bold
+2x line break
+is important!
+
+/home/buchmann> telnet www.google.de 80
+Trying 129.13.182.137...
+Connected to www.google.de.
+Escape character is '^]'.
+
+request
+
+GET http://www.google.de/ HTTP/1.1
+HOST: myhost.de
+Referer: http://bild.de/index.html
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.1) Firefox/2.0.0.1
+Accept: text/html, image/gif, image/jpeg, image/pjpeg, */*
+Accept-Language: en, de
+(here follows the response from the server)
+
+Wenn Sie's direkt ausprobieren wollen:
+- zu https://reqbin.com/curl gehen,
+- "curl https://google.de" eingeben,
+- auf "Raw output" stellen
+Prof. Buchmann - Web-Sicherheit
+
+7
+
+Antwort vom Webserver
+/home/buchmann> telnet www.google.de 80
+Trying 129.13.182.137...
+Connected to www.google.de.
+Escape character is '^]'.
+response
+GET http://www.google.de/ HTTP/1.1
+HOST: myhost.de
+
+Input lines are bold
+2x line break
+is important!
+
+HTTP/1.1 200 OK
+Date: Thu, 01 Jun 2023 11:44:36 GMT
+Expires: -1
+Cache-Control: private, max-age=0
+Content-Type: text/html; charset=ISO-8859-1
+Set-Cookie: AEC=AUEFqZfv4KvZEGt4IUzmZoYIEylYoWHKSz1PsLQZOrsuRPic0kOeSSM4hU; expires=Tue, 28-Nov-2023 11:44:36
+GMT; path=/; domain=.google.de; Secure; HttpOnly; SameSite=lax
+<!doctype html> <…>
+</html>Connection closed by foreign host.
+
+Prof. Buchmann - Web-Sicherheit
+
+8
+
+Welche der URLs führt zu einer Phishing-Webseite?
+
+https://www.troyhunt.com/humans-are-bad-at-urls-and-fonts-dont-matter/
+Prof. Buchmann - Web-Sicherheit
+
+9
+
+Andere Schriftart: Aha, die dritte wars!
+
+https://www.troyhunt.com/humans-are-bad-at-urls-and-fonts-dont-matter/
+Prof. Buchmann - Web-Sicherheit
+
+10
+
+Können Sie entscheiden, welche URL zu Google gehört?
+
+https://www.troyhunt.com/humans-are-bad-at-urls-and-fonts-dont-matter/
+Prof. Buchmann - Web-Sicherheit
+
+11
+
+Herausforderungen in den OSI-Layern 7-6
+▪
+
+Vertraulichkeit
+−
+
+▪
+
+Integrität
+−
+
+▪
+
+Unsicheres Design, z.B. weil Apps Daten im Klartext übertragen oder
+nach Code Injection vertrauliche Daten dem Angreifer anzeigen oder
+Nutzer dazu gebracht werden, Daten selber preiszugeben
+
+Fehlerhafte Zugriffskontrolle, z.B. weil nicht berücksichtigt wurde, dass
+ein Angreifer eine URL manipulieren, als man-in-the-middle auftreten
+oder von Dritten eingebundene Packages ändern könnte
+
+Verfügbarkeit
+−
+
+Denial of service, z.B. durch Programmierfehler in den WebAnwendungen (s. Kapitel "Sichere Programmierung")
+
+Prof. Buchmann - Web-Sicherheit
+
+12
+
+Im Folgenden
+▪
+
+Angriffe auf den Browser
+−
+
+▪
+
+Angriffe auf den Nutzer
+−
+
+▪
+
+Den Browser dazu bringen, das er etwas tut das er nicht sollte
+
+Den Nutzer dazu bringen, das er etwas tut das er nicht wollte
+
+Angriffe auf den Webserver
+−
+
+Den Server dazu bringen, das er etwas tut das er nicht sollte
+
+Prof. Buchmann - Web-Sicherheit
+
+13
+
+Angriffe auf den Browser
+●
+
+Der Browser tut etwas, das er nicht soll
+
+Man-in-the-Browser
+▪
+
+Browser von Schadcode infiziert, der durchlaufende Daten abfängt
+−
+
+▪
+
+Kann alles, was der Browser darf/Browser darf alles, was Benutzer darf
+
+Anmerkung: SSL-Verschlüsselung/TLS (https) passiert im Browser
+−
+
+Daten abgefangen/manipuliert, bevor sie verschlüsselt werden
+
+Prof. Buchmann - Web-Sicherheit
+
+15
+
+Beispiel: Trojan.Silentbanker
+▪
+
+2008 entdeckt, erkennt >400 Banken-Webseiten
+
+▪
+
+Kann folgendes tun
+−
+−
+−
+−
+−
+−
+−
+−
+
+Legitime Onlinebanking-Requests an Server des Angreifers umleiten
+im Browser HTML-Quelltexte betrachteter Webseiten verändern
+Onlinebanking-Requests des Nutzers verändern, bevor sie die Bank
+erreichen
+Antworten des Onlinebanking-Servers an den Angreifer senden
+Sich selber automatisch updaten
+Nutzernamen, Passwörter und Inhalt der Zwischenablage aufzeichnen
+Cookies und Zertifikate kopieren und versenden
+Verzeichnisse der installierten Software außerhalb des Browsers
+erstellen und an den Angreifer versenden
+
+Prof. Buchmann - Web-Sicherheit
+
+16
+
+Zahllose Varianten
+▪
+
+Email-Phishing (kennt jeder)
+
+▪
+
+DNS Spoofing, Router cache poisoning
+(Router ordnet falsche IP-Adresse einem DNS-Eintrag zu)
+
+▪
+
+DNS Injection
+(DNS-Server ordnet einer IP-Adresse einen falschen DNS-Eintrag zu)
+
+▪
+
+URL Redirection
+(CSS, JavaScript, Sicherheitslücken im Browser bringen diesen dazu,
+die falsche Seite anzuzeigen)
+
+▪
+
+Proxy-Angriffe
+(Cache-Zwischenspeicher im Web-Proxy enthält die falsche Seite)
+
+Prof. Buchmann - Web-Sicherheit
+
+17
+
+Download Substitution
+▪
+
+Nutzer möchte Software herunterladen, erhält aber statt der Datei
+vom ausgewählten Server eine manipulierte Datei vom Angreifer
+−
+−
+
+Angriff ist ähnlich zu Page-in-the-Middle
+Großes Plus für den Angreifer: Nutzer möchte tatsächlich Software
+installieren und wird darum alle Sicherheitswarnungen wegclicken
+
+Prof. Buchmann - Web-Sicherheit
+
+18
+
+Warum funktionieren Angriffe auf den Browser?
+▪
+
+Probleme bei Identifizierung und Authentifizierung von
+Unbekannten
+−
+−
+
+▪
+
+Von welcher Person kommt eine Nachricht/Webseite wirklich?
+Von welchem Rechner kommt eine Nachricht/Webseite wirklich?
+
+Problematisch, weil
+−
+
+Usability, User Experience im Internet sind wichtig!
+▪
+
+−
+−
+−
+
+Lieber unsicheres Online-Banking als nervige Authentifizierung?
+
+Jede Rechner-zu-Rechner-Authentifizierung ist notwendigerweise
+begrenzt auf das Wissen der Rechner
+Schadsoftware sitzt genau da, wo die Authentifizierung stattfindet
+Beide Seiten einer Kommunikationsbeziehung sicher authentifizieren?
+▪
+
+Bsp. Onlinebanking: 2-Faktor-Authentifizierung des Nutzers gegenüber Bank
+durch Pin und Handy/QR-Code, aber Authentifizierung der Bank gegenüber
+Nutzer nur über mickriges SSL-Zertifikat
+
+Prof. Buchmann - Web-Sicherheit
+
+19
+
+Angriffe auf den Nutzer
+●
+
+Der Nutzer tut etwas, das er nicht will
+
+Falscher oder irreführender Inhalt auf Webseiten
+▪
+
+Website Defacement
+−
+
+▪
+
+Fake-Webseite
+−
+
+▪
+
+Angreifer ersetzt den regulären Inhalt einer Seite
+
+Angreifer generiert eine gefälschte Webseite, die aber legitim aussieht,
+z.B. wie die Seite einer vertrauenswürdigen Regierungsorganisation
+
+Fake-Code
+−
+−
+
+Angreifer platziert manipulierte Software-Downloads auf einem
+vertrauenswürdig aussehenden Server
+Schönstes Beispiel: „Sunburst“-Angriff auf SolarWinds im Jan. 2021
+▪
+
+Update-Server von SolarWinds hatte Passwort „solarwinds123“, Angreifer
+manipulierte bereitgestellte Updates, die User selber spielten die Hintertür
+des Angreifers ein
+
+Prof. Buchmann - Web-Sicherheit
+
+21
+
+Beispiel:
+Fake-Webseite
+▪
+
+Sieht aus wie das
+Original, gehört aber
+dem Angreifer
+
+▪
+
+Eingegebene
+Credentials gehen an
+den Angreifer
+
+Prof. Buchmann - Web-Sicherheit
+
+22
+
+Schad-/Fremdcode auf Webseiten
+▪
+
+Manipuliere die Inhalte legitimer Webseiten
+−
+
+▪
+
+Inhalte, die den Nutzer ausspähen
+−
+
+▪
+
+Möglichkeit, den Browser anzugreifen
+(durch Viren, Trojaner, ggf. durch vorspiegeln seriöser Downloads)
+
+Web bugs, Analyse-Toolkits, Advanced Webtracking, etc.,
+
+Inhalt ist nicht das, was er zu sein scheint
+−
+
+Clickjacking
+
+Prof. Buchmann - Web-Sicherheit
+
+23
+
+Beispiel: Clickjacking
+▪
+
+HTML erlaubt transparente
+Webseiten bzw.
+transparente Layer über
+beliebigem Hintergrund
+
+▪
+
+Angreifer generiert
+unsichtbare, anklickbare
+Steuerelemente
+
+▪
+
+Viele Varianten, z.B.
+−
+−
+
+eigentlicher Seiteninhalt
+als <iframe> eingebettet
+unsichtbare Buttons, die
+dem Mauszeiger folgen,
+egal wohin man clickt
+
+(Mittlerweile unterstützen einige Browser HTTP-Header "X-Frame-Options: DENY")
+Prof. Buchmann - Web-Sicherheit
+
+24
+
+2011: zahlreiche Facebook-Likejacking-Angriffe
+▪
+
+Durch einen Klick auf den Play-Button wurde Like ausgelöst, anstelle
+das Video abzuspielen
+
+▪
+
+Generiert Werbeeinnahmen für Spammer
+
+▪
+
+Funktioniert heute auf Facebook nicht mehr, aber auf anderen
+unvorbereiteten Webseiten, die aktive Inhalte von Dritten laden
+
+Prof. Buchmann - Web-Sicherheit
+
+25
+
+Warum funktionieren diese Angriffe auf den Nutzer?
+▪
+
+Nutzer
+−
+
+▪
+
+Webseiten
+−
+−
+
+▪
+
+Wenig Möglichkeiten zum Selbstschutz, wenn der Server ein gültiges
+Zertifikat hat, aber Webseiteninhalt vom Angreifer manipuliert wurde
+(„Seite sieht ungewohnt aus“)
+
+Sollen öffentlich sichtbar sein: keine störenden Sicherheitsmechanismen
+Angreifer kann nicht nur Webseiten oder Downloads manipulieren,
+sondern auch Prüfsummen, Signaturen oder Zertifikate des Servers
+(System so gut wie möglich absichern und SSL benutzen)
+
+Wir schauen uns später in diesem Kapitel an, wie weit der Schutz von
+Zertifikaten reicht und wie SSL funktioniert
+
+Prof. Buchmann - Web-Sicherheit
+
+26
+
+Angriffe auf den Webserver
+●
+
+Der Server tut etwas, das er nicht soll
+
+Cross-site Scripting
+▪
+
+Webseiten enthalten ausführbaren Code (JavaScript, Plugins, …) auf
+den der Angreifer Einfluss nehmen kann ohne den Server selbst
+anzugreifen
+
+Prof. Buchmann - Web-Sicherheit
+
+28
+
+Beispiel: Einfaches Gästebuch
+Attacker
+
+Guestbook entry: Cool web page!<script
+type=“text/javascript“>alert("XSS")</script>
+
+Server
+
+Andere Nutzer
+<!DOCTYPE html>
+<html lang="de">
+<body>
+...sometext...
+<h1>These are my guestbook entries</h1>
+...
+<ul><li>Awesome homepage!</li>
+<li>Awesome homepage!</li>
+...somemoretext...
+<li>Awesome homepage!</li>
+<li>Cool web page!<script type=?text/javascript?>alert("XSS")
+</script></li>
+</ul>
+</body>
+Prof. Buchmann - Web-Sicherheit
+
+29
+
+Das funktionierte noch am 16. März 2019 im TelekomKundencenter ;-)
+
+Prof. Buchmann - Web-Sicherheit
+
+30
+
+SQL Injection
+▪
+
+Wenn eine SQL-Datenbank im Backend verwendet wird:
+Gib SQL-Kommandos in Textfelder ein und warte was passiert
+−
+
+▪
+
+Angriff nutzt die so vom Betreiber geplante Interaktion
+
+Beispiel: Nutzer darf einen Nutzernamen in ein Textfeld eingeben
+
+Prof. Buchmann - Web-Sicherheit
+
+31
+
+Funktionsweise einer SQL Injection
+▪
+
+Typische SQL Query in der Datenbank
+SELECT * FROM customers WHERE name = 'Robert';
+
+▪
+
+Im Code im Backend steht
+SELECT * FROM customers WHERE name = '$Param';
+−
+
+▪
+
+$Param kommt vom Browser des Benutzers
+
+SQL injection: Browser sendet nicht
+Robert
+
+sondern Robert + Verknüpfung mit weiteren SQL-Befehlen
+Robert'; DELETE * FROM customers;
+
+beispielsweise in der URL kodiert
+
+http://www.victim.de/?param=Robert27%3B+DELETE+*+FROM+customers%3B
+▪
+
+Backend führt dann folgende SQL Query in der Datenbank aus
+
+SELECT * FROM customers WHERE name = 'Robert'; DELETE * FROM
+customers;
+Prof. Buchmann - Web-Sicherheit
+
+32
+
+Warum sind diese Angriffe erfolgreich?
+▪
+
+Übernahme ungeprüfter Parameter aus einer unsicheren Umgebung
+−
+
+Annahme, dass sich jeder im Internet so verhält wie vom Entwickler der
+Webanwendung geplant
+
+▪
+
+Angriffe dieser Art sind mit allen Systemen möglich, die
+Eingabeparameter aus dem Internet akzeptieren und intern Code
+ausführen
+
+▪
+
+Gegenmaßnahmen
+−
+−
+
+Immer jeglichen Input auf Korrektheit prüfen!
+Rechte des Webservers so weit wie möglich beschränken
+▪
+
+Im Gegensatz zum Browser des Benutzers hat ein Webserver nur eine
+eingegrenzte Aufgabe und kann daher mit stark eingeschränkten
+Berechtigungen laufen
+
+Prof. Buchmann - Web-Sicherheit
+
+33
+
+Sichere Kommunikation mit Unbekannten?
+●
+
+Deutlich weniger Angriffe, wenn wir wüssten mit
+welchem Rechner/welcher Person wir reden
+
+Kryptographische Protokolle
+▪
+
+Schlüsselaustausch
+
+▪
+
+Authentifizierung
+−
+−
+
+Data origin authentication
+Entity authentication
+
+▪
+
+Secret splitting
+
+▪
+
+Secret sharing
+
+▪
+
+Time-stamping (global gültige, unverfälschte Zeitstempel)
+
+▪
+
+Key escrow (Nur Berechtigte können Schlüssel wiederherstellen)
+
+▪
+
+Zero-Knowledge proofs (Besitz von Wissen nachweisen, ohne dieses
+Wissen preiszugeben)
+
+▪
+
+Blind signatures (Nachrichteninhalt signieren, ohne diesen Inhalt zu
+kennen)
+
+▪
+
+...
+Prof. Buchmann - Web-Sicherheit
+
+35
+
+Grundlage: Data Origin Authentication
+Data origin authentication erlaubt die Prüfung, dass eine Nachricht von
+einem bestimmten Absender stammt und nicht verändert wurde.
+▪
+
+Keine Aussage, ob Absender auch authentifiziert ist!
+−
+
+▪
+
+Jeder kann ein Public Key/Private Key-Paar generieren
+
+Bezug zur Kryptographie
+−
+−
+
+Kryptographie kann Integrität sicherstellen
+Beispiel: Alice publiziert ihren Public Key, und signiert eine Nachricht an
+Bob mit ihrem Private Key. Bob prüft Signatur mit Public Key von Alice.
+▪
+▪
+
+Wenn Signatur (kryptographische Prüfsumme) korrekt ist, wurde die
+Nachricht nach dem Signieren nicht mehr verändert
+Wenn die Signatur mit dem Public Key validiert werden konnte, musste sie
+jemand mit dem passenden Private Key erzeugt haben
+
+Anm.: Nur wenn der Public Key tatsächlich von Alice stammt (und Alice ihren Private Key
+geheim gehalten hat) war Alice die Absenderin der Nachricht
+→ das ist Bestandteil der Entity Authentication
+
+Prof. Buchmann - Web-Sicherheit
+
+36
+
+Grundlage: Entity Authentication
+Entity authentication erlaubt die Prüfung der behaupteten Identität des
+Absender einer Nachricht
+▪
+
+Sie wissen bereits, wie direkte Authentifizierung funktioniert
+(Prüfung von Wissen, Besitz, persönliche Merkmale)
+
+▪
+
+Bezug zur Kryptographie
+−
+−
+
+Alice gegenüber Bob und Bob gegenüber Alice über einen unsicheren
+Kanal authentifizieren
+Herausforderungen
+▪
+▪
+
+▪
+
+Alice und Bob sind sich nie begegnet, kein Shared Secret vereinbart
+Alice muss sicher sein, dass eine Nachricht von Bob kommt und nicht von
+Carol, die eine Kopie einer alten Nachricht von Bob einschleust
+(Replay-Angriff)
+Bob muss sicher sein, dass er direkt mit Alice kommuniziert und nicht mit
+Dave, der Bob gegenüber so tut als wäre er Alice und Alice gegenüber so als
+wäre er Bob. (Man-in-the-Middle-Angriff)
+Prof. Buchmann - Web-Sicherheit
+
+37
+
+Grundlage: Elektronische Signaturen
+▪
+
+Nachweis, das Nachricht unverändert von einer Quelle kommt
+−
+−
+
+▪
+
+Authentizität und Integrität der Nachricht
+mit Verschlüsselung kombiniert auch Vertraulichkeit
+
+Einfacher Ansatz: Reverse Public Key-Infrastruktur
+−
+−
+
+Alice signiert eine Nachricht mit ihrem Private Key
+Bob verifiziert die Nachricht mit Alice's Public Key
+K (pub_Alice)
+
+P
+
+SigK (priv_Alice)(P)
+
+S
+
+VerK (pub_Alice(C)
+
+P
+
+K (priv_Alice)
+
+Prof. Buchmann - Web-Sicherheit
+
+38
+
+Anforderungen an „gute“ Signaturen
+▪
+
+Elektronische Signatur ersetzt handschriftliche Unterschrift
+→ dieselben Anforderungen wie an eine gerichtsfeste Unterschrift
+−
+−
+−
+−
+−
+−
+
+▪
+
+Signatur identifiziert Unterzeichner
+Signatur bestätigt Authentizität des Dokuments
+Mit Signatur erklärt Unterzeichner, das Text gültig und vollständig ist
+Signatur ist eindeutig dem signierten Dokument zugeordnet
+Signatur ist fälschungsssicher
+Signatur kann nicht später zurückgezogen oder abgestritten werden
+
+Auch hier: Noch keine Authentifizierung!
+−
+
+Analoges Beispiel: Wenn ein Freund für Sie auf Ihrem Personalausweis
+unterschreibt, wird seine Unterschrift für die echte gehalten, nicht Ihre
+
+Prof. Buchmann - Web-Sicherheit
+
+39
+
+Grundlage: Schlüsselaustausch
+▪
+
+Alice und Bob wollen verschlüsselt kommunizieren, kennen sich aber nicht
+−
+
+handeln ein Shared Secret S (gemeinsamen Sitzungsschlüssel) über
+unsicheren Kanal auf der Basis eigener Public/Private Keys aus
+
+enc(PrvA)
+Alice
+
+unsicherer Kanal
+
+dec(PubB)
+
+enc(PrvB)
+dec(PubA)
+
+S
+
+Bob
+
+S
+
+Carol
+Prof. Buchmann - Web-Sicherheit
+
+40
+
+Diffie-Hellman Protokoll
+▪
+
+Asymmetrisches Verfahren, mit dem zwei
+Parteien einen geheimen Schlüssel über
+unsicheren Kanal aushandeln können
+
+▪
+
+Nachfolgend symmetrische Verschlüsselung
+(Diffie-Hellman ist nur Schlüsselaustausch,
+nicht Verschlüsselung selber)
+
+▪
+
+Prinzip
+−
+−
+
+Alice kombiniert ihren Private Key mit Bobs Public Key
+Bob kombiniert seinen Private Key mit Alices Public Key
+→ Alice und Bob haben gemeinsam dasselbe Secret,
+ohne dass private Informationen über
+einen unsicheren Kanal geflossen sind
+
+Prof. Buchmann - Web-Sicherheit
+
+41
+
+Protokoll
+p,g
+
+Öffentlich
+p (Primzahl)
+g (zu p teilerfremde
+Zufallszahl)
+Unsicher
+pubA,B (public key)
+Geheim
+prvA,B (private key)
+S (session key)
+
+p,g
+
+erzeuge geheime
+Zufallszahl prvA
+
+erzeuge geheime
+Zufallszahl prvB
+
+berechne pubA mit
+pubA = gprvA mod p
+
+berechne pubB mit
+pubB = gprvB mod p
+
+Unsicherer Kanal
+
+pubA
+
+berechne S mit
+S = pubBprvA mod p
+
+Prof. Buchmann - Web-Sicherheit
+
+pubB
+
+berechne S mit
+S = pubAprvB mod p
+
+42
+
+Diffie-Hellman
+mit Farben erklärt
+common color
+
+secret colors
+
+public transmission
+
+Unsicherer Kanal
+
+(Farben können nicht zu
+den Originalfarben
+„entmischt“ werden)
+secret colors
+
+shared secret
+Source:
+http://sibiwiki.de/wiki/index.php?title=Datei:Diffie-Hellman-Farben.png
+Prof. Buchmann - Web-Sicherheit
+
+43
+
+Diskussion Diffie-Hellman
+▪
+
+Empfänger einer Nachricht muss aktiv und verfügbar sein
+−
+
+▪
+
+Für eine Vollduplex-Verbindung, d.h., bidirektionalen Nachrichtenaustausch
+−
+
+▪
+
+Shared Secret kann nicht passiv von einer Seite vorbereitet werden
+
+Unnötig aufwendig für einseitigen Nachrichtenversand, da genügt RSA
+
+Wird u.a. von verschiedenen SSL-Versionen benutzt
+−
+
+Ablösung durch Post-Quantum-Cryptographie,
+siehe Kapitel "Verschlüsselung"
+
+▪
+
+Diffie-Hellman leistet keine Authentifizierung!
+−
+
+Es muss bereits vorher sichergestellt sein, dass der Public Key von Alice
+und Bob auch tatsächlich zu den beiden Personen gehört!
+(Sonst: Man-in-the-Middle-Angriffe möglich)
+
+Prof. Buchmann - Web-Sicherheit
+
+44
+
+Direkte Authentifizierung: Zertifikate
+●
+
+Authentifizierung ohne Trusted Third Party
+
+Direkte Authentifizierung
+▪
+
+Alice und Bob authentifizieren sich gegenseitig ohne einen Dritten
+−
+
+▪
+
+Vorteile:
+−
+−
+
+▪
+
+Beispielsweise mit Zertifikaten
+
+Keine Trusted Third Party ist in die Kommunikation involviert,
+d.h., kann feststellen dass/wann Alice und Bob kommunizieren
+Kein Single Point of Failure, kein Perfomanzproblem, skalierbar
+
+Nachteile:
+−
+−
+
+Benötigt asymmetrische Kryptographie oder
+vorab über sicheren Kanal vereinbarte geheime Schlüssel
+Verwaltungsaufwand/Sicherheitslücken beim Client
+
+Prof. Buchmann - Web-Sicherheit
+
+46
+
+Zertifikate
+▪
+
+Ein digital signiertes Dokument, mit dem der Aussteller bestätigt das
+ein bestimmter Public Key zu einem bestimmten Subjekt gehört
+−
+−
+−
+−
+−
+−
+
+▪
+
+signiertes Dokument: Vom Aussteller mit digitaler Unterschrift signiert
+Aussteller: Person oder Organisation, die das Zertifikat signiert hat
+Public Key: Öffentlicher Schlüssel des Subjekts
+Subject: Person oder Organisation, die der rechtmäßige Besitzer des
+Public Key/Private Key-Paares ist, um das es bei dem Zertifikat geht
+Signatur des Ausstellers kann von einer Certificate Authority ebenfalls
+signiert worden sein von
+Certificate Chain: Wenn Alice der CA von Bob vertraut, vertraut sie
+auch dem Zertifikat, mit dem Bob den Public Key von Carol bestätigt
+
+Operationen auf Zertifikaten:
+−
+
+können generiert, signiert, exportiert, importiert, vertraut und
+zurückgezogen werden
+
+Prof. Buchmann - Web-Sicherheit
+
+47
+
+Woher bekommt man ein Zertifikat?
+▪
+
+Zwei Möglichkeiten
+1) Von einer Certificate Authority (CA, kostenfrei z.B. LetsEncrypt.org)
+
+2) Ein selbst signiertes Zertifikat erzeugen
+▪
+
+keine CA involviert, d.h., Empfänger muss dem Zertifikat explizit vertrauen
+Prof. Buchmann - Web-Sicherheit
+
+48
+
+X.509 – Zertifikate
+Version
+Certificate
+Serial Number
+Version 3
+
+Subject’s
+Public
+Key Info
+
+Version 2
+
+Period of
+Validity
+
+Algorithm ID
+Parameters
+Issuer Name
+Not Before
+Not After
+Subject Name
+
+Version 1
+
+Signature
+Algorithm
+
+Algorithm ID
+Parameters
+Key
+Issuer Unique ID
+Subject Unique ID
+Extensions
+Signature
+
+All Versions
+
+▪
+
+Version - X.509 standard
+version number.
+
+▪
+
+Serial Number - A sequence
+number given to each
+certificate.
+
+▪
+
+Signature Algorithm Identifier Name of the algorithm used to
+sign
+
+▪
+
+Issuer Name - Name of the
+issuer.
+
+▪
+
+Validity Period - Period during
+which this certificate is valid.
+
+▪
+
+Subject Name - Name of the
+owner of the public key.
+
+▪
+
+Subject Public Key Information
+- The public key
+
+Prof. Buchmann - Web-Sicherheit
+
+49
+
+Beispiel
+Textdarstellung für ein
+X.509v3 Zertifikat
+
+Certificate:
+Data:
+Version: 3 (0x2)
+Serial Number: 1 (0x1)
+Signature Algorithm: md5WithRSAEncryption
+Issuer: C=AT, ST=Steiermark, L=Graz, O=TrustMe Ltd, OU=Certificate
+Authority, CN=CA/Email=ca@trustme.dom
+Validity
+Not Before: Oct 29 17:39:10 2024 GMT
+Not After : Oct 29 17:39:10 2025 GMT
+Subject: C=AT, ST=Vienna, L=Vienna, O=Home, OU=Web Lab,
+CN=anywhere.com/Email=xyz@anywhere.com
+Subject Public Key Info:
+Public Key Algorithm: rsaEncryption
+RSA Public Key: (1024 bit)
+Modulus (1024 bit):
+00:c4:40:4c:6e:14:1b:61:36:84:24:b2:61:c0:b5:
+d7:e4:7a:a5:4b:94:ef:d9:5e:43:7f:c1:64:80:fd:
+9f:50:41:6b:70:73:80:48:90:f3:58:bf:f0:4c:b9:
+90:32:81:59:18:16:3f:19:f4:5f:11:68:36:85:f6:
+1c:a9:af:fa:a9:a8:7b:44:85:79:b5:f1:20:d3:25:
+7d:1c:de:68:15:0c:b6:bc:59:46:0a:d8:99:4e:07:
+f0:b4:95:f5:f9:34:9f:f8:43
+Exponent: 65537 (0x10001)
+X509v3 extensions:
+X509v3 Subject Alternative Name:
+email:xyz@anywhere.com
+Signature Algorithm: md5WithRSAEncryption
+12:ed:f7:b3:5e:a0:93:3f:a0:1d:60:cb:47:19:7d:15:59:9b:3b:2c:a8:a3:6a:
+03:43:d0:85:d3:86:86:2f:e3:aa:79:39:e7:82:20:ed:f4:11:85:a3:41:5e:5c:
+8d:36:a2:71:b6:6a:08:f9:cc:1e:da:c4:78:05:75:8f:9b:10:f0:15:f0:9e:67:
+a0:4e:a1:4d:3f:16:4c:9b:19:56:6a:f2:af:89:54:52:4a:06:34:42:0d:d5:40:
+25:6b:b0:c0:a2:03:18:cd:d1:07:20:b6:e5:c5:1e:21:44:e7:c5:09:d2:d5
+Prof. Buchmann - Web-Sicherheit
+
+50
+
+X.509 Authentifizierung
+▪
+
+Wenn sich Alice für Bob authentifizieren will, sendet sie an Bob:
+−
+−
+−
+
+▪
+
+Zeitstempel (synchronisierte Uhren!)
+Ihr signiertes Zertifikat CA<<A>>
+Einen optionalen Session Key, der mit Bobs Public Key verschlüsselt ist
+
+Bob handelt wie folgt
+1) Verifiziert das Zertifikat (Gültigkeitsdauer, Signatur der CA)
+2) Holt Alices Public Key aus dem Zertifikat
+3) Verifiziert Alices Signatur und den Zeitstempel der Nachricht
+4) Entschlüsselt den Session Key mit seinem Private Key
+5) Kann nun sicher sein, dass Alice sein Kommunikationspartner ist
+Für 2-Wege-Authentifizierung sendet Bob eine ebensolche Nachricht
+
+▪
+
+Macht mein Browser das auch? https://badssl.com/
+Prof. Buchmann - Web-Sicherheit
+
+51
+
+X.509 Certificate Chains
+▪
+
+Alice und Bob wollen kommunizieren. Das Zertifikat von Alice wurde
+von CA und das von Bob von CB unterzeichnet. Alice kennt weder
+Bob noch CB, und Bob kennt weder Alice noch CA
+−
+
+▪
+
+Alice und Bob können Public Keys ihrer Gegenüber nicht validieren
+
+Lösung: Certificate chains (Ketten von Zertifikaten)
+−
+
+Wenn CA und CB sich gegenseitig vertrauen, kann CA ein Zertifikat für
+CB signieren „CA<<CB>>“ und umgekehrt CB<<CA>>
+▪
+
+−
+−
+
+Analoges Beispiel: Ausweisbehörden vertrauen sich gegenseitig, z.B.
+deutscher Reisepass wird von russischer Behörde anerkannt und umgekehrt
+
+Wenn CA den öffentlichen Schlüssel von CB mit CA<<CB>> zertifiziert:
+Alice vertraut CA → CA vertraut CB → Alice vertraut auch CB
+CB hat Zertifikat von Bob unterschrieben → Alice vertraut Zertifikat Bob
+d.h., Alice prüft CA<<CB>>, CB<<B>>
+
+Prof. Buchmann - Web-Sicherheit
+
+52
+
+X.509 Certificate Chains (fortgesetzt)
+▪
+
+Certificate chains können beliebig lang werden
+−
+−
+
+CA<<CC>>, CC<<CD>>, CD<<CE>>, CE<<CG>>, CG<<G>
+Alice kann Zertifikat von G validieren, obwohl sie nur CA vertraut
+Wenn Alice CG<<G>> bekommt ist nicht immer offensichtlich, welche
+Zertifikate sie prüfen muss!
+▪
+
+▪
+
+unter Umständen mehrere Wege möglich
+
+X.509 beschreibt Certificate Authorities als Zertifizierungshierarchie
+CD
+CC
+CA
+
+CE
+CB
+
+CF
+
+Prof. Buchmann - Web-Sicherheit
+
+CG
+
+CH
+
+53
+
+Was, wenn ein Angreifer
+den Private Key kennt?
+▪
+
+Zertifikat beweist, dass mit dem Private Key signierte
+Daten/Programme/Dokumente von einem Subjekt kommen
+
+▪
+
+Zertifikate werden automatisch geprüft: Software sagt "alles ok"
+
+▪
+
+Mit Private Key kann sich Angreifer unbemerkt als Subjekt ausgeben,
+z.B. Trojaner als Android-Systemsoftware von Samsung signieren
+
+(… viele weitere Certificates ...)
+
+Prof. Buchmann - Web-Sicherheit
+
+54
+
+Was, wenn ein Angreifer
+den Private Key kennt?
+
+https://www.heise.de/news/Gestohlener-Microsoft-Schluessel-stammte-aus-einem-Crash-Dump-9297240.html
+Prof. Buchmann - Web-Sicherheit
+
+55
+
+X.509 Certificate Revocation
+▪
+
+Schlimm: der Private Key von Alice ist kompromittiert
+(z.B. weil Eve ihn gestohlen hat oder weil er öffentlich wurde)
+
+▪
+
+Alice muss zugehöriges Zertifikat sofort zurückziehen (Revocation)
+−
+
+▪
+
+Viel Schlimmer: Private Key einer Certificate Authority kompromittiert
+−
+−
+
+▪
+
+Wenn nicht, könnte Eve sich als Alice ausgeben, bis die Gültigkeitsdauer
+des Zertifikats von allein abläuft
+
+Alle Zertifikate, die mit diesem Key signiert wurden, müssen sofort
+zurückgezogen werden
+Hacker könnte sich Zertifikate selbst unterschreiben, die von allen
+akzeptiert werden, die dieser Certificate Authority vertrauen
+
+Zurückziehen heißt: Zertifikat landet auf einer Ungültig-Liste, die
+regelmäßig von allen Beteiligten geprüft werden soll(te)
+−
+
+Certificate revocation ist langsam und teuer
+Prof. Buchmann - Web-Sicherheit
+
+56
+
+Certificate Revocation mit OCSP
+(Schnellere Alternative zu Sperrlisten)
+
+Prof. Buchmann - Web-Sicherheit
+
+57
+
+Online Certificate Status Protocol
+▪
+
+Herkömmliche Sperrlisten
+−
+−
+
+▪
+
+OCSP
+−
+−
+
+▪
+
+Client lädt periodisch Sperrliste herunter, entfernt alle gesperrten X.509Zertifikate aus seinem TrustStore-Repository
+Funktioniert offline
+
+Validierungsdienst erlaubt die Statusabfrage eines Zertifikats in Echtzeit
+Funktioniert nur online
+
+Macht mein Browser/Server OCSP?
+−
+
+Gültiges OCSP-fähiges Zertifikat: z.B. https://www.google.de/
+
+(Firefox: auf das Schloss in der Adresszeile klicken, über den "Sicherheit"-Tab nach
+"Zertifikat anzeigen" navigieren, nach OCSP suchen)
+−
+
+Was kann der Webserver? https://www.ssllabs.com/ssltest/index.html
+(geben Sie hier mal www.uni-leipzig.de ein)
+
+Prof. Buchmann - Web-Sicherheit
+
+58
+
+Sperrlisten Ablauf
+▪
+
+Periodischer Abruf der Certificate Revocation List (CRL)
+
+▪
+
+Offline-Prüfung vor jeder Verbindung mit einem zertifizierten Server
+Zertifikate max. 3
+Jahre gültig
+●
+CRL enthalten
+ALLE Zertifikate,
+die vor Ablauf
+der 3 Jahre
+zurückgezogen
+wurden
+●
+CRL können
+riesig werden
+●
+zu häufiger
+Abruf sieht aus
+wie DDOSAngriff auf CRS
+
+Prof. Buchmann - Web-Sicherheit
+
+59
+
+Bild: thesslstore.com
+
+OCSP Ablauf
+▪
+
+Online-Prüfung vor jeder Verbindung mit einem zertifizierten Server:
+
+Prof. Buchmann - Web-Sicherheit
+
+60
+
+OCSP Bewertung
+▪
+
+Parteien
+−
+−
+
+▪
+
+Verbindungen
+−
+−
+
+▪
+
+Client→OCSP-Server
+OCSP-Server→Client
+
+Services
+−
+
+▪
+
+OCSP-Client
+OCSP-Server
+
+Zertifikat-Validierung
+
+Daten
+−
+−
+−
+−
+
+Kommunikationspartner
+Zertifikat
+Sperrinformation
+Metadaten (Uhrzeit,
+Protokollversion,
+gewählte CA, …)
+
+Was passiert, wenn man die
+Verbindungen, Services, Daten
+- unterbricht
+- modifiziert
+- abfängt
+- fälscht
+
+Prof. Buchmann - Web-Sicherheit
+
+61
+
+OCSP-Client
+▪
+
+Vertraulichkeit
+→ Wer ist der vom Client gewählte
+OCSP-Server?
+
+▪
+
+Verfügbarkeit
+→ unproblematisch
+
+▪
+
+Integrität
+→ Fehlkonfiguration, Trojaner?
+
+▪
+
+Datenschutz
+→ unproblematisch
+
+Prof. Buchmann - Web-Sicherheit
+
+62
+
+Client→OCSP-Server (OCSP Request)
+▪
+
+Vertraulichkeit
+→ „Client will Zertifikat prüfen“
+
+▪
+
+Verfügbarkeit
+→ kann unterbrochen werden!
+→ Latenz!
+
+▪
+
+Integrität
+→ signiert, TLS-verschlüsselt
+
+▪
+
+Datenschutz
+→ „Client will Zertifikat prüfen“
+
+Prof. Buchmann - Web-Sicherheit
+
+63
+
+OCSP-Service, OCSP-Server
+▪
+
+Vertraulichkeit
+→ erfährt, wer mit wem redet
+
+▪
+
+Verfügbarkeit
+→ Single Point of Failure!
+→ Latenz! Viele Clients parallel
+
+▪
+
+Integrität
+→ Vertrauen in Revocation List!
+
+▪
+
+Datenschutz
+→ häuft Kommunikationsprofile
+pro IP-Adresse an!
+→ Tracking mittels Cookies
+
+Prof. Buchmann - Web-Sicherheit
+
+64
+
+OCSP-Server→Client (OCSP Response)
+▪
+
+Vertraulichkeit
+→ unproblematisch
+
+▪
+
+Verfügbarkeit
+→ kann unterbrochen werden!
+→ Latenz!
+
+▪
+
+Integrität
+→ signiert, TLS-verschlüsselt
+
+▪
+
+Datenschutz
+→ unproblematisch
+
+Prof. Buchmann - Web-Sicherheit
+
+65
+
+Diskussion OCSP
+▪
+
+Pro's
+−
+
+▪
+
+Lücke zwischen „Zertifikat wird ungültig“ und „Client lädt CRL herunter
+und prüft diese offline“ wird kleiner
+
+Con's
+−
+
+Validierungsdienst
+▪
+
+−
+
+Kommunikationsverbindungen
+▪
+
+−
+
+Single Point of Failure, attraktives Angriffsziel, sammelt
+Kommunikationsprofile vieler Clients, Latenz hat Auswirkungen auf Clients
+Können unterbrochen werden, Außenstehende erfahren dass Client OCSP
+einsetzt (aber nicht den Inhalt der Zertifikate)
+
+Client
+▪
+▪
+
+Möglichkeiten zur Fehlkonfiguration, mit Schadcode infiziert?
+Was tut der Client, wenn der Validierungsdienst nicht antwortet?
+
+Prof. Buchmann - Web-Sicherheit
+
+66
+
+Aktuell: OCSP-Stapling
+▪
+
+Server fragt selber den OCSP-Validierungsdienst regelmäßig ab
+
+▪
+
+Server hängt signierte Antwort des Validierungsdienstes beim TLSHandshake an sein eigenes Zertifikat an
+→ Client muss nicht selber den Validierungsdienst fragen
+→ Validierungsdienst erfährt nicht, wer mit wem kommuniziert
+→ Validierungsdienst muss
+nicht online sein,
+keine Performanzprobleme
+Von praktisch allen aktuellen
+Browsern unterstützt
+
+Prof. Buchmann - Web-Sicherheit
+
+67
+
+Arbitrated Authentication: Kerberos
+●
+
+Authentifizierung über Trusted Third Party
+
+Arbitrated Authentication
+▪
+
+Trusted Third Party (TTP) erledigt die Authentifizierung
+−
+
+▪
+
+Vorteile:
+−
+−
+−
+
+▪
+
+Z.B. mit Kerberos
+
+Authentifizierung, ohne zuvor ein Secret auszutauschen oder
+Vertrauensbeziehungen zu Dritten zu vereinbaren
+Es kann direkt (schnelle) symmetrische Verschlüsselung genutzt werden
+Zentrale Verwaltung der Credentials durch TTP
+
+Nachteile:
+−
+
+TTP ist ein Single Point of Failure / kann Perfomanz beeinträchtigen
+▪
+
+−
+−
+
+Verfügbarkeit der TTP ist kritisch
+
+TTP sieht alle Authentifizierungen, d.h., Nutzertracking
+TTP ist ein wertvolles Angriffsziel
+▪
+
+Sicherheitslücken der TTP betreffen alle und sind kritisch
+Prof. Buchmann - Web-Sicherheit
+
+69
+
+Komponenten von Kerberos
+▪
+
+Am MIT in 80ern entwickelt, Grundlage für Microsoft Active Directory
+
+1) Authentifizierung:
+−
+
+Alice authentifiziert sich gegenüber Authentication Server (AS), der dafür
+ein temporär gültiges Ticket-Granting-Ticket (TGT) ausstellt.
+
+2) Zugriffskontrolle
+−
+−
+
+Alice zeigt dieses TGT einem Ticket-Granting-Server (TGS), der die
+Zugriffsrechte von Alice für einen bestimmten Service Server (SS) prüft.
+Wenn Prüfung erfolgreich, stellt TGS Alice ein Service-Granting-Ticket
+SGT für Service Server SS aus.
+
+3) Schlüsselaustausch
+−
+−
+
+AS generiert Session Key für Kommunikation von Alice mit TGS
+TGS generiert Session Key für Kommunikation von Alice mit SS
+
+Prof. Buchmann - Web-Sicherheit
+
+70
+
+Protokollübersicht
+1. Request ticket-granting ticket (TGT)
+from Authentication Service (AS)
+2. Receive the TGT from the AS
+3. Show the TGT and request a
+service-granting ticket (SGT)
+from the Ticket-Granting Server
+(TGS)
+4. Receive the SGT from the TGS
+5. Submit SGT to Service Server (SS)
+6. Use Service Server (SS)
+
+Source: https://www.tecchannel.de/a/die-funktionsweise-von-kerberos,461645
+Prof. Buchmann - Web-Sicherheit
+
+71
+
+Grafische
+Darstellung
+▪
+
+Zählen Sie mal,
+wieviele
+verschiedene
+Schlüssel an
+wievielen
+verschiedenen
+Stellen Kerberos
+benötigt
+
+Prof. Buchmann - Web-Sicherheit
+
+72
+
+Diskussion Kerberos
+▪
+
+Pro's
+−
+
+Verteilte Architektur: In einem System aus vielen Servern
+Authentifizierung/Zugriffsrechte zentral in Kerberos pflegen
+▪
+
+−
+
+Flexibilität, Skalierbarkeit, Parallelisierbarkeit
+▪
+
+▪
+
+Jeder andere Dienst/Server muss nur das SGT auf Gültigkeit prüfen
+Jeder der drei Protokollschritte kann auf einem anderen Server laufen
+
+Con's
+−
+−
+−
+−
+
+Kerberos ist ein Single Point of Failure
+Jeder Server/Service im System muss dem Kerberos-Server vertrauen
+(Sehr) komplexe Administration
+Herausforderungen im Design (Protokoll benötigt zwingend
+synchronisierte Uhren auf allen Servern, Virtualisierung kompliziert da
+Vertrauensbeziehungen an physischen Host gebunden)
+
+Prof. Buchmann - Web-Sicherheit
+
+73
+
+Abschluss
+
+Zusammenfassung
+▪
+
+Browser gehören zu den komplexesten Anwendungen überhaupt
+
+▪
+
+Sicherheit von Web-Anwendungen hängt wesentlich von zwei
+Faktoren ab
+−
+−
+
+▪
+
+sichere Authentifizierung von Unbekannten (Rechnern, Personen)
+Validierung aller Daten, die „von außen“ kommen
+
+Leistungen kryptographischer Protokolle
+−
+
+Direkte Authentifizierung (Zertifikate)
+▪
+
+Trusted Third Party authentifiziert Zertifikat, welches die
+Kommunikationspartner authentifiziert
+(aber komplexes Zertifikatsmanagemet, s. Stapled OCSP)
+
+−
+
+Vermittelte Authentifizierung (Kerberos)
+▪
+
+Trusted Third Party authentifiziert die Kommunikationspartner direkt
+(ist aber Angriffsziel und erfährt auch, wer wann mit wem kommuniziert)
+
+Prof. Buchmann - Web-Sicherheit
+
+75
+
+Mögliche Prüfungsfragen
+▪
+
+Erläutern Sie unterschiedliche Wege, mit denen ein Angreifer echt
+aussehende Kopien von Webseiten erzeugen und Anwender dazu
+bringen kann, diese anstelle der Originale zu benutzen.
+
+▪
+
+Entwickeln Sie einen Vorschlag, wie ein Webbrowser einen
+„Clickjack“-Angriff erkennen oder blockieren könnte.
+
+▪
+
+Welche der in diesem Kapitel erwähnten Angriffe betreffen das
+Schutzziel „Integrität“? Begründen Sie Ihre Antwort.
+
+▪
+
+Erläutern Sie die Vor- und Nachteile der vermittelten (arbitrated)
+Authentifizierung gegenüber der direkten Authentifizierung an einem
+eigenen Beispiel.
+
+▪
+
+Warum ist das Zurückziehen von Zertifikaten problematisch?
+Prof. Buchmann - Web-Sicherheit
+
+76
+
+

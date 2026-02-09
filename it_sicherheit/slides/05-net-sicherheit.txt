@@ -1,0 +1,2231 @@
+Grundlagen der IT-Sicherheit
+Kapitel 5 – Netzwerk-Sicherheit
+
+Lehrstuhl: Data Privacy and Security,
+Center for Scalable Data Analytics and Artificial Intelligence
+Kontakt: buchmann@informatik.uni-leipzig.de
+
+Gliederung der Vorlesung
+▪
+
+Grundlagen der IT-Sicherheit
+−
+
+▪
+
+Anwendungsschicht
+−
+
+▪
+
+Krypto-Protokolle, Tracking, Browser-Sicherheit,
+sichere Programmierung
+
+Übertragungsschicht
+−
+
+▪
+
+Zugriffskontrolle, Verschlüsselung, Anonymisierung
+
+Firewalls, Angriffe auf die Infrastruktur, Netzwerkarchitekturen
+
+Management-Ebene
+−
+
+Basis-Absicherung und Security Engineering
+
+Prof. Buchmann - Web-Sicherheit
+
+2
+
+Lernziel und Aufbau dieses Kapitels
+▪
+
+Internet-Protokolle
+−
+
+▪
+
+Angriffe
+−
+−
+
+▪
+
+belauschen der Kommunikation
+unsichere Protokolle und Architekturen
+
+Firewalls
+−
+
+▪
+
+Kommunikation in Netzwerken
+und nach „außen“ ins Internet
+
+Paketfilter und Firewall-Architekturen
+
+Lernziele
+−
+−
+
+Sie können erklären, welche unterschiedlichen Arten von Angriffe auf die
+Netzwerkkommunikation existieren
+Sie sind in der Lage, für ein einfaches Szenario eine Firewall-Architektur
+auszuwählen und einen Regelsatz für einen Paketfilter aufzustellen
+
+Prof. Buchmann - Netz-Sicherheit
+
+3
+
+Angriffe auf die Netzwerk-Sicherheit
+
+Möglichkeiten, um Schaden zu verursachen
+▪
+
+Abfangen
+
+▪
+
+Modifizieren
+
+▪
+
+Unterbrechen
+
+▪
+
+Einschleusen
+
+Prof. Buchmann - Netz-Sicherheit
+
+Wi
+ed
+erh
+olu
+ng
+
+5
+
+Herausforderungen in den OSI-Layern 1-5
+▪
+
+Vertraulichkeit
+−
+−
+
+▪
+
+Integrität
+−
+−
+
+▪
+
+Belauschen vertraulicher Datenpakete (ganz besonders drahtlose
+Protokolle wie WLAN/Bluetooth/etc. mit Richtfunkantennen)
+Man-in-the-middle-Angriffe, sowohl physikalisch (Angriff/Tausch eines
+Routers) als auch logisch
+
+Datenübertragungen sind sehr leicht störbar
+(physikalisch → Sonennflecken, logisch → Services wie ARP, DNS,...)
+Einschleusen von gefälschten Datenpaketen ebenfalls leicht
+
+Verfügbarkeit
+−
+
+Denial of service, z.B. durch Dienstüberlastung, stören von
+Routingtabellen, unvorsichtige Baggerfahrer
+
+Prof. Buchmann - Netz-Sicherheit
+
+6
+
+Was macht Netzwerke anfällig? (1/2)
+▪
+
+Anonymität, Angriffe aus Sicherheitsabstand
+−
+−
+
+▪
+
+Systemkomplexität
+−
+−
+
+▪
+
+Angreifer kann weit entfernt von den physischen Netzwerkgeräten sein
+Angriff lässt sich über mehrere Stationen routen
+
+Viele potentielle Schwachstellen
+Zahllose Rechner, Kabel, Switches, Protokolle, Dienste etc., die
+alle gleichzeitig funktionieren müssen
+
+„Mischbetrieb“
+−
+
+Netzwerke und insbes. Netzwerkbandbreite sind eine endliche
+Ressource, die von vielen gleichzeitig beansprucht wird
+
+Prof. Buchmann - Netz-Sicherheit
+
+7
+
+Was macht Netzwerke anfällig? (2/2)
+▪
+
+Unbekannte Perimeter
+−
+−
+
+▪
+
+Prinzipiell könnte jeder Rechner im Netz als WLAN-Hotspot oder Bridge
+in ein anderes Netzwerksegment dienen
+Neue Rechner können prinzipiell überall im Netz hinzugefügt werden
+
+Unbekannte
+Pfade
+−
+
+Es ist nicht
+zwingend
+festgelegt,
+welchen Weg
+Datenpakete
+nehmen
+
+Prof. Buchmann - Netz-Sicherheit
+
+8
+
+Prof. Buchmann - Netz-Sicherheit
+
+9
+
+Firewalls
+
+Was sind Firewalls?
+▪
+
+Vergleichbar mit einem Stadttor
+−
+−
+
+▪
+
+Leute dürfen nur an Kontrollpunkt die Stadt betreten oder verlassen
+Angreifer kommen gar nicht erst in die Nähe anderer
+Verteidigungspunkte in der Stadt
+
+Üblicherweise separiert eine Firewall zwei Netzwerk-Segmente mit
+unterschiedlichen Sicherheitsniveaus
+−
+
+Offensichtliches Beispiel: Firewall zwischen Internet und Firmennetz
+Internet
+
+−
+
+Firewall
+
+Weniger offensichtliches Beispiel: Firewall zwischen der Testumgebung
+der Entwickler und dem Netzbereich der Firmenleitung
+
+Prof. Buchmann - Netz-Sicherheit
+
+11
+
+Was leisten Firewalls für die IT-Sicherheit?
+▪
+
+Eine Firewall dient als Fokus für Sicherheitsentscheidungen
+−
+
+▪
+
+Eine Firewall kann Sicherheitsregeln durchsetzen
+−
+
+▪
+
+Wer darf überhaupt mit wem kommunizieren?
+
+Eine Firewall kann Aktivitäten mitloggen
+−
+
+▪
+
+Wo sind eigentlich meine sensiblen Daten?
+
+Wer kommuniziert wann mit wem über welches Protokoll?
+
+Eine Firewall kann Sicherheitsprobleme auf ein Teilnetz beschränken
+−
+
+Welche Rechner oder Dienste müssen von jedermann aus dem Internet
+erreichbar und damit potentiell angreifbar sein?
+
+Prof. Buchmann - Netz-Sicherheit
+
+12
+
+Was können Firewalls nicht leisten?
+▪
+
+Eine Firewall schützt nicht gegen Angreifer von Innen
+
+▪
+
+Eine Firewall überwacht keine Verbindungen, die an ihr vorbei gehen
+−
+
+Wenn ein Angestellter einen LTE-Surfstick in seinen Rechner steckt,
+kann prinzipiell jeder Datenverkehr darüber laufen
+
+▪
+
+Eine Firewall schützt nicht zuverlässig gegen neue Bedrohungen
+
+▪
+
+Eine Firewall schützt nicht zuverlässig vor Viren, Trojaner, Malware
+
+▪
+
+Eine Firewall kann sich nicht von allein konfigurieren
+−
+
+Regeln benötigen Hintergrundwissen über erlaubte Datenströme
+
+Prof. Buchmann - Netz-Sicherheit
+
+13
+
+Was leistet ein Paketfilter?
+●
+
+Einfachste Form einer Firewall
+
+Welche Möglichkeiten hat ein Paketfilter?
+▪
+
+Pass
+−
+
+▪
+
+Drop
+−
+
+▪
+
+Das Paket verwerfen und den Absender darüber informieren
+
+Log
+−
+
+▪
+
+Das Paket verwerfen
+
+Reject
+−
+
+▪
+
+Das Paket passieren lassen, also vom Input-Interface an das
+Output-Interface weitergeben
+
+Das Paket loggen (egal ob pass oder drop), Statistiken fortschreiben
+
+Network address translation
+−
+
+Das Paket an einen anderen Empfänger/anderes Netzwerksgement
+weiterleiten (genau genommen ist das kein Filtern)
+
+Prof. Buchmann - Netz-Sicherheit
+
+15
+
+Zwei fundamentale Strategien
+▪
+
+Default deny-Strategie:
+−
+−
+−
+−
+−
+
+▪
+
+“Alles was nicht explizit erlaubt wurde ist verboten”
+Finde heraus, welche Dienste die Nutzer im Netzwerksegment brauchen
+Treffe eine Entscheidung, ob und unter welchen Umständen diese
+Dienste mit einem unsicheren Netzwerksegment kommunizieren dürfen
+Erlaube nur „sichere“ Dienste, die im Unternehmensinteresse liegen
+Verbiete alles andere
+
+Default permit-Strategie:
+−
+−
+
+“Alles was nicht explizit verboten wurde ist erlaubt”
+Verbiete jeden Dienst, der als gefährlich oder unsicher eingestuft wird
+▪
+
+▪
+
+z.B. Pakete des Network File System (NFS) nicht in andere Netze
+weiterleiten, (unverschlüsselte) Telnet-Verbindungen nur zu einem Rechner
+
+Welchen Grund könnte es für eine Default Permit-Strategie geben?
+Prof. Buchmann - Netz-Sicherheit
+
+16
+
+Technischer Hintergrund für das Folgende
+(sollte Ihnen eigentlich bekannt sein)
+▪
+
+Internet: Client-Server-Architektur, Client redet
+über den TCP/IP- Protokollstack mit dem Server
+
+▪
+
+TCP (verbindungsorientierte) oder UDP (verbindungslose) Pakete
+
+▪
+
+Ein TCP-Datenpaket enthält
+−
+
+Internet Protocol (IP)-Header
+wohin geht das Paket
+
+−
+
+Transmission Control
+Protocol (TCP)-Header
+wie werden die Daten
+ausgetauscht
+
+−
+
+IP
+Header
+
+TCP
+Header
+
+Payload
+die Inhalte, App-Protokolle
+wie HTTP, POP3, IMAP
+
+▪
+
+UDP-Header ist einfacher
+(Source Port, Dest. Port,
+Length, Checksum)
+
+Ver.
+
+IHL
+TOS
+Length
+IP Identification
+Flags
+Fragment Offset
+TTL
+Protocol
+IP Checksum
+Source Address
+Destination Address
+IP Options (if any)
+Source Port
+Destination Port
+Sequence Number
+Request Number
+Offset Reserv.
+Control
+Window
+Checksum
+Urgent Pointer
+TCP Options (if any)
+
+Payload
+
+Prof. Buchmann - Netz-Sicherheit
+
+Payload
+(Including Application PDU Header)
+
+17
+
+Interessant für die Firewall (1/3)
+▪
+
+Media Access Protocol
+−
+−
+
+Welches Protokoll? Ethernet, Bluetooth, ZigBee, IEEE 802.11-Familie
+Welche Adressen? MAC-Adr. (Ethernet, WLAN), IMEI (Mobilfunk), etc.
+▪
+
+▪
+
+Adressen beziehen sich auf die Sender- und Empfängerhardware
+
+IP
+−
+−
+−
+
+Source-Adresse
+Destination-Adresse
+Protokolltyp: TCP, UDP, ICMP, ...
+
+Prof. Buchmann - Netz-Sicherheit
+
+18
+
+Interessant für die Firewall (2/3)
+▪
+
+TCP
+−
+
+Source-Port, Destination-Port:
+▪
+
+▪
+
+−
+
+An welchen Dienst auf dem Rechner mit der Destination-Adresse im IPHeader ist das Paket gerichtet?
+(s. https://de.wikipedia.org/wiki/Liste_der_standardisierten_Ports
+Von welchem Dienst kommt das Paket (Ports < 1024 sind Systemdienste,
+alle höheren Ports sind Anwendungen des Users, z.B. Webbrowser)
+
+Steuerungsflags:
+▪
+▪
+▪
+
+ACK: False im allerersten Paket bei Verbindungsaufbau, sonst immer true
+SYN: Im jeweils ersten Paket vom Sender zum Empfänger und zurück vom
+Empfänger zum Sender true, sonst false
+RST: True: Irgendwas ist schiefgegangen (z.B. Paket an eine vom
+Empfänger eigentlich geschlossene Verbindung gesendet), zurücksetzen
+→ Wichtig für Stateful Inspection, ermöglicht Regeln wie „Externe Rechner
+dürfen Verbindung mit Webserver aufbauen, aber nicht umgekehrt)
+Prof. Buchmann - Netz-Sicherheit
+
+19
+
+Interessant für die Firewall (3/3)
+▪
+
+Anwendungsprotokoll
+−
+
+Beschreibt, wie die Payload im TCP/IP-Paket strukturiert ist, z.B.
+▪
+▪
+▪
+▪
+▪
+
+▪
+
+HTTP: Abruf von Webseiten
+POP3: Abruf von Email
+SMTP: Senden von Email
+DNS: Namensauflösung für IP-Adressen
+…
+
+Anwendungsspezifisch, "deep packet inspection"
+−
+−
+
+„Blockiere Pakete an UDP-Port 53, die nicht wie DNS-Pakete aussehen"
+siehe Abschnitt "Next Generation Firewall"
+
+Prof. Buchmann - Netz-Sicherheit
+
+20
+
+Die Übertragungsrichtung
+Da Paketfilter immer an den Grenzen eines Netzwerksegments sitzen,
+gibts eine implizite Festlegung für die Übertragungsrichtung beim Filtern:
+▪
+
+Outbound (herausgehend)
+
+▪
+
+Das Datenpaket ist über eine Schnittstelle in den Rechner gelangt, die
+innerhalb des geschützten Netzwerksegments liegt
+− Beispiel: Ein Rechner aus dem internen Netz sendet eine Anfrage an
+einen Webserver im Internet.
+Inbound (hereinkommend)
+−
+
+−
+−
+
+▪
+
+Das Datenpaket ist über eine Schnittstelle in den Rechner gelangt, die
+außerhalb des geschützten Netzwerksegments liegt
+Beispiel: Antwort dieses Webservers an den internen Rechner.
+
+Für jede Regel eines Paketfilters muss die Übertragungsrichtung
+angegeben werden, “inbound”, “outbound”, “either” (beide
+Richtungen)
+Prof. Buchmann - Netz-Sicherheit
+
+21
+
+Übertragung mit oder ohne Rückkanal für ein ACK?
+▪
+
+TCP
+−
+−
+
+−
+
+▪
+
+Verbindungsorientiert
+Pakete, die nicht mit ACK
+bestätigt werden, werden
+wiederholt
+Jede Übertragung hat
+immer Inbound und
+Outbound-Pakete
+
+UDP
+−
+−
+−
+
+Verbindungsloses Protokoll
+Pakete werden ohne
+Bestätigung gesendet
+Nur die Sendung, entweder
+Inbound oder Outbound
+
+Prof. Buchmann - Netz-Sicherheit
+
+22
+
+Beispielszenario
+Internal
+
+External
+
+Internal Client-Request to an
+external Mail-Server
+External Mail-Server
+Response to an internal
+Client
+
+1023
+
+1023
+
+25
+
+25
+
+External Client-Request to an
+internal Mail-Server
+Internal Mail-Server
+Response to an external
+Client
+
+▪
+
+Im geschützten Netzwerksegment (Internal) steht ein Email-Server
+und wartet an TCP-Port 25 (SMTP) auf eingehende Verbindungen.
+
+▪
+
+Wenn der Server als Email-Relay selber Emails an externe Server
+weitergibt, agiert er als Client, d.h., öffnet ausgehend von einer
+Portadresse >1023 eine Verbindung zu Port 25 auf anderem Server.
+
+▪
+
+Wenn der Server eine Email von einem externen Server erhält, dann
+ist es genau andersherum.
+Prof. Buchmann - Netz-Sicherheit
+
+23
+
+Beispiel-Regelsatz
+Rule Direction
+
+Src. Addr. Dest. Addr.
+
+Protocol
+
+Src. Port
+
+Dest. Port
+
+ACK Action
+
+A
+
+Inbound
+
+External
+
+Internal
+
+TCP
+
+25
+
+Permi
+
+B
+
+Outbound
+
+Internal
+
+External
+
+TCP
+
+>1023
+
+Permit
+
+C
+
+Outbound
+
+Internal
+
+External
+
+TCP
+
+25
+
+Permi
+
+D
+
+Inbound
+
+External
+
+Internal
+
+TCP
+
+>1023
+
+Permit
+
+E
+
+Either
+
+Any
+
+Any
+
+Any
+
+Any
+
+Deny
+
+Annahme: Nur eingehende und ausgehende Email ist erlaubt.
+▪
+
+Regel A erlaubt eingehende TCP-Datenpakete von einer externen
+Quelle, die an Port 25 einer internen Adresse gerichtet ist
+(eingehende Email)
+
+▪
+
+Regel B erlaubt das Senden einer Bestätigung an den externen
+Server, von dem die Email kam.
+
+▪
+
+Regel C und D sind analog für herausgehende Email.
+
+▪
+
+Regel E verbietet alle anderen Datenpakete
+(Die Reihenfolge ist wichtig!)
+Prof. Buchmann - Netz-Sicherheit
+
+24
+
+Funktioniert der Beispiel-Regelsatz? (1/2)
+▪
+
+Angreifer 1: Versucht, von außen eine SSH-Verbindung (TCP Port
+22) zu dem Email-Server zu öffnen
+−
+−
+
+▪
+
+Angreifer 2: Versucht, mit einer gefälschten internen Source-Adresse
+von außen in das geschützte interne Subnetz zu kommen
+−
+−
+
+▪
+
+Jedes inbound-Datenpaket muss entweder an den TCP-Port 25
+gerichtet sein (Regel A) oder an einen TCP-Port > 1023 (Regel D).
+Zugriff wird erfolgreich blockiert.
+
+Ein Datenpaket, das an eine interne Destination-Adresse gerichtet ist,
+muss über die „inbound“-Schnittstelle kommen. (Regel A,B,C,D)
+Zugriff wird erfolgreich blockiert
+
+Angreifer 3: Mitarbeiter hat den Email-Server übernommen und will
+von diesem aus einen externen Rechner mittels Telnet (TCP-Port 23)
+erreichen
+−
+−
+
+Jedes outbound-Datenpaket muss entweder an den TCP-Port 25
+gerichtet sein (Regel C) oder an einen TCP-Port > 1023. (Regel B)
+Zugriff wird erfolgreich blockiert
+Prof. Buchmann - Netz-Sicherheit
+
+25
+
+Funktioniert der Beispiel-Regelsatz? (2/2)
+
+▪
+
+External
+
+6000
+
+6000
+
+1023
+
+1023
+
+25
+
+25
+
+External X11 request to an
+internal X11-Server
+Internal X11 response to an
+external Client >1023
+
+X11-Protokoll für Unix-Bildschirmweiterleitung
+−
+−
+
+▪
+
+Internal
+
+X11-Server läuft im User-Space, standardmäßig TCP-Port 6000
+X11-Client läuft ebenfalls im User-Space, benutzt TCP-Ports >1023
+
+Angreifer 4: will von außen X11-Bildschirmweiterleitung aufmachen
+−
+−
+−
+
+Regel D erlaubt TCP-Pakete von außen an Port >1023 (Requests)
+Regel B erlaubt TCP-Pakete nach außen an Port >1023 (Antworten)
+Zugriff ist erlaubt
+Prof. Buchmann - Netz-Sicherheit
+
+26
+
+Blockieren des X11-Servers
+Rule Direction
+
+▪
+
+Protocol
+
+Src. Port
+
+Dest. Port
+
+ACK Action
+
+A
+
+Inbound
+
+External
+
+Internal
+
+TCP
+
+>1023
+
+25
+
+Permi
+
+B
+
+Outbound
+
+Internal
+
+External
+
+TCP
+
+25
+
+>1023
+
+Permit
+
+C
+
+Outbound
+
+Internal
+
+External
+
+TCP
+
+>1023
+
+25
+
+Permi
+
+D
+
+Inbound
+
+External
+
+Internal
+
+TCP
+
+25
+
+>1023
+
+Permit
+
+E
+
+Either
+
+Any
+
+Any
+
+Any
+
+Any
+
+Any
+
+Deny
+
+Im Regelsatz die Source-Ports ergänzen
+−
+−
+−
+
+▪
+
+Src. Addr. Dest. Addr.
+
+Outbound-Pakete sind nur erlaubt, wenn sie von Port 25 kommen
+(Regel B) oder an Port 25 gerichtet sind (Regel C)
+Inbound-Pakete sind nur erlaubt, wenn sie von Port 25 kommen (Regel
+D) oder an Port 25 gerichtet sind (Regel A)
+X11-Server wird blockiert
+
+Angreifer 5: Hat root-Rechte auf dem Emailserver im Internet, ändert
+die Standardports und startet Verbindungen mit Source-Port 25
+−
+
+Zugriff ist erlaubt
+Prof. Buchmann - Netz-Sicherheit
+
+27
+
+Wer darf Verbindungen öffnen?
+Rule Direction
+
+Src. Addr. Dest. Addr.
+
+Protocol
+
+Src. Port
+
+Dest. Port
+
+ACK Action
+
+A
+
+Inbound
+
+External
+
+Internal
+
+TCP
+
+>1023
+
+25
+
+Any
+
+Permi
+
+B
+
+Outbound
+
+Internal
+
+External
+
+TCP
+
+25
+
+>1023
+
+Yes
+
+Permit
+
+C
+
+Outbound
+
+Internal
+
+External
+
+TCP
+
+>1023
+
+25
+
+Any
+
+Permi
+
+D
+
+Inbound
+
+External
+
+Internal
+
+TCP
+
+25
+
+>1023
+
+Yes
+
+Permit
+
+E
+
+Either
+
+Any
+
+Any
+
+Any
+
+Any
+
+Any
+
+Any
+
+Deny
+
+ACK: No im ersten Paket bei Verbindungsaufbau, sonst immer Yes
+▪
+
+Im Regelsatz das ACK-Flag in den Regeln B, D ergänzen
+−
+−
+
+Regel B erlaubt nur Outbound-Datenpakete als Antwort auf eine
+eingehende Verbindung
+Regel D erlaubt nur Inbound-Datenpakete als Antwort auf eine
+ausgehende Verbindung
+
+(Anm.: Spätenstens wenn der Angreifer bereits Root-Rechte hat, versagt eine
+Firewall, die auf dem selben Rechner läuft wie der zu schützende Server)
+Prof. Buchmann - Netz-Sicherheit
+
+28
+
+Web Application Firewalls und
+Next Generation Firewalls
+●
+
+Aktuellste Varianten einer Firewall
+
+Was kann ein Paketfilter nicht?
+▪
+
+Paketfilter beschränken sich auf Attribute der Netzwerkpakete
+−
+−
+−
+
+▪
+
+Quell-/Zieladressen und Ports
+Flags zum Verbindungsstatus
+Statistiken wie Paketgröße oder Pakete pro Zeiteinheit
+→ lässt sich alles vom Angreifer leicht manipulieren
+
+Angriffe, die ein Paketfilter nicht entdecken kann
+−
+
+Angriffe, die sich als normale Pakete tarnen können
+▪
+
+−
+
+z.B. Angreifer hat Kontrolle über einen Rechner, kann Standard-Ports
+umleiten und über den offenen Port vom Mailserver kommunizieren
+
+praktisch alles, was sich in der Payload (Anwendungsebene,
+OSI-Level 5,6) abspielt
+▪
+
+z.B. Injection, fehlerhafte HTTP POST/GET-Requests, Download von
+Viren/Malware, Authentifizierungsprobleme gegenüber Anwendungen
+(s. Kapitel Web-Sicherheit)
+
+Prof. Buchmann - Netz-Sicherheit
+
+30
+
+Web Application Firewalls
+▪
+
+Kann alles, was ein Paketfilter auch kann
+
+▪
+
+Filterung des HTTP(S)-Protokolls, d.h., Application Layer
+−
+
+Header Inspection
+
+−
+
+Request Body Inspection
+z.B. SQL Injection in HTTP POST Kommando ("apple' OR 1=1")
+
+−
+
+Response Inspection
+z.B. wenn die Web-App durch Server-Side Request Forgery ein Binary
+ausliefert statt einer erwarteten Klartext-Antwort
+
+Prof. Buchmann - Netz-Sicherheit
+
+31
+
+Funktionsweise von Web Application Firewalls
+1) WAF bietet nach außen die Dienste des App-Servers an
+2) Client sendet (verschlüsselten) Request an WAF
+3) WAF filtert den Request und reicht ihn an den App-Server weiter
+4) App-Server antwortet an WAF
+5) WAF filtert die Antwort und reicht sie an den Client weiter
+App-Server ist aus dem Internet nicht erreichbar, alle Kommunikation
+über WAF ("Reverse Proxy"), d.h., Verschlüsselung, Zertifikate der WAF
+
+1
+3
+
+2
+
+4
+
+5
+Client
+
+WAF als
+Reverse Proxy
+Prof. Buchmann - Netz-Sicherheit
+
+App-Server
+32
+
+OWASP Modsecurity Core Rule Set
+▪
+
+Von Freiwilligen-Community gepflegte
+Liste von Regeln für Web Application Firewalls
+https://github.com/coreruleset/coreruleset/tree/main/rules
+
+▪
+
+Zahlreiche Regeln
+−
+
+▪
+
+SQL/Java/PHP/Code Injection, Cross Site Scripting, File Inclusion,
+Umgebungsvariablen, Remote Shells, Session Fixation,
+Scripting/Scanner/Bot Detection, Metadata/Error Leakages
+
+Aufbau einer Regel:
+−
+−
+−
+−
+−
+−
+−
+
+Der Filter selbst (RegExp oder Verweis auf Datei mit Suchtermen)
+ID und Versionsnummer der Regel
+Allow/Deny
+Status-Code
+Loggen oder nicht?
+Message/Tags fürs Log und für die Auswahl passender Regeln
+Severity ('CRITICAL', 'WARN', 'ERROR')
+Prof. Buchmann - Netz-Sicherheit
+
+33
+
+Beispiel
+▪
+
+Prüft mittels RegExp auf gültig formatierten HTTP-Request
+
+SecRule REQUEST_LINE "!@rx (?i)^(?:get /[^#\?]*(?:\?[^\s\v#]*)?(?:#[^\s\v]*)?|(?:connect (?:(?:[0-9]{1,3}\.){3}[0-9]
+{1,3}\.?(?::[0-9]+)?|[\--9A-Z_a-z]+:[0-9]+)|options \*|[a-z]{3,10}[\s\v]+(?:[0-9A-Z_a-z]{3,7}?://[\--9A-Z_a-z]*(?::[0-9]+)?)?/
+[^#\?]*(?:\?[^\s\v#]*)?(?:#[^\s\v]*)?)[\s\v]+[\.-9A-Z_a-z]+)$" \
+"id:920100,\
+phase:1,\
+block,\
+t:none,\
+msg:'Invalid HTTP Request Line',\
+logdata:'%{request_line}',\
+tag:'application-multi',\
+tag:'language-multi',\
+tag:'platform-multi',\
+tag:'attack-protocol',\
+tag:'paranoia-level/1',\
+tag:'OWASP_CRS',\
+tag:'capec/1000/210/272',\
+ver:'OWASP_CRS/4.0.0-rc2',\
+severity:'WARNING',\
+setvar:'tx.inbound_anomaly_score_pl1=+%{tx.warning_anomaly_score}'"
+
+Prof. Buchmann - Netz-Sicherheit
+
+34
+
+Diskussion Web Application Firewalls
+▪
+
+Vorteile
+−
+−
+−
+
+▪
+
+Gut mit herkömmlichen Firewalls oder Web-Proxies kombinierbar
+HTTP-Header und die Requests/Responses im HTTP-Body werden für
+die Firewall unterscheidbar und zugänglich
+Exploits für Web-Anwendungen filterbar, für die noch keine Patches
+existieren, desgleichen Viren und Schadcode im HTTP-Body
+
+Nachteile
+−
+
+Administration ist komplex
+▪
+
+−
+
+Vordefinierte Filter, aber die müssen angepasst werden
+
+Filterregeln können sehr, sehr rechenaufwändig werden
+▪
+
+Insbesondere Filtern auf RegEx oder auf große Dateien mit Stichworten
+
+Prof. Buchmann - Netz-Sicherheit
+
+35
+
+Next-Generation Firewall (NGFW)
+▪
+
+Kann alles, was ein Paketfilter auch kann
+
+▪
+
+App-Erkennung und Filterung ("Deep Packet Inspection")
+−
+
+Welche Anwendungsprotokolle in der Payload der Pakete?
+▪
+
+−
+
+Sind die Anwendungsprotokolle korrekt?
+▪
+
+−
+
+Viren/Malware/Trojaner-Scans
+
+Ver-/Entschlüsseln der Payload
+−
+
+▪
+
+Versucht ein Angreifer, einen Exploit an den SMTP-Server zu senden,
+oder soll tatsächlich eine Email versendet werden?
+
+Sind die Anwendungsdaten korrekt?
+▪
+
+▪
+
+Entspricht die Kommunikation auf Port 25 (Standard SMTP-Port) dem
+SMTP-Protokoll, oder verschickt ein Angreifer darüber andere Daten?
+
+NGFW kann gültige Zertifikate erzeugen und darum als Man-in-theMiddle bei HTTPS/SSL/SSH-Verbindungen auftreten
+
+Häufig, aber nicht immer: Integration in die Authentifizierung
+−
+
+z.B. Active Directory zum Filtern von Apps nach erlaubten Benutzern
+Prof. Buchmann - Netz-Sicherheit
+
+36
+
+NGFW als erlaubter Man-in-the-Middle Angriff
+1) Client startet TLS-/SSL-Handshake mit Server
+2) NGFW fängt dies ab und stellt eine Sitzung zum Client mit einem
+selbst erzeugten Zertifikat her, das den Namen des Servers trägt
+3) NGFW startet eigenen TLS-/SSL-Handshake mit Server,
+nutzt dafür selbst generiertes Zertifikat mit dem Namen des Clients
+4) Server baut Tunnel zwischen sich und NGFW auf
+5) NGFW entschlüsselt den gesamten Datenverkehr, macht Deep
+Packet Inspection, und verschüsselt den erlaubten Verkehr wieder
+Server für Internet versteckt, NGFW generiert Zertifikate mit Servername
+Client
+
+Client
+
+1
+
+3
+
+5
+2
+Client
+
+Server
+
+4
+NGFW
+
+Prof. Buchmann - Netz-Sicherheit
+
+Server
+
+Server
+37
+
+Diskussion Next Generation Firewalls
+▪
+
+Vorteile
+−
+−
+−
+
+▪
+
+Anwendungsprotokolle, die über HTTP/HTTPS und Port 80 laufen,
+werden für die Firewall unterscheidbar und zugänglich
+Exploits für Anwendungen filterbar, für die noch keine Patches
+existieren, desgleichen Viren und Schadcode in der Payload
+Gilt auch für verschlüsselten Datentransfer (HTTPS, TLS, SSL, SSH, ...)
+
+Nachteile
+−
+
+Administration ist ausgesprochen komplex.
+▪
+
+−
+
+Vordefinierte Filter, aber die müssen angepasst werden
+
+Man-in-the-Middle zulassen ist eigentlich eine Sicherheitslücke
+▪
+▪
+▪
+
+Server/Client können nicht mehr das Zertifikat der Gegenstelle sehen/prüfen
+Nutzer werden an "gefälschte echte" Zertifikate gewöhnt
+Sicherheit/Datenschutz? Ohne echte Ende-zu-Ende-Verschlüsselung sieht
+der Systemadministrator alles
+– HTTP Public Key Pinning/Certificate Pinning muss abgeschaltet sein
+(Trust-of-first-Use-Prinzip: Sichert HTTPS gegen einen Angreifer, der eine
+Certificate Authority betreibt und anerkannte Zertifikate ausstellen darf.)
+Prof. Buchmann - Netz-Sicherheit
+
+38
+
+Intrusion Detection / Intrusion Prevention
+
+Was können Firewalls nicht?
+▪
+
+Angriffe erkennen, die über zulässige Pakete ablaufen
+−
+
+z.B. ein Client greift seltsam häufig auf den SQL-Server zu
+(jemand macht einen kompletten Database Dump?)
+
+▪
+
+Angriffe erkennen, die die Anwendungsebene einbezieht
+−
+
+z.B. nach Anfragen vom Client wird die CPU-Auslastung seltsam hoch
+(jemand hat eine Möglichkeit für einen Denial of Service entdeckt?)
+
+▪
+
+Angriffe innerhalb desselben Netzwerksegments erkennen
+−
+
+z.B. ein Rechner im Subnetz verhält sich anders als alle anderen
+(jemand versucht einen Insider-Angriff?)
+
+▪
+
+Intrusion Detection System (IDS): aktive Überwachung von
+Systemen / Netzen zur Erkennung von Angriffen und Missbrauch
+(Anm.: Abgrenzung zu Web-Application/Next-Gen Firewalls ist fließend)
+
+▪
+
+Intrusion Prevention System (IPS): ein IDS, das über Schwellwerte
+den Datenstrom unterbricht oder Firewall-Regeln ändert
+(Anm.: die meisten IDS können auch IPS, wenn Sie sich trauen...)
+Prof. Buchmann - Netz-Sicherheit
+
+40
+
+IDS-Varianten
+▪
+
+Nach der Methode der Angriffserkennung
+−
+
+Anomalieerkennung (z.B. https://suricata.io/ )
+▪
+
+−
+
+IDS enthält Heuristiken zur Protokollanalse, Machine Learning lernt
+"normales" Verhalten, Einsatz von KI, Nutzung von Honeypots
+
+Signaturerkennung (z.B. https://www.snort.org/ )
+▪
+
+▪
+
+Viele False
+Positives
+
+IDS-Hersteller baut Regeln oder Signaturen für bekannt gewordene
+Schwachstellen und existierende Exploits
+
+Nach dem Ort der Datengewinnung
+−
+
+Host-Based IDS
+▪
+
+−
+
+IDS arbeitet auf einem Host und überwacht den ein/ausgehenden
+Datenverkehr sowie das Verhalten von Betriebssystem und Anwendungen
+
+Network-Based IDS
+▪
+
+−
+
+Nur bekannte
+Schwachstellen
+
+IDS sitzt wie die Firewall auf dem Router zwischen Netzwerksegementen
+
+Hybrides IDS
+▪
+
+vereint beides (heute eher üblich)
+Prof. Buchmann - Netz-Sicherheit
+
+41
+
+Komponenten eines IDS
+▪
+
+Netzbasierte Sensoren
+−
+
+▪
+
+Hostbasierte Sensoren
+−
+
+▪
+
+Speichert diese Daten sowie die von der Auswertekomponente
+generierten Ereignis-Logs
+
+Management-Komponente
+−
+
+▪
+
+Scripte, die neben Netzwerkdaten des Hosts auch Daten über
+Betriebssystem/Anwendungsparameter zum IDS schicken
+
+Datenbank-Komponente
+−
+
+▪
+
+Scripte, die auf Routern/Firewalls/Network Appliances laufen und Daten
+über Netzwerkpakete zum IDS schicken
+
+Konfiguration, Regeln, Schwellwerte, auszulösende Aktionen
+
+Auswertekomponente
+−
+
+Wendet die Regeln auf die Ereignisse in der Datenbank an und generiert
+Ereignisse
+
+Prof. Buchmann - Netz-Sicherheit
+
+42
+
+Beispiel: Snort
+▪
+
+Open Source
+−
+
+Schnittstellen zu kommerzieller Software,
+Support durch Firmen (z.B. Regelsätze)
+
+▪
+
+Kann als IDS, IPS und Paketlogger eingesetzt werden
+
+▪
+
+Regelbasiert
+−
+−
+
+▪
+
+Community Rule Set (Open Source)
+Snort Subscriber Ruleset (von Cisco)
+
+Netzwerk-basiert
+−
+
+läuft typischerweise auf einem Network Appliance,
+z.B. Router, Proxy oder Firewall
+
+Prof. Buchmann - Netz-Sicherheit
+
+43
+
+Erkennung von verdächtigen Aktivitäten durch Snort
+1) Snort überwacht Netzwerkverkehr in Echtzeit.
+2) Pakete werden dekodiert und auf Regeln überprüft.
+3) Ein Regelmatch löst Alarme aus oder wird geloggt.
+▪
+
+Snort-Regeln:
+alert tcp any any -> 192.168.1.0/24 80 (msg:"Web attack";)
+−
+−
+−
+−
+
+Aktion: alert
+Protokoll: tcp
+Quell-/Ziel-IP und Ports
+Optionen: auszugebende Nachricht "msg"
+
+Prof. Buchmann - Netz-Sicherheit
+
+44
+
+Wie sieht eine reale Snort-Regel aus? (1/2)
+▪
+
+Beispiel: Auf einem Rechner ist eine Backdoor, die im Klartext über
+den (üblicherweise unbenutzten) Telnet-Port kommuniziert und das
+Default-Passwort "r00t" hat:
+alert tcp $EXTERNAL_NET any -> $TELNET_SERVERS 23
+( msg:"MALWARE-BACKDOOR MISC r00t attempt";
+flow:to_server,established;
+content:"r00t";
+metadata:ruleset community;
+classtype:attempted-admin;
+sid:211;
+rev:7; )
+
+Prof. Buchmann - Netz-Sicherheit
+
+45
+
+Wie sieht eine reale Snort-Regel aus? (2/2)
+▪
+
+Beispiel: Jemand will einen Buffer Overflow Bug in OpenSSL 3.0.0 bis
+3.0.6 durch zu lange Emailadresse im Zertifikat ausnutzen:
+alert ssl ( msg:"SERVER-OTHER OpenSSL x509 crafted email
+address buffer overflow attempt";
+flow:established;
+content:"|06 03 55 1D 1E|"; ber_skip:0x01,optional;
+ber_data:0x04; ber_data:0x30; ber_data:0xa1; ber_data:0x30;
+content:"|81 82|",within 2; byte_test:2,>,500,0,relative;
+content:"xn--",within 4,distance 2,fast_pattern;
+metadata:policy balanced-ips drop,policy connectivity-ips
+drop,policy max-detect-ips drop,policy security-ips
+drop,ruleset community;
+reference:cve,2022-3602; reference:cve,2022-3786;
+reference:url,blog.talosintelligence.com/openssl-vulnerability/;
+classtype:attempted-user; gid:1; sid:300306; rev:3; )
+Prof. Buchmann - Netz-Sicherheit
+
+46
+
+Diskussion IDS/IPS
+▪
+
+Vorteile
+−
+−
+−
+
+▪
+
+Tiefere Analyse als (klassische) Firewalls, insbes. Inhaltsanalyse von
+Netzwerkpaketen und Integration hostbasierter Sensoren
+Schutz vor internen Bedrohungen, da Prüfung nicht nur an der Grenze
+der Netzwerksegmente
+Prävention vor unbekannten Angriffen mittels Machine Learning/KI
+
+Nachteile
+−
+−
+−
+
+Rein reaktiv, d.h., der Angriff findet bereits statt, wenn der Admin
+informiert (IDS) oder der Datenverkehr unterbrochen (IPS) wird
+Enorm aufwendige Konfiguration und Wartung, insbes. IPS darf den
+Betrieb nicht stören
+Viele Fehlalarme potentieller Angriffe (insbes. bei Anomalieerkennung)
+müssen vom Experten manuell aussortiert werden
+
+Prof. Buchmann - Netz-Sicherheit
+
+47
+
+Firewall-Architekturen
+●
+●
+●
+●
+●
+
+Simple Packet Filter
+Dual-Homed Host
+Screened Host
+Screened Subnet
+Split Screened Subnet
+
+Anforderungen an eine Firewall-Architektur
+▪
+
+Sicherheit
+−
+−
+
+Vertraulichkeit, Verfügbarkeit, Integrität im Netzwerk
+Was kann Angreifer, der eine Sicherheitskomponente überwunden hat?
+▪
+▪
+
+▪
+
+Performanz
+−
+
+▪
+
+Zugriff auf interne Daten/Dienste
+Ausschalten/Überwinden von
+weiteren Sicherheitskomponenten
+Sicherheit
+
+Durchsatz/Latenz?
+
+Aufwand
+−
+−
+−
+−
+
+Anschaffung
+Inbetriebnahme
+Wartung und Pflege
+Monitoring
+
+Performanz
+
+Prof. Buchmann - Netz-Sicherheit
+
+Aufwand
+
+49
+
+Begriffe im Folgenden
+▪
+
+Subnetz, Teilnetz
+−
+
+▪
+
+Paketfilter
+−
+
+▪
+
+Programm (ggf. auf eigenständigen Rechner oder Router), welches
+Netzwerkpakete nach bestimmten Filterregeln filtert oder loggt
+
+Dual-homed Host
+−
+
+▪
+
+Durch Router, Firewalls etc. abgegrenzter Teil eines internen Netzes
+
+Rechner mit (mindestens) zwei getrennten Netzwerk-Schnittstellen, der
+Netzsegmente physisch trennt
+
+Bastion Host
+−
+
+Ein besonders geschützter und überwachter Rechner für
+sicherheitskritische Aufgaben
+▪
+
+z.B. Rechner auf dem eine Application Level-Firewall oder ein Virenscanner
+laufen, oder der einen vom Internet aus sichtbaren Server betreibt
+
+Prof. Buchmann - Netz-Sicherheit
+
+50
+
+Simple Packet Filter-Architektur
+
+Paketfilter auf dem Router
+Internal Network
+
+▪
+
+Ein Paketfilter auf dem Router
+−
+−
+−
+−
+
+ist die einfachstmögliche Architektur
+filtert Pakete anhand eines definierten Regelwerks aus dem Datenstrom
+loggt Pakete mit, ebenfalls anhand eines Regelwerks
+sendet alle erlaubten Pakete von einem Subnetz in ein anderes
+Prof. Buchmann - Netz-Sicherheit
+
+51
+
+Simple Packet Filter-Architektur
+
+Paketfilter auf dem Router
+Internal Network
+
+▪
+
+Vorteile
+−
+−
+
+Kostengünstiger Aufbau
+Konfiguration und Wartung sind einfach
+(Sie müssen aber trotzdem wissen was Sie tun)
+
+Prof. Buchmann - Netz-Sicherheit
+
+52
+
+Simple Packet Filter-Architektur
+
+Paketfilter auf dem Router
+Internal Network
+
+▪
+
+Nachteile
+−
+
+Eine einzelne Komponente schützt das ganze Subnetz
+▪
+▪
+
+−
+
+Single Point of Failure, attraktives Angriffsziel
+Wenn der Angreifer die Firewall überwunden hat, sieht er alles
+
+Die Filterregeln können sehr umfangreich und sehr komplex werden
+▪
+
+Abhängig von den Anwendungen im Subnetz
+Prof. Buchmann - Netz-Sicherheit
+
+53
+
+Dual-Homed Host-Architektur
+
+Internal Network
+
+▪
+
+Dual-homed Host hat eigene physische Netzwerkschnittstelle für einund ausgehenden Datenverkehr
+−
+
+mehr Rechenleistung als ein Router, komplexere Filteraufgaben
+▪
+
+−
+
+▪
+
+Virenscanner, WWW-Proxy, etc.
+
+Kann nicht im Internet-Router „wegkonfiguriert“ werden
+
+Arbeitet selbst als Internet-Router für das interne Netzwerk
+(Network Address Translation)
+Prof. Buchmann - Netz-Sicherheit
+
+54
+
+Dual-Homed Host-Architektur
+
+Internal Network
+
+▪
+
+Vorteile
+−
+−
+−
+
+Kann allen Datenverkehr mitloggen und potentielle Angriffe erkennen
+Es gibt keine direkte Verbindung zu dem internen Netzsegment, das der
+Dual-Homed Host schützt
+Details des internen Netzsegments werden nicht nach außen sichtbar
+(ARP, DNS etc., von jedem Rechner läuft immer über den Host)
+
+Prof. Buchmann - Netz-Sicherheit
+
+55
+
+Dual-Homed Host-Architektur
+
+Internal Network
+
+▪
+
+Nachteile
+−
+−
+
+Da jeder Datenverkehr durch den Dual Homed Host muss, ist dieser ein
+potentieller Performanz-Flaschenhals
+Dual Homed Host ist attraktives Angriffsziel, „sieht“ das gesamte
+geschützte Subnetz und allen Datenverkehr nach außen
+
+Prof. Buchmann - Netz-Sicherheit
+
+56
+
+Screened Host-Architektur
+
+Internal Network
+
+▪
+
+Paketfilter auf dem Router
+−
+
+▪
+
+Erlaubt Datenverkehr zwischen Bastion Host und Internet sowie
+zwischen internem Netz und Bastion Host, blockiert alles andere
+
+Bastion Host bietet Proxy-Dienste
+−
+
+Beispielsweise kann der Paketfilter auf dem Router erzwingen, dass alle
+Emails durch den Virenscanner auf dem Bastion Host laufen müssen
+Prof. Buchmann - Netz-Sicherheit
+
+57
+
+Screened Host-Architektur
+
+Internal Network
+
+▪
+
+Vorteile
+−
+−
+−
+−
+
+Nur Router und Bastion Host aus dem Internet sichtbar
+Es ist möglich, unproblematischen Diensten direkten Zugang zu geben
+Zwei Sicherheitskomponenten statt einer erhöhen Sicherheit
+Performanter als Dual Homed Host, da es möglich ist, für jeden Dienst
+einen eigenen Bastion Host bereitzustellen
+(Email-Filter, Virenscanner, Web-Proxy, Application-Level Firewall, ...)
+Prof. Buchmann - Netz-Sicherheit
+
+58
+
+Screened Host-Architektur
+
+Internal Network
+
+▪
+
+Nachteile
+−
+−
+−
+
+Vom Angreifer übernommener Bastion Host kann den internen
+Datenverkehr ablauschen
+Vom Angreifer übernommener Router kann Datenverkehr am Bastion
+Host vorbeileiten
+Konfigurationsaufwand/Wartung für zwei Komponenten ist höher als für
+eine Komponente
+Prof. Buchmann - Netz-Sicherheit
+
+59
+
+Screened SubnetArchitektur
+Outer Router
+Perimeter Network
+Inner Router
+Internal Network
+
+▪
+
+Bastion Host in einem Perimeter-Network zwischen zwei Paketfiltern
+−
+
+▪
+
+Bastion Host sowohl im inneren Teilnetz als auch im Internet sichtbar
+−
+
+▪
+
+auch als Demilitarized Zone (DMZ) bekannt
+Dienste in beide Richtungen
+
+Paketfilter auf beiden Routern
+
+Prof. Buchmann - Netz-Sicherheit
+
+60
+
+Screened SubnetArchitektur
+Outer Router
+Perimeter Network
+Inner Router
+Internal Network
+
+▪
+
+Vorteile
+−
+
+Hohes Sicherheitslevel für praktisch alle Anwendungen
+▪
+▪
+▪
+▪
+
+−
+
+Inneres Netz nicht nach außen sichtbar
+Wer den äußeren Router überwindet, sieht nur Bastion Host
+Wer den Bastion Host erobert, sieht nur zwei Router
+Wer in das interne Netz will, muss an zwei Routern vorbei
+
+Performant wie Screened Host, da nur der Datenverkehr an den Bastion
+Host geschickt wird, den dieser benötigt
+▪
+▪
+
+Es ist möglich, internen Rechnern für bestimmte Dienste Internet-Zugang zu
+geben, z.B. auf einen externen Zeitserver oder DNS-Server
+Es kann mehrere Bastion Hosts für unterschiedliche Aufgaben geben
+Prof. Buchmann - Netz-Sicherheit
+
+61
+
+Screened SubnetArchitektur
+Outer Router
+Perimeter Network
+Inner Router
+Internal Network
+
+▪
+
+Nachteile
+−
+
+Hoher Konfigurationsaufwand
+
+Prof. Buchmann - Netz-Sicherheit
+
+62
+
+Split Screened Subnet-Architektur
+
+Outer Router
+Perimeter Network 1
+
+Perimeter Network 2
+Inner Router
+Internal Network
+
+▪
+
+Dual Homed Host teilt das Perimeternetzwerk zwischen zwei Routern
+in zwei Hälften
+−
+−
+
+Physische Trennung zwischen internem und externem Netz durch den
+Dual Homed Host, jede Datenübertragung wird kontrolliert
+Jeder Router schützt über Paketfilter den Dual Homed Host,
+jeweils ins interne Netz und ins Internet
+Prof. Buchmann - Netz-Sicherheit
+
+63
+
+Split Screened Subnet-Architektur
+
+Outer Router
+Perimeter Network 1
+
+Perimeter Network 2
+Inner Router
+Internal Network
+
+▪
+
+Vorteile
+−
+−
+
+Nochmal sicherer als Screened Subnet, weil es nicht möglich ist
+Datenverkehr am Dual Homed Host vorbeizurouten
+Damit ein Angreifer Zugriff auf das interne Netz bekommt, muss er zwei
+Router und den Dual Homed Host überwinden
+
+Prof. Buchmann - Netz-Sicherheit
+
+64
+
+Split Screened Subnet-Architektur
+
+Outer Router
+Perimeter Network 1
+
+Perimeter Network 2
+Inner Router
+Internal Network
+
+▪
+
+Nachteile
+−
+−
+
+Sehr hoher Konfigurationsaufwand
+Dual Homed Host als Flaschenhals für die Performanz, weil es nicht
+möglich ist unproblematischen Datenverkehr vorbeizurouten
+
+Prof. Buchmann - Netz-Sicherheit
+
+65
+
+Abschluss
+
+Zusammenfassung
+▪
+
+In hinreichend komplexen Netzwerk-Infrastrukturen ist es praktisch
+unmöglich zu verhindern, dass jemand physikalisch Daten ablauscht
+−
+
+▪
+
+viel zuviele Gelegenheiten für interne und externe Angreifer
+
+Beste Möglichkeit
+−
+−
+−
+
+Verschlüsselte Protokolle und Netzwerkauthentifizierung wann immer
+möglich
+Von Hause aus unsichere Protokolle sowie nicht benötigte Dienste
+konsequent abschalten
+Firewalls helfen bei der Einteilung des Netzwerks in Sicherheitszonen
+▪
+▪
+
+−
+
+Intrusion Detection Systems identifizieren verdächtige Aktivitäten
+▪
+
+▪
+
+Geräte/Daten mit ähnlichen Sicherheitsanforderungen in derselben Zone
+Firewalls kontrollieren Zonengrenzen
+Sie brauchen aber jemanden, der die Logs liest und versteht
+
+Verlassen Sie sich nicht auf vorkonfigurierte Personal Firewalls!
+Prof. Buchmann - Netz-Sicherheit
+
+67
+
+Mögliche Prüfungsfragen
+▪
+
+Eine Fabrik hat eine Verwaltung, ein Produktivsystem mit
+Industrieanlagen sowie vom Internet sichtbare Web- und EmailServer. Welche Argumente sprechen für oder gegen die Aufteilung in
+1, 2 oder 3 durch Firewalls voneinander getrennte Subnetze?
+
+▪
+
+Welche Vor- und Nachteile hat eine Personal Firewall (d.h., eine auf
+dem Arbeitsrechner installierte Firewall, wie in Windows enthalten)
+
+▪
+
+Auf einem Bastion-Host laufen ein HTTP-Proxy, ein Web-Server und
+ein Email-Server (TLS/SSL). Der Bastion Host ist durch einen Router
+mit dem Internet verbunden (Screened Host-Architektur). Die Firewall
+läuft auf dem Router. Die anderen Rechner im internen Netz dürfen
+nur über den HTTP-Proxy auf dem Bastion-Host mit dem WWW
+kommunizieren. Der DNS-Server hat die IP-Adresse 80.153.199.210
+und muss von jedem Rechner erreichbar sein. Wie sehen die
+Paketfilterregeln für die Firewall aus?
+
+▪
+
+Wieso kann eine Next Generation Firewall Daten entschlüsseln,
+die ja nicht an die Firewall, sondern an einen Server gerichtet sind?
+Prof. Buchmann - Netz-Sicherheit
+
+68
+
+Literatur
+[1] Elizabeth D. Zwicky, Simon Cooper and D. Brent Chapman: Building
+Internet Firewalls, 2nd Edition, O'Reilly Media, 2000
+[2] Claudia Eckert: IT-Sicherheit: Konzepte – Verfahren – Protokolle.
+De Gruyter Studium, 2018
+[3] Liang, Junyan, and Yoohwan Kim. "Evolution of firewalls: Toward
+securer network using next generation firewall." Annual Computing
+and Communication Workshop and Conference (CCWC), 2022
+[4] Khraisat, Ansam, et al. "Survey of intrusion detection systems:
+techniques, datasets and challenges." Cybersecurity 2.1, 2019
+
+Prof. Buchmann - Netz-Sicherheit
+
+69
+
+

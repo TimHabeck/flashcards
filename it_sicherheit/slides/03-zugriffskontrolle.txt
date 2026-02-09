@@ -1,0 +1,1520 @@
+Grundlagen der IT-Sicherheit
+Kapitel 3 – Zugriffskontrolle
+
+Lehrstuhl: Data Privacy and Security,
+Center for Scalable Data Analytics and Artificial Intelligence
+Kontakt: buchmann@informatik.uni-leipzig.de
+
+Gliederung der Vorlesung
+▪
+
+Grundlagen der IT-Sicherheit
+−
+
+▪
+
+Anwendungsschicht
+−
+
+▪
+
+Krypto-Protokolle, Tracking, Browser-Sicherheit,
+sichere Programmierung
+
+Übertragungsschicht
+−
+
+▪
+
+Zugriffskontrolle, Verschlüsselung
+
+Firewalls, Angriffe auf die Infrastruktur, Netzwerkarchitekturen
+
+Management-Ebene
+−
+
+Basis-Absicherung und Security Engineering
+
+−
+
+Mobile Security
+
+Prof. Buchmann - Zugriffskontrolle
+
+2
+
+POV: Passwörter sind nicht der Weisheit letzter Schluss
+
+Prof. Buchmann - Zugriffskontrolle
+
+3
+
+Lernziel und Aufbau dieses Kapitels
+▪
+
+▪
+
+Identifikation und Authentifikation
+−
+
+Wie lässt sich eine Identität bestätigen?
+
+−
+
+Passkey, Decentralized Identifiers und Self-Sovereign Identity
+
+−
+
+Welche Vor- und Nachteile haben die Varianten?
+
+Zugriffskontrolle
+−
+
+▪
+
+Aktuell etablierte Verfahren
+
+Lernziele
+−
+
+Sie können und Identifikation und Authentifikation abgrenzen.
+
+−
+
+Sie können den Konflikt zwischen Zugriffskontrolle und Nutzbarkeit eines
+Systems erklären und Lösungsvorschläge machen.
+
+−
+
+Sie können die vorgestellten Mechanismen zur Umsetzung der
+Zugriffskontrolle erklären und ihre Stärken und Schwächen diskutieren.
+
+Prof. Buchmann - Zugriffskontrolle
+
+4
+
+Identifikation und Authentifizierung
+
+Wie kann man jemanden identifizieren?
+▪
+
+„Das blonde Mädel mit dem Tattoo, mit dem ich auf der Rolltreppe am
+Hauptbahnhof letzten Samstag Augenkontakt hatte“
+
+▪
+
+Personalausweisnummer #DE23948873984
+
+▪
+
+Der Besitzer des Fahrzeugs mit dem Kennzeichen „L AT-123“
+
+▪
+
+Der Nutzer des Webbrowsers, der folgenden Cookie speichert:
+„end_user_id:oeu1472024592717r0.2216567118954197“
+
+→ Identifizierung hängt vom Anwendungskontext ab
+→ Identifizierung kann ungenau oder zeitlich befristet sein
+
+Prof. Buchmann - Zugriffskontrolle
+
+6
+
+Drei Möglichkeiten, eine Identität zu bestätigen
+▪
+
+Etwas, das die Person weiß
+−
+
+▪
+
+Etwas, das die Person ist
+−
+
+▪
+
+Passwörter, PIN-Nummern, Antworten auf Sicherheitsfragen wie
+“Was ist der Mädchenname Ihrer Mutter“
+
+Biometrische Merkmale wie Fingerabdrücke, Sprache,
+Gesichtserkennung, Blutgefäße in Netzhaut oder Hand
+
+Etwas, das die Person hat
+−
+
+Hardware-Token, Personalausweis, Schlüssel
+
+→ lässt sich kombinieren, z.B. Geldautomat: PIN + Besitz der Karte
+
+Prof. Buchmann - Zugriffskontrolle
+
+8
+
+Identifikation vs. Authentifizierung
+Hallo, ich bin
+Stefan L.
+
+Prof. Buchmann - Zugriffskontrolle
+
+Darf ich Ihren
+Ausweis sehen?
+
+9
+
+Identifikation vs. Authentifizierung
+▪
+
+Identitäten sind häufig öffentlich
+−
+
+▪
+
+Authentifizierung sollte auf privaten Eigenschaften beruhen
+−
+
+▪
+
+Name einer Person, Email-Adresse, etc.
+z.B.: Email enthält Identität von Absender und Empfänger
+
+Passwort, Fingerabdruck, Schlüssel, …
+
+Authentifizierung darf nicht für Identifizierung benutzt werden!
+−
+
+Wer ist die Person mit dem Passwort blabla38?
+
+−
+
+Welche Person hat den Fingerabdruck mit dem Hash 86AD100C?
+→ Ergebnis ist nicht zwingend eindeutig!
+
+Prof. Buchmann - Zugriffskontrolle
+
+10
+
+Korrekte und inkorrekte Authentifizierung
+▪
+
+True positive
+−
+
+▪
+
+True negative
+−
+
+▪
+
+System hat falsche Authentifizierung zurückgewiesen
+
+False positive
+−
+
+▪
+
+System hat korrekte Authentifizierung akzeptiert
+
+System hat falsche Authentifizierung akzeptiert
+
+False negative
+−
+
+System hat korrekte Authentifizierung zurückgewiesen
+
+→ Wieviele False Positives/Negatives Sie erlauben, hängt
+von Ihrer Anwendung ab!
+
+Prof. Buchmann - Zugriffskontrolle
+
+11
+
+Passwörter
+▪
+
+Kategorie: Etwas, das die Person weiß
+
+▪
+
+Häufig genutzt, aber problematisch
+
+▪
+
+Wenn das System starke Passwörter
+erzwingt, finden Sie oft
+
+▪
+
+−
+
+ein Post-it irgendwo auf dem Schreibtisch,
+hinter dem Monitor, unter der Schreibtischunterlage oder unter der Tastatur
+
+−
+
+einen Zettel in der linken vorderen Ecke der obersten Schublade
+
+Wenn das System keine starken Passwörter erzwingt
+−
+
+51% aller Passwörter bestehen aus weniger als 5 Buchstaben, alle klein
+geschrieben (s. Pfleeger: Security in Computing)
+→ 265 = 11.881.373 Möglichkeiten
+
+Prof. Buchmann - Zugriffskontrolle
+
+12
+
+Verwendung von Passwörtern
+▪
+
+▪
+
+Verwendung als solche ist einfach
+−
+
+System fragt Nutzer nach Passwort, Nutzer gibt Passwort ein
+
+−
+
+System baut eine kryptographische Signatur vom Passwort
+
+−
+
+Wenn diese der gespeicherten Signatur entspricht, ist Nutzer
+authentifiziert
+
+Herausforderungen
+−
+
+Nutzung: Ein eigenes Passwort für jedes Asset ist unpraktisch
+
+−
+
+Enthüllung: Passwörter lassen sich ausspähen oder weitergeben
+
+−
+
+Zurückziehen: Wenn ein Passwort zurückgezogen wird, was passiert mit
+dem Asset, das gerade bearbeitet wird?
+
+−
+
+Verlust:
+Wie Passwort
+zurücksetzen?
+
+Prof. Buchmann - Zugriffskontrolle
+
+13
+
+Ist die Implementierung sicher?
+▪
+
+Eigenes Beispiel vom DFG-Server zur
+Vergabe von Forschungsmitteln, Juni'25
+
+▪
+
+Die Sicherheitsbestimmungen des BSI
+schränken nicht
+−
+
+die Maximallänge
+
+−
+
+die erlaubten Buchstaben
+
+−
+
+die erlaubten Sonderzeichen
+
+eines Passworts ein ;-)
+
+Prof. Buchmann - Zugriffskontrolle
+
+14
+
+Was passiert, wenn das Passwort vergessen wurde?
+▪
+
+Sichere Authentifizierung nötig, aber kein Passwort verfügbar
+−
+
+Lange Liste von "Angriffen" auf Passwortrücksetzmechanismen, bei
+denen Antwort auf Sicherheitsfrage ergoogelt werden konnte
+
+−
+
+Kein technisches Problem, sondern Bug in der Business Logic!
+Prof. Buchmann - Zugriffskontrolle
+
+15
+
+Angreifbarkeit von Passwörtern
+▪
+
+Passwörter werden als kryptographische Signatur gespeichert
+
+▪
+
+System könnte eine zeitlang blockieren, wenn ein Nutzer mehrmals
+hintereinander ein falsches Passwort eingegeben hat
+−
+−
+
+▪
+
+Kryptographische Signaturen müssen geheim bleiben
+−
+
+▪
+
+Angreifer kann auf diese Weise nicht Millionen von Passwörtern pro
+Sekunde ausprobieren
+Aber: Kann als Denial of Service gegen Nutzer eingesetzt werden
+
+Wenn Angreifer Signaturfunktion kennt, kann er sonst auf seinem
+Rechner tatsächlich alle Passwörter ausprobieren
+
+8 Zeichen aus {a-z|A-Z|0-9} sind 628 = 218 Billionen Kombinationen
+−
+−
+
+Sicher genug?
+Zum Vergleich: Duden enthält ca. 148.000 Stichwörter (Stand 2020)
+
+Prof. Buchmann - Zugriffskontrolle
+
+16
+
+218 Billionen Kombinationen reduzieren
+▪
+
+Ablauf beim Passwörter-erraten
+1) kein Passwort
+2) Passwort ist identisch zum Namen des Nutzerkontos im System
+3) ähnlich zum Vor- oder Nachnamen des Nutzers
+4) gebräuchliches Wort + irgendein einfaches Muster
+(z.B. „password123“, „qwerzt-geheim“)
+5) im Wörterbuch der Muttersprache des Nutzers
+6) im Wörterbuch in einer Fremdsprache
+7) im Wörterbuch mit einfachen Ersetzungen (0 → O, S → 5 etc.) with
+Großbuchstaben („PaSsWorT“)
+8) alle erlaubten Kombinationen aus Buchstaben/Zahlen
+9) alle erlaubten Kombinationen von (Sonder-)Zeichen
+
+Prof. Buchmann - Zugriffskontrolle
+
+17
+
+Sowas nennen die Medien „Hackerangriff“ :-/
+
+Updated 2234 GMT (0634 HKT) February 26, 2021
+
+Anmerkung: SolarWinds stellt Security-Tools für Datenbankund Netzwerküberwachung her. Passwort betraf UpdateServer, daraufhin wurden Updates mit Trojanern an alle
+Kunden ausgeliefert. Passwort vom Praktikanten gesetzt.
+
+Prof. Buchmann - Zugriffskontrolle
+
+19
+
+Sichere Passwörter
+▪
+
+Postillon, 21.04.2023:
+
+Prof. Buchmann - Zugriffskontrolle
+
+21
+
+Biometrie
+▪
+
+Kategorie: Etwas, das die Person ist
+
+▪
+
+Biologische Merkmale basierend auf den Eigenschaften des Körpers
+−
+
+Fingerabdruck
+
+−
+
+Geometrie der Handfläche
+
+−
+
+Blutgefäße in Netzhaut, Finger, Hand, Gesicht
+
+−
+
+Handschrift, Timing beim Tippen auf der Tastatur
+
+−
+
+Stimme
+
+−
+
+Gesichtsform, Anordnung von Nase, Mund, Augenbrauen
+
+−
+
+…
+
+Prof. Buchmann - Zugriffskontrolle
+
+22
+
+Eigenschaften von biometrischen Merkmalen (1/2)
+▪
+
+▪
+
+▪
+
+Unveränderlich!
+−
+
+Anders als beispielsweise Passwörter
+
+−
+
+Öffentliche biometrische Merkmale sind für immer „verbrannt“
+
+Sensibel!
+−
+
+Tiefer Eingriff in die Privatsphäre
+des Nutzers
+
+−
+
+Zur Authentifizierung gemessene
+Merkmale können zusätzliche
+sensible Informationen enthalten
+
+Offen für Manipulationen!
+−
+
+Fingerabdruck auf Gummifinger, Aufzeichnung der Stimme, Foto
+
+Prof. Buchmann - Zugriffskontrolle
+
+23
+
+Eigenschaften von biometrischen Merkmalen (2/2)
+▪
+
+Anteil der False positives kann sehr hoch sein
+−
+
+Schwellwert, ab wann gemessene Eigenschaften übereinstimmen
+
+−
+
+Es gibt immer Leute, die ein Merkmal nicht nutzen können
+▪
+
+−
+
+−
+
+Unlesbare Fingerabdrücke, fehlende Augen/Gliedmaßen, stumm, …
+
+Sicherheitsbeweis unmöglich
+▪
+
+Weder Nutzer noch Betreiber
+kann beweisen, dass System
+Sicherheitskriterien erfüllt
+
+▪
+
+nur statistische Aussagen
+durch Nutzerstudien
+
+Niemals Authentifizierung
+für Identifizierung nutzen!
+
+Prof. Buchmann - Zugriffskontrolle
+
+24
+
+Hardwaretoken-basierte Authentifizierung
+▪
+
+Kategorie: Etwas, das der Nutzer hat
+
+▪
+
+Passive Token
+−
+
+▪
+
+Aktive Tokens
+−
+
+▪
+
+Lassen sich digital auslesen
+e.g., RFID-chip, EC-Karte
+
+Statische Tokens
+−
+
+▪
+
+Schlüssel, Ausweise, etc.
+
+Unveränderliche Daten
+
+Dynamische Token
+−
+
+Daten ändern sich über die Zeit
+
+→ Wo wäre ein EC-Karte mit PIN in diesem Schema?
+
+Prof. Buchmann - Zugriffskontrolle
+
+25
+
+Zugriffskontrolle
+
+Wi
+ed
+
+Zugriffskontrolle
+▪
+
+erh
+olu
+ng
+
+Subjekt, Art des Zugriffs, Objekt und Regel
+Art des Zugriffs
+(Wie soll das passieren)
+
+Subjekt
+(Wer möchte zugreifen)
+
+Objekt
+(Was wird zugegriffen)
+
+Regel:
+f(Wer + Was + Wie) → {Ja|Nein}
+
+Prof. Buchmann - Zugriffskontrolle
+
+27
+
+Effektive Zugriffskontrolle
+▪
+
+Prüfe jeden Zugriff
+−
+
+▪
+
+Vergebe die minimale Menge an Privilegien
+−
+
+▪
+
+Ein einmal autorisiertes Subjekt muss nicht notwendigerweise auch
+später noch Zugriffsrechte haben (Was ist mit Sigle Sign-on?)
+
+Ein Subjekt sollte Zugriff auf die kleinste Menge an Assets haben, die
+notwendig sind um die gestellte Aufgabe zu erfüllen (Least Privilege)
+
+Prüfe, was eine akzeptable Nutzung ist
+−
+
+Eine Zugriffsberechtigung ist eine ja/nein-Entscheidung
+
+−
+
+Wie müssen Zugriffsberechtigungen aussehen, damit ein Subjekt nur
+das mit einem Asset tun kann, was es tun darf? (Integritätssicherung)
+
+Prof. Buchmann - Zugriffskontrolle
+
+28
+
+Auch Zugriffsrechte ändern sich mit der Zeit!
+▪
+
+Rechte müssen immer und am besten sofort an Änderungen in der
+Unternehmensstruktur angepasst werden
+−
+
+Größte Herausforderung für Zugriffsregeln überhaupt
+Wer hat alles vergessene Schlüssel von früheren
+Tätigkeiten/Ausbildung/Vereinen etc. in der Schublade?
+Wer hat alles vergessene Accounts von früheren
+Tätigkeiten/Ausbildung/Vereinen etc., die er nicht mehr braucht?
+
+Prof. Buchmann - Zugriffskontrolle
+
+29
+
+Single Sign-On
+Zugriffskontrolle über Trusted Third Party
+●
+ggf. mit Passkey noch benutzerfreundlicher
+●
+
+Benutzerfreundlichkeit vs. Sicherheit
+▪
+
+Ist Sicherheit unpraktisch, suchen die Nutzer andere Wege
+
+Prof. Buchmann - Zugriffskontrolle
+
+38
+
+Ansatz zur Vereinfachung: Single Sign-On
+▪
+
+Vielversprechender Ansatz: Reduziere die
+benötigte Anzahl der
+Authentifizierungsvorgänge
+
+Prof. Buchmann - Zugriffskontrolle
+
+39
+
+Single Sign-On
+▪
+
+Eine einzige Authentifizierung für mehrere Dienste
+−
+
+Darf aufwendig sein
+▪
+
+−
+
+Passwort/Credentials werden nur einmal benötigt
+▪
+
+−
+
+▪
+
+▪
+
+komplexe Passwörter, 2-(Multi-)Faktor-Authentifizierung
+übertragen/verwalten nur an einer Stelle (hoffentlich sicher)
+
+Phishing wird schwerer, da nicht mehr Passworteingabe überall
+
+Nachteile
+−
+
+Single Point of Failure (Verfügbarkeit, vertrauen in SSO-Service)
+
+−
+
+Ausloggen meist über Timeout (SSO weiß nicht, welche Dienste genutzt)
+
+Drei allgemeine Ansätze im folgenden
+−
+
+Portal-basiert
+
+−
+
+Token-basiert
+
+−
+
+Client-basiert
+Prof. Buchmann - Zugriffskontrolle
+
+40
+
+Portal-basiertes Single Sign-On
+1) Nutzer authentifiziert sich in Portal
+2) Portal gibt Authentifizierung an
+angeschlossene Dienste weiter
+3) Dienst prüft nur noch Zugriffsrechte des
+authentifizierten Nutzers
+▪
+
+Vorteile
+−
+
+▪
+
+Cloud-Lösungen skalieren sehr gut,
+im Internet sehr häufig genutzt
+
+Nachteile
+−
+
+Portal sieht, wer wann welchen Dienst nutzt
+
+−
+
+Ausloggen über Timeout
+
+Prof. Buchmann - Zugriffskontrolle
+
+41
+
+Token-basiertes Single Sign-On
+1) Nutzer authentifiziert sich bei
+Auth-Server
+2) Auth-Server gibt Token mit
+Session-Key und User-ID aus
+3) Dienst prüft Gültigkeit des
+Tokens und Rechte der User-ID
+▪
+
+Vorteile
+−
+
+▪
+
+Komplexe Szenarien möglich
+z.B. Auslagern der Rechteprüfung
+(s. Kerberos, Kapitel "Web-Sicherheit")
+
+Nachteile
+−
+
+Komplexe Infrastruktur, fehleranfällig
+
+(googeln Sie nach MS Active Directory Security ;-)
+−
+
+Ausloggen über Verfallsdatum des Tokens
+Prof. Buchmann - Zugriffskontrolle
+
+42
+
+Client-basiertes Single Sign-On
+1) Nutzer authentifiziert sich mit lokaler Client-App gegenüber einer
+Smart Card (z.B. Online-Ausweisfunktion vom Personalausweis)
+2) Die Smart Card verwaltet Schlüssel für die Anmeldung
+3) Alle Anmeldungen von Client-App an Smart Card durchgereicht
+▪
+
+▪
+
+Vorteile
+−
+
+Keine trusted Third Party erfährt Anmeldungen
+
+−
+
+Ausloggen direkt beim Dienst
+
+−
+
+2 Faktoren (Besitz + Wissen)
+
+Nachteile
+−
+
+Aufwendige Umsetzung
+
+−
+
+Sicherheit hängt davon ab, dass der Nutzer
+die Smart Card und PIN nicht verliert
+
+Prof. Buchmann - Zugriffskontrolle
+
+43
+
+Probleme vom Single Sign-On
+▪
+
+▪
+
+Abhängig von einer Trusted Third Party
+−
+
+Anmeldungen unmöglich, wenn Portal / Kerberos' Auth-Server ausfällt
+
+−
+
+Trusted Third Party kontrolliert Zugang (beim Online-Perso gewünscht)
+
+Komplexe Protokolle
+−
+
+▪
+
+▪
+
+Es werden immer wieder Sicherheitslücken bekannt
+z.B. Session-Hijacking mittels Cross Site-Scripting
+
+Datenschutzbedenken
+−
+
+Anmeldedaten vollständig unter Kontrolle der Trusted Third Party
+
+−
+
+Wenn Dienste nachträglich an Trusted Third Party angedockt, gelangen
+ggf. Anmeldedaten ohne Zustimmung des Nutzers in fremde Hände
+
+−
+
+Trusted Third Party weiß mindestens, das User Zugang wünscht
+z.T. auch genau, welcher Dienst wann genutzt wird
+
+Keine einheitliche Schnittstellen
+−
+
+Active Directory, Personalausweis, OpenID fundamental unterschiedlich
+Prof. Buchmann - Zugriffskontrolle
+
+44
+
+Passkey
+
+▪
+
+Verfahren nach W3C-Standard "FIDO2" (Fast IDentity Online 2)
+Als Ersatz für Passwort-basierte Login-Verfahren gedacht
+Ergänzt Single Sign-on, kann aber auch allein eingesetzt werden
+
+▪
+
+Grundsätzliche Idee:
+
+▪
+▪
+
+−
+
+Nicht der Nutzer, sondern das Verfahren bestimmt einen sicheren
+Passkey (Private Key), der im Auftrag des Nutzers verwendet wird
+
+−
+
+Passkey bleibt auf sicherem Gerät, z.B. USB-Stick, Handy oder Tablet
+
+−
+
+Nutzer autorisiert Nutzung des Passkeys durch Fingerabdruck,
+Face-ID, PIN, etc. gegenüber sicherem Gerät
+
+−
+
+Nutzung durch Challenge-Response, d.h., Passkey verlässt Gerät nicht
+
+Prof. Buchmann - Zugriffskontrolle
+
+45
+
+Passkey Registrierung
+Dienst
+Authenticator
+Sichere Hardware, z.B.
+Handy, USBStick, Tablet
+●
+Private Key
+des Nutzers
+
+CTAP2
+
+Client
+Web browser
+oder Betriebssystem
+
+WebAuthn
+
+Relying Party
+FIDO2-Server,
+der die Authentifizierung
+durchführt
+●
+Public Key
+des Nutzers
+
+1) Authenticator holt sich eine Autorisierung vom Benutzer
+−
+−
+
+Face-ID, Fingerabdruck, Pin, Wischmuster, was auch immer
+generiert Public/Private Key spezifisch für den Dienst
+
+2) Client schickt Nutzer-ID und Public Key an Relying Party
+3) Relying Party generiert aus Public Key eine Challenge
+−
+
+Challenge wird an an Authenticator geschickt
+
+4) Authenticator berechnet Challenge-Response mit Private Key,
+schickt Response an Relying Party
+5) Wenn Response gültig, ist der Nutzer für den Dienst registriert
+Prof. Buchmann - Zugriffskontrolle
+
+46
+
+Passkey Authentifizierung
+Dienst
+Authenticator
+Sichere Hardware, z.B.
+Handy, USBStick, Tablet
+●
+Private Key
+des Nutzers
+
+CTAP2
+
+Client
+Web browser
+oder Betriebssystem
+
+WebAuthn
+
+Relying Party
+FIDO2-Server,
+der die Authentifizierung
+durchführt
+●
+Public Key
+des Nutzers
+
+1) Client schickt Nutzer-ID an Relying Party
+2) Relying Party generiert aus Public Key eine Challenge
+−
+
+Challenge wird an an Authenticator geschickt
+
+3) Authenticator holt sich eine Autorisierung vom Benutzer
+−
+
+Face-ID, Fingerabdruck, Pin, Wischmuster, was auch immer
+
+4) Authenticator berechnet Challenge-Response mit Private Key,
+schickt Response an Relying Party
+5) Wenn Response gültig, darf der Nutzer den Dienst verwenden
+Prof. Buchmann - Zugriffskontrolle
+
+47
+
+Vorteile von Passkey
+▪
+
+Unanfälliger gegenüber Phishing
+−
+
+▪
+
+▪
+
+▪
+
+Passkey auf Hardware im Besitz des Nutzers gespeichert
+−
+
+z.B. in Wallet auf USB-Stick, auf einem Tablet oder Handy des Nutzers
+
+−
+
+Nutzer autorisiert dem sicheren Gerät die Nutzung des Schlüssels
+
+Es werden keine sicherheitskritischen Informationen übertragen
+−
+
+Verfahren verschickt nur Nutzer-ID, Public Key, Challenge, Response
+
+−
+
+Private Key verbleibt beim Authenticator (sicheres Gerät)
+
+Multi-Faktor-Authentifizierung
+−
+
+▪
+
+Nutzer kann den Passkey nicht verraten (weil er ihn nicht kennt),
+sondern nur die Nutzung des Passkey autorisieren
+
+Mindestens: Besitz des Geräts + FaceID/Fingerabdruck/...
+
+Viele Arten unsicherer Handhabung fallen weg
+−
+
+Vgl. Passwörter: werden an Dritte weitergegeben, aufgeschrieben, zu
+kurz/unsicher gewählt um sie merken zu können, dieselben Passwörter
+für mehrere unterschiedliche Dienste, etc.
+Prof. Buchmann - Zugriffskontrolle
+
+49
+
+Self-Sovereign Identity
+●
+
+Zugriffskontrolle mit selbst vermittelten
+Credentials
+
+Lessons learned from Single Sign-On
+▪
+
+Man möchte in vielen Anwendungen keine Trusted Third Party
+−
+
+die den Zugang zu Diensten und Weitergabe der Daten kontrolliert
+
+−
+
+die entscheidet, welche Dienste genutzt werden können
+
+−
+
+die ausfallen kann oder ein attraktives Angriffsziel ist
+
+→ Vertrauen in das System, statt Vertrauen in Trusted Third Party
+▪
+
+Stattdessen soll der Nutzer als Controller
+−
+
+digitale (Teil-)Identitäten selbst anlegen, verwalten und löschen
+
+−
+
+Credentials selbst weitergeben, anstelle dass dies ein SSO tut
+
+−
+
+durch offene Standards mit beliebigen Diensten arbeiten
+
+−
+
+Credentials mit einem sicheren System verwalten
+
+−
+
+Credentials von anderen ohne Hilfe Dritter direkt prüfen
+
+→ Offenes, sicheres, transparentes System
+
+Prof. Buchmann - Zugriffskontrolle
+
+51
+
+Wir brauchen darum...
+▪
+
+Eine offene, sichere Speicherund Distributionsinfrastruktur
+−
+
+▪
+
+Decentralized Identifiers (DID)
+−
+
+▪
+
+Standard zur Identifikation
+von digitalen (Teil-)Identitäten
+
+Verifiable Credentials
+−
+
+▪
+
+Meistens eine Blockchain
+
+Standard zur prüfbaren Verknüpfung von
+DIDs mit Credentials und Metadaten
+
+Self-Sovereign Identity
+−
+
+Ein Protokoll zum Zusammenspiel dieser Komponten
+
+Prof. Buchmann - Zugriffskontrolle
+
+52
+
+Decentralized Identifier (DID)
+▪
+
+Neue Art von global eindeutigen URIs ohne zentrale Registratur
+−
+
+−
+
+Beispiele für herkömmliche Uniform Resource Identifiers:
+▪
+
+https://de.wikipedia.org/wiki/Uniform_Resource_Identifier
+
+▪
+
+file:///C:/Users/Benutzer/Desktop/Uniform%20Resource%20Identifier.html
+
+▪
+
+mailto:John.Doe@example.com
+
+▪
+
+git://github.com/rails/rails.git
+
+Beispiel für einen Decentralized Identifier
+▪
+
+did:selfkey:TKzHv2jFIyvdTGF1Dsgwngfdg3SH6TpDv0Ta1aOEkw
+Methoden-spezifischer Identifikator
+Methode
+Schema
+
+▪
+
+DID identifiziert das, was der Controller des DID wünscht
+−
+
+Person, Organisation, Data Model, Entity, Dokument, etc.
+Prof. Buchmann - Zugriffskontrolle
+
+53
+
+DIDs haben 5 Eigenschaften
+▪
+
+Persistent
+−
+
+▪
+
+Auflösbar
+−
+
+▪
+
+Metadaten
+stehen in der
+Blockchain
+
+Identifikator
+ist gültiger
+Hash für
+Metadaten
+
+Gültigkeit des DID kann kryptographisch nachgewiesen werden
+
+Dezentral
+−
+
+▪
+
+DID lässt sich seinen Metadaten zuordnen
+
+Verifizierbar
+−
+
+▪
+
+Der DID ist so lange gültig, wie der Controller das wünscht
+
+Keine Trusted Third Party bei Erstellung, Validierung, Nutzung und beim
+zurückziehen des DID durch seinen Controller nötig
+
+Standardisiert
+−
+
+Definierte, interoperable Schnittstellen zur Erstellung, Validierung, ...
+
+−
+
+W3C DID Working Group pflegt den Standard (https://www.w3.org/TR/did-core)
+und führt die Liste von existierenden DID-Methoden
+(https://w3c.github.io/did-spec-registries/#did-methods )
+Prof. Buchmann - Zugriffskontrolle
+
+54
+
+4 Arten von DID-Methoden
+▪
+
+Ledger-basiert
+−
+
+▪
+
+Peer-to-Peer
+−
+
+▪
+
+Der DID wird in seiner Nutzercommunity zwischen
+den Teilnehmern mit einem Peer-to-Peer-Verfahren verteilt
+
+Layer 2
+−
+
+▪
+
+Der DID ist in direkt einer Blockchain (Bitcoin, Ethereum,
+Hyperledger, …) registriert
+
+Der DID ist mittelbar in einer Blockchain verankert, z.B. über eine
+Prüfsumme, aber ist nicht selber darin gespeichert (z.B. Microsoft ION)
+
+Alternativ
+−
+
+Verfahren für Spezialanwendungen, die nicht unbedingt alle
+5 genannten Eigenschaften erfüllen
+Prof. Buchmann - Zugriffskontrolle
+
+55
+
+Beispiele für DID-Methoden
+▪
+▪
+
+siehe hier: https://w3c.github.io/did-spec-registries/#did-methods
+20.09.2023: insgesamt 182 registrierte Methoden
+
+(...)
+Prof. Buchmann - Zugriffskontrolle
+
+56
+
+Verifiable Credentials (VC)
+{
+
+▪
+
+Bestandteile
+−
+
+Metadaten
+(Datum, Aussteller,
+Typ, Subjekt, ID, …)
+
+−
+
+Credential-Inhalt
+
+(Im Beispiel: Nachweis,
+dass ein DID-Inhaber
+an der Uni Leipzig
+Master Data Science
+studiert)
+−
+
+kryptographischer
+Beweis, dass das
+VC authentisch ist
+}
+
+"@context": [
+"https://www.w3.org/2022/credentials/v1",
+"https://www.w3.org/2022/credentials/examples/v1"],
+"id": "http://uni-leipzig.de/credentials/1872",
+"type": ["VerifiableCredential", "StudentCredential"],
+"issuer": "https://uni-leipzig.de/issuers/5650",
+"issuanceDate": "2023-01-01T19:23:24Z",
+"credentialSubject": {
+"id": "did:selfkey:ebfeb1f712ebc6f1c276e12ec21",
+"studentOf": {
+"id": "did:selfkey:c276e12ec21ebfeb1f712ebc6f1",
+"name": [{
+"value": "Universität Leipzig",
+"lang": "de"
+}],
+"title": "Master of Science",
+"course": "Data Science"
+}
+},
+"proof": {
+"type": "RsaSignature2018",
+"created": "2023-06-18T21:19:10Z",
+"proofPurpose": "assertionMethod",
+"verificationMethod": "https://uni-leipzig.de/issuers/5650#key1",
+"jws": "eyJhbGciOiJSUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19
+sITJX1CxPCT8yAV-TVkIEq_PbChOMqsLfRoPsnsgw5WEuts01mq-pQy7UJiN5m
+X16dUEMGlv50aqzpqh4Qktb3rk-BuQy72IFLOqV0G_zS245-kronKb78cPN25D
+PAYuNzVBAh4vGHSrQyHUdBBPM"
+}
+
+https://www.w3.org/TR/vc-data-model/#example-a-simple-example-of-a-verifiable-credential
+Prof. Buchmann - Zugriffskontrolle
+
+57
+
+Die Semantik hinter VCs
+▪
+
+Entities
+(real existierende Personen, Organisationen, z.B. "Uni Leipzig", "Peter Petermann")
+−
+
+▪
+
+Controller, erzeugen/nutzen/verbreiten Decentralized Identifiers
+
+Decentralized Identifiers
+(Digitale (Teil-)Identitäten,
+z.B. "Student der Uni Leipzig")
+−
+
+▪
+
+beschreiben Identitäten
+
+correspond
+to
+Entities
+
+Identities
+
+consist
+of
+
+Attributes /
+Identifiers
+
+Verifiable Credentials
+(Credential, z.B. "studiert
+M. Sc. in Data Science")
+−
+
+ordnen den DIDs
+beliebige Attribute zu
+
+Prof. Buchmann - Zugriffskontrolle
+
+58
+
+Wie werden daraus Self-Sovereign Identities?
+▪
+▪
+▪
+
+Nutzer verwenden Wallet mit VCs wie digitale Brieftasche mit
+Ausweis, Reisepass, Firmenausweis, Gesundheitskarte, …
+VCs sind vom Controller erstellt (Uni → Nachweis M. Sc. Student)
+VCs vom Nutzer prüfbar, Integrität und Distribution über Blockchain
+
+Quelle: Allen, Christopher: Self-Sovereign Identity
+Prof. Buchmann - Zugriffskontrolle
+
+59
+
+Das heißt also...
+▪
+▪
+▪
+▪
+
+Trusted Third Party (z.B. den Active Directory-Betreiber) ersetzt durch
+ein offenes, manipulationssicheres System, z.B. Blockchain
+Vertrauen in die Trusted Third Party ersetzt durch Vertrauen in die
+Sicherheit eines kryptografischen Beweises
+Verwaltung der Credentials in der Datenbank der Trusted Third Party
+ersetzt durch Verwaltung im digitalen Wallet des Nutzers
+Nutzer selber übergibt Credentials an Dienst, nicht eine Third Party
+
+Prof. Buchmann - Zugriffskontrolle
+
+60
+
+Abschluss
+
+Zusammenfassung
+▪
+
+Identifikation und Authentifizierung sind die Grundlage für jeden
+Mechanismus zur Absicherung der Assets
+–
+
+▪
+
+Niemals Identifikation (öffentliche Merkmale) und Authentifizierung (private
+Merkmale) mischen
+–
+
+▪
+
+Also nicht beispielsweise jemanden anhand seines Fingerabdrucks
+identifizieren UND authentifizieren
+
+Verschiedene Implementierungen von Zugriffskontrollmechanismen
+−
+
+▪
+
+Nutzerakzeptanz ist ein wichtiger Sicherheitsfaktor!
+Aufwand und andere Seiteneffekte müssen berücksichtigt werden
+
+Jeder Ansatz hat spezifische Vor- und Nachteile
+
+Praxis: Single Sign-On (heute) und Self-Sovereign Identities (morgen?)
+
+Prof. Buchmann - Zugriffskontrolle
+
+62
+
+Mögliche Prüfungsfragen
+▪
+
+Warum haben wir davon abgeraten, Verfahren zur Authentifizierung
+auch gleich für die Identifizierung zu verwenden?
+
+▪
+
+Beschreibe für jeden Zugriffskontrollmechanismus, auf welche Weise
+und mit wieviel Aufwand (a) das System feststellen kann, ob jemand
+Zugriffsrechte für ein Objekt besitzt, (b) neue Zugriffsrechte für ein
+Subjekt hinzugefügt werden können, (c) Zugriffsrechte eines Nutzers
+zurückgezogen werden können, (d) neue Objekte mit StandardZugriffsrechten für alle Nutzer hinzugefügt werden können.
+
+▪
+
+Nennen Sie drei Gründe, warum Nutzer biometrische
+Zugriffskontrollverfahren ablehnen könnten.
+
+▪
+
+Inwiefern sind Passkey-Lösungen für den Datenschutz besser als
+Single Sign-On-Lösungen?
+
+Prof. Buchmann - Zugriffskontrolle
+
+64
+
+Literatur
+▪
+
+Pfleeger, Charles P. et al.: Security in Computing,
+Prentice Hall, 2015
+
+▪
+
+Eckert, Claudia. IT-Sicherheit: Konzepte-Verfahren-Protokolle. Walter de
+Gruyter, 2018
+(Die Auflage ist für Grundlagenkapitel egal, falls Sie eine alte Version
+besitzen oder als PDF im Netz finden)
+
+▪
+
+Allen, Christopher: Self-Sovereign Identity, 2020
+https://www.slideshare.net/SSIMeetup/selfsovereign-identity-ideology-and-architecture-with-christopher-allen
+
+Prof. Buchmann - Zugriffskontrolle
+
+65
+
+

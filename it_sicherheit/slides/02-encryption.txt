@@ -1,0 +1,3342 @@
+Grundlagen der IT-Sicherheit
+Kapitel 2 – Kryptographie
+
+Lehrstuhl: Data Privacy and Security,
+Center for Scalable Data Analytics and Artificial Intelligence
+Kontakt: buchmann@informatik.uni-leipzig.de
+
+Gliederung der Vorlesung
+▪
+
+Grundlagen der IT-Sicherheit
+−
+
+▪
+
+Anwendungsschicht
+−
+
+▪
+
+Krypto-Protokolle, Tracking, Browser-Sicherheit,
+sichere Programmierung
+
+Übertragungsschicht
+−
+
+▪
+
+Zugriffskontrolle, Verschlüsselung
+
+Firewalls, Angriffe auf die Infrastruktur, Netzwerkarchitekturen
+
+Management-Ebene
+−
+
+Basis-Absicherung und Security Engineering
+
+−
+
+Mobile Security
+
+Prof. Buchmann - Kryptographie
+
+2
+
+Inhalte und Lernziele dieses Kapitels
+▪
+
+Inhalt
+– Einführung in die Kryptographie
+– Symmetrische Verschlüsselung
+– Asymmetrische Verschlüsselung
+– Post-Quantum-Cryptographie und andere Herausforderungen
+
+▪
+
+Lernziele
+– Sie können die verschiedenen Verschlüsselungsverfahren
+anwenden, und kennen ihre Stärken und Schwächen.
+− Sie können die Ziele der Kryptographie erklären,
+sowie passende Sicherheitskriterien und
+Verschlüsselungsverfahren erläutern.
+
+Prof. Buchmann - Kryptographie
+
+3
+
+Einführung in die Kryptographie
+
+Wer etwas zu verbergen hat...
+...versucht es zu verstecken.
+▪ Unsichtbare Tinte (Zitronensaft trocken unsichtbar, bei Erhitzen braun)
+▪
+
+Codebücher
+
+▪
+
+Steganographie
+(rechts: Morsecode
+in Grashalm-Länge
+codiert)
+
+▪
+
+Geheimschrift
+(unten: nach
+Arthur C. Doyle)
+
+Prof. Buchmann - Kryptographie
+
+5
+
+Kryptographie und IT-Sicherheit
+▪
+
+▪
+
+Vertraulichkeit
+−
+
+Nur Berechtigte sollen Nachricht lesen,
+
+−
+
+Absender/Empfänger in Erfahrung bringen,
+
+−
+
+Existenz einer Nachricht erfahren
+
+Integrität
+−
+
+▪
+
+Authentizität
+−
+
+▪
+
+Urheber einer Nachricht eindeutig nachprüfbar
+
+Verbindlichkeit
+−
+
+▪
+
+Daten nachweislich unverfälscht vom Sender zum Empfänger
+
+Absender einer Nachricht soll Urheberschaft nicht abstreiten können
+
+Verfahren müssen nicht unbedingt jedes Ziel erfüllen
+
+Prof. Buchmann - Kryptographie
+
+6
+
+Kryptographie und Datenschutz
+▪
+
+Allgemein
+
+▪
+
+Vertraulichkeit, Integrität, Verfügbarkeit bzgl. Zweckbindung
+Neue Ziele
+−
+
+−
+
+−
+
+Plausible Deniability (Glaubhafte Abstreitbarkeit)
+▪
+
+Gegenkonzept zur Verbindlichkeit
+
+▪
+
+Urheberschaft einer Nachricht plausibel leugnen können
+
+Separation of Duties (Funktionstrennung bei Nichtverknüpfbarkeit)
+▪
+
+▪
+
+Abstrakter als Anonymisierung; hier geht es um Daten allgemein
+
+Neuartige Anwendungen
+−
+
+Homomorphe Verschlüsselung: Berechnung von Operationen auf
+verschlüsselten Daten
+
+−
+
+Secure Multiparty Computation: Verteilte Berechnung, ohne Datenquelle,
+Rohdaten oder Zwischenergebnisse öffentlich zu machen
+
+Prof. Buchmann - Kryptographie
+
+7
+
+Anfänge der Verschlüsselung
+▪
+
+Motivation: ein Angreifer soll eine Nachricht nicht lesen können,
+obwohl er die Methode der Übertragung kennt
+
+▪
+
+Skytale
+
+▪
+
+−
+
+Mittelmeerraum (Griechische
+Kleinstaaten, Persien)
+
+−
+
+Um 500 v. Chr.
+
+Caesar-Chiffre
+−
+
+Nach Julius Caesar, um 100 v. Chr.
+
+−
+
+Verschiebechiffre
+X → X + 3 mod 26
+(wer kennt noch ROT-13?)
+Bilder: Wikimedia
+Prof. Buchmann - Kryptographie
+
+8
+
+Klassische Vorgehensweise
+▪
+
+Security through obscurity
+−
+
+▪
+
+▪
+
+Mache das Verfahren möglichst kompliziert und halte es geheim
+
+break-it fix-it break-it fix-it...
+−
+
+Alice entwickelt Verschlüsselung
+
+−
+
+Carol versucht Verfahren zu knacken
+
+−
+
+Nach einiger Zeit kein Angriff: → Verfahren gilt als „sicher“
+Bei erfolgreichem Angriff:
+→ Alice entwickelt nächstes Verfahren
+
+Beispiel von so entstandenen Verfahren
+−
+
+Enigma, 2. WK (drehbare Rotoren
+mit unregelmäßiger Verzahnung)
+
+Prof. Buchmann - Kryptographie
+
+9
+
+Stand der Technik
+▪
+
+Kerckhoff's Maxime (1883):
+"The security of a cryptosystem must not depend on the secrecy
+of the algorithm. The security is based only on the secrecy of the
+key. "
+
+▪
+
+Etabliertes Prinzip in der modernen Kryptographie, denn
+
+▪
+
+−
+
+Sicherheit von Geheimhaltung des Algorithmus abhängig:
+Algorithmus wird öffentlich → alle Nutzer des Algorithmus
+betroffen
+
+−
+
+Sicherheit von Geheimhaltung des Schlüssels abhängig:
+Schlüssel wird öffentlich → nur Nutzer des Schlüssels betroffen
+
+Ein veröffentlichter Algorithmus kann von Experten geprüft werden
+
+Prof. Buchmann - Kryptographie
+
+10
+
+Stand der Technik (cont'd.)
+▪
+
+Sicherheit bestimmbar durch
+–
+
+Ressourcen des Angreifers
+▪
+
+–
+
+–
+
+Polynomial beschränkter Angreifer
+
+Ziele des Angreifers
+▪
+
+den Schlüssel K herausfinden
+
+▪
+
+min. ein Klartext-Bit p є P vom cipher C → encK(P) herausfinden
+
+▪
+
+Metainformationen von C herausfinden, z.B. die Länge von K, die
+Länge des Texts P, die Sprache des Texts P, den Absender etc.
+
+Angreifermodell (nächste Folie)
+
+Prof. Buchmann - Kryptographie
+
+11
+
+Angreifermodelle
+▪
+
+Angreifermodelle unterscheiden nach Wissen des Angreifers
+
+▪
+
+Ciphertext-Only
+−
+
+▪
+
+Known-Plaintext
+−
+
+▪
+
+Angreifer kennt Ciphertext-Klartext-Paare
+
+Chosen-Plaintext
+−
+
+▪
+
+Angreifer hat nur Ciphertext zur Verfügung
+
+Angreifer kann aus Klartext selbst Ciphertext erzeugen
+(typisch für Public-Key-Verfahren, öffentlicher Schüssel bekannt)
+
+Chosen-Ciphertext
+−
+
+Angreifer kann aus gewählten Ciphertexten Klartext erzeugen
+Prof. Buchmann - Kryptographie
+
+12
+
+7
+
+Beispiel: Brechen des
+Caesar-Chiffres
+
+6
+5
+4
+
+▪
+
+Verschiebechiffre ROT13:
+X → X + 13 mod 26
+
+3
+2
+1
+
+▪
+
+▪
+
+K: „This should be a very secret message!“
+C: „Guvf fubhyq or n irel frperg zrffntr!“
+Ciphertext-Only-Angriff:
+−
+−
+
+0
+a b c d e f g h i j k l mn o p q r s t u vwy z
+
+Häufigkeitsverteilung der
+Buchstaben im Ciphertext
+0.14
+
+„e“ ist häufigster Buchstabe,
+wurde „e“ zu „r“?
+Bei bekanntem Verfahren ist
+Verschüsselung gebrochen,
+„r“→„e“=13
+
+0.12
+
+0.1
+
+0.08
+
+0.06
+
+0.04
+
+0.02
+
+0
+a b c d e f g h
+
+i
+
+j
+
+k
+
+l m n o p q r s
+
+t u v w x y z
+
+Häufigkeitsverteilung der
+Buchstaben in eng. Texten
+Prof. Buchmann - Kryptographie
+
+13
+
+One-time Pad
+▪
+
+▪
+
+One-time Pad ist das einzige Verfahren, das absolute Sicherheit
+garantiert, wenn der Schlüssel folgende Eigenschaften hat:
+−
+
+Echt zufälliger Schlüssel
+
+−
+
+Genauso lang wie Nachricht
+
+−
+
+Bits haben Gleichverteilung
+
+−
+
+Schlüssel bleibt geheim
+
+−
+
+Schlüssel wird nur 1x verwendet
+
+Encryption: Xi → Xi XOR Pi
+Key: 1010 1001 0000 1000 ….
+XOR
+
+Ciphertext: 1010 0000 1111 1001 ...
+
+Plaintext: 0000 1001 1111 0001 ….
+Prof. Buchmann - Kryptographie
+
+14
+
+One-time Pad & Quantenphysik
+▪
+
+Beitrag der Quantenkryptographie
+–
+
+Laser sendet polarisierte Photonen, die sich in Superposition
+befinden, zum Schlüsselaustausch zum Empfänger
+
+−
+
+Sicherer Kanal: Messung der Photonen führt dank
+Quanteneigenschaften zur Veränderung der Photonenverteilung
+
+▪
+
+Problem: teure Hardware und komplizierte physikalische Prozesse,
+komplizierte Handhabung
+
+Prof. Buchmann - Kryptographie
+
+15
+
+ESA baut gerade
+einen Satelliten für
+Quantum Key
+Distribution...
+
+▪
+
+...die Chinesen sind
+damit schon fertig ;-)
+Prof. Buchmann - Kryptographie
+
+16
+
+Symmetrische Verschlüsselung
+
+Symmetrische Verschlüsselung
+▪
+
+Alice und Bob haben den gleichen Schlüssel
+−
+
+Der selbe Schlüssel zur Ver- und Entschlüsselung
+
+−
+
+Schlüssel ist geheim, über gesicherten Kanal übertragen
+Sicherer Kanal
+
+S
+
+K
+
+encS(K)
+
+C
+
+decS(C)
+
+K
+Bob
+
+Alice
+▪
+
+S
+
+Alice → Bob und
+Bob → Alice kann
+mit gleichem Schlüssel
+erfolgen
+Carol
+Prof. Buchmann - Kryptographie
+
+18
+
+Blockchiffrierung
+▪
+
+Ziel: Klartexte beliebiger Länge mit kurzem Schlüssel verschlüsseln
+
+▪
+
+Designprinzip: Substitutions-Permutations-Netzwerke
+−
+
+Aus Schlüssel Rundenschlüssel generieren
+
+−
+
+Mehrere Verschlüsselungsrunden
+▪
+
+Rundenschlüssel auf Eingabe addieren
+
+▪
+
+Ergebnis in Blöcke aufteilen
+
+▪
+
+Substitutionsbox (S1...S4): Einen Block
+durch einen anderen substituieren
+
+▪
+
+Permutationsbox (P):
+Entstehende Blöcke durchmischen
+
+−
+
+In der letzten Verschlüsselungsrunde
+nochmals Rundenschlüssel addieren
+
+−
+
+Entschlüsselung erfolgt genauso wie
+Verschlüsselung, nur rückwärts
+Bilder:Wikimedia
+Prof. Buchmann - Kryptographie
+
+19
+
+Advanced Encryption
+Standard (AES)
+
+K
+
+▪
+
+Symmetrische Verschlüsselung
+
+▪
+
+Schlüssel 128, 192 oder 256 Bit
+
+▪
+
+Anwendungen in IPSec, WLAN
+(WPA2), SSH, HTTPS, etc.
+
+AddRoundkey
+
+S
+
+(9 Runden)
+SubBytes
+
+▪
+
+ShiftRows
+
+AES ist ein Blockchiffre
+−
+
+MixColumns
+
+Ein Block ist
+
+AddRoundKey
+
+▪
+
+Tabelle mit 4 Zeilen, 4 Spalten
+
+▪
+
+1 Byte pro Zelle
+
+▪
+
+128 Bit insgesamt
+
+SubBytes
+ShiftRows
+
+−
+
+S-Boxen: SubBytes
+
+−
+
+P-Boxen: ShiftRows, MixColumns
+
+AddRoundKey
+
+Frage: Warum ist die letzte Operation AddRoundKey?
+Prof. Buchmann - Kryptographie
+
+S0...9
+
+S10
+
+C
+20
+
+Erzeugung der Rundenschlüssel in AES
+▪
+
+▪
+
+▪
+
+Schlüssel ebenfalls 4x4-Tabelle,
+Wort: eine Spalte der Tabelle
+10 Rundenschlüssel
+werden gebraucht
+Rekursive
+Berechnung
+der Rundenschlüssel
+
+Start
+
+Ist Wort #
+durch vier
+Teilbar?
+
+Nein
+Das so bearbeitete
+Wort wird nun mittels
+XOR mit dem Wort
+vier weiter links
+verknüpft
+
+Nein
+
+XOR
+
+Alle
+Schlüssel
+erzeugt?
+
+Ja
+
+RotWord
+
+Das oberste Byte des
+Worts wird nach unten
+gebracht, die anderen
+Bytes rutschen nach
+oben.
+
+SubBytes
+
+Mit der Substitutionsbox
+(S-Box) werden die
+einzelnen Bytes
+ausgetauscht.
+
+XOR
+
+Das so bearbeitete Wort
+wird nun mittels XOR mit
+dem Wort vier weiter links
+und mit der
+Rundenkonstante
+verknüpft
+
+Ja
+Ende
+Bilder:Wikimedia
+
+Prof. Buchmann - Kryptographie
+
+21
+
+Addition des Rundenschlüssels in AES
+a0,0 a0,1 a0,2 a0,3
+
+b0,0 b0,1 b0,2 b0,3
+
+▪
+
+Methode AddRoundKey
+
+▪
+
+Bitweise XOR-Verknüpfung
+von einem Block und
+dem Rundenschlüssel
+
+a2,0 a2,1 a2,2 a2,3
+
+b2,0 b2,1 b2,2 b2,3
+
+a3,0 a3,1 a3,2 a3,3
+
+b3,0 b3,1 b3,2 b3,3
+
+Rundenschlüssel
+ebenfalls 4x4-Tabelle
+
+k0,0 k0,1 k 0,2 k0,3
+
+▪
+
+▪
+
+a1,0 a 1,1 a1,2 a1,3
+
+AddRoundKey
+
+b1,0 b1,1 b1,2 b1,3
+
+k 1,0 k 1,1 k1,2 k1,3
+
+Anmerkung: Schlüssel
+wird nur hier angewendet,
+alle anderen Operationen
+sind von den Eingabedaten
+abhängig
+
+k2,0 k2,1 k2,2 k2,3
+
+A
+
+B
+
+A XOR B
+
+k3,0 k 3,1 k3,2 k3,3
+
+0
+
+0
+
+0
+
+0
+
+1
+
+1
+
+1
+
+0
+
+1
+
+1
+
+1
+
+0
+
+Bilder:Wikimedia
+Prof. Buchmann - Kryptographie
+
+22
+
+S-Boxen in AES
+▪
+
+Methode SubBytes
+
+▪
+
+Jedes Byte der Tabelle wird durch ein anderes in der S-Box ersetzt
+→ Monoalphabetische Kodierung
+
+▪
+
+S-Box entsteht als Kehrwert
+einer Matrize, die auch in der
+P-Box genutzt wird
+−
+
+Galois-Körper GF,
+→ fragen Sie einen
+Mathematiker ;-)
+
+−
+
+Tabelle in Hex-Code
+
+−
+
+Bsp.: aus 12 wird c9
+
+0
+10
+20
+30
+40
+50
+60
+70
+80
+90
+a0
+b0
+c0
+d0
+e0
+f0
+
+0
+63
+ca
+b7
+4
+9
+53
+d0
+51
+cd
+60
+e0
+e7
+ba
+70
+e1
+8c
+
+1
+7c
+82
+fd
+c7
+83
+d1
+ef
+a3
+0c
+81
+32
+c8
+78
+3e
+f8
+a1
+
+2
+77
+c9
+93
+23
+2c
+0
+aa
+40
+13
+4f
+3a
+37
+25
+b5
+98
+89
+
+Prof. Buchmann - Kryptographie
+
+3
+7b
+7d
+26
+c3
+1a
+ed
+fb
+8f
+ec
+dc
+0a
+6d
+2e
+66
+11
+0d
+
+4
+f2
+fa
+36
+18
+1b
+20
+43
+92
+5f
+22
+49
+8d
+1c
+48
+69
+bf
+
+5
+6b
+59
+3f
+96
+6e
+fc
+4d
+9d
+97
+2a
+6
+d5
+a6
+3
+d9
+e6
+
+6
+6f
+47
+f7
+5
+5a
+b1
+33
+38
+44
+90
+24
+4e
+b4
+f6
+8e
+42
+
+7
+c5
+f0
+cc
+9a
+a0
+5b
+85
+f5
+17
+88
+5c
+a9
+c6
+0e
+94
+68
+
+8
+30
+ad
+34
+7
+52
+6a
+45
+bc
+c4
+46
+c2
+6c
+e8
+61
+9b
+41
+
+9
+1
+d4
+a5
+12
+3b
+cb
+f9
+b6
+a7
+ee
+d3
+56
+dd
+35
+1e
+99
+
+a
+67
+a2
+e5
+80
+d6
+be
+2
+da
+7e
+b8
+ac
+f4
+74
+57
+87
+2d
+
+b
+2b
+af
+f1
+e2
+b3
+39
+7f
+21
+3d
+14
+62
+ea
+1f
+b9
+e9
+0f
+
+c
+fe
+9c
+71
+eb
+29
+4a
+50
+10
+64
+de
+91
+65
+4b
+86
+ce
+b0
+
+d
+d7
+a4
+d8
+27
+e3
+4c
+3c
+ff
+5d
+5e
+95
+7a
+bd
+c1
+55
+54
+
+e
+ab
+72
+31
+b2
+2f
+58
+9f
+f3
+19
+0b
+e4
+ae
+8b
+1d
+28
+bb
+
+f
+76
+c0
+15
+75
+84
+cf
+a8
+d2
+73
+db
+79
+8
+8a
+9e
+df
+16
+
+23
+
+P-Boxen in AES
+▪
+
+Methode ShiftRows
+−
+−
+
+▪
+
+Jede Zelle um Nummer seiner
+Zeile nach Links schieben
+Links herausfallende Zellen
+rechts einfügen
+
+Methode MixColumns
+−
+
+No
+change
+
+a0,0 a0,1 a0,2 a0,3
+
+Shift 1
+
+a1,0 a1,1 a1,2 a1,3
+
+Shift 2
+
+a2,0 a2,1 a2,2 a2,3
+
+a2,2 a2,3 a2,0 a2,1
+
+Shift 3
+
+a3,0 a3,1 a3,2 a3,3
+
+a3,3 a3,0 a 3,1 a3,2
+
+a0,0
+
+Matritzenmultiplikation
+
+a1,0
+
+a0,1
+a 1,1
+
+a3,1
+
+ShiftRows
+
+a1,2 a1,3
+
+a3,2 a3,3
+
+a1,1 a1,2 a1,3 a1,0
+
+b0,0
+
+a0,2 a0,3
+
+a2,0 a2,1 a2,2 a2,3
+a3,0
+
+a0,0 a0,1 a0,2 a0,3
+
+MixColumns
+
+b1,0
+
+b0,1
+b1,1
+
+b0,2 b0,3
+b1,2 b1,3
+
+b2,0 b2,1 b2,2 b2,3
+b3,0
+
+b3,1
+
+b3,2 b3,3
+
+Bsp.: b01=2*a01+3*a11+1*a21+1*a31
+−
+
+alle 4 Eingabebytes beeinflussen jedes Ausgabebyte
+Bilder:Wikimedia
+Prof. Buchmann - Kryptographie
+
+24
+
+Wie sicher ist das, was Sie bisher gesehen haben?
+▪
+▪
+
+Bis hierher: Electronic Codebook Mode
+− Jeder Block einzeln für sich verschlüsselt
+Was passiert, wenn
+− ein Bit in einem Cipher-Block verändert wird?
+− ein Cipher-Block aus dem verschlüsselten Dokument gelöscht wird?
+− identische Klartextabschnitte existieren?
+− nur einen bestimmten Block entschlüsseln möchten?
+Dokument A
+
+Dokument B
+
+***** *** ******** ****** *****
+********* *** ***** ******* ***
+************ *** ****** ******* *
+** **** *** *** ***** ******* **
+******** ** ********
+**** ***** ****** ***********
+********** *** *** *********
+******** ** ********
+
+*** **** *** *** ***** ******* **
+**** ***** ****** ***********
+********** *** *** *********
+******** ** ********
+***** *** ******** ****** *****
+********* *** ***** ******* ***
+******* ***** *** *************
+*** ****** ******* ****** ******
+
+Prof. Buchmann - Kryptographie
+
+25
+
+Cipher Block Chaining Mode (CBC)
+▪
+▪
+▪
+
+Erster Block XOR Initialisierungsvektor mit Zufallszahlen
+− Initialisierungsvektor zufällig/einzigartig, aber nicht geheim
+Ergebnis wird verschlüsselt und ergibt Cipher-Block
+Jeder Cipher-Block per XOR mit dem nächsten Klartext-Block verkettet
+− identische Klartextblöcke → unterschiedliche Cipher-Texte
+− Bitfehler zerstört diesen Block und das selbe Bit im nächsten Block
+− sequenzielle Verarbeitung der Blöcke
+
+(Image: Wikimedia)
+Prof. Buchmann - Kryptographie
+
+26
+
+Cipher Feedback Mode (CFB)
+▪
+▪
+▪
+
+Initialisierungsvektor wird verschlüsselt
+− Initialisierungsvektor zufällig/einzigartig, aber nicht geheim
+Jeder Klartext-Block per XOR mit dem Cipher-Block verkettet
+− sequenzielle Verarbeitung der Blöcke
+Ergebnis wird verschlüsselt
+− Bitfehler zerstört das Bit dieses Blocks und den ganzen nächsten Block
+− Jeder Block ist der Initialisierungsvektor des Folgeblocks
+
+(Image: Wikimedia)
+Prof. Buchmann - Kryptographie
+
+27
+
+Output Feedback Mode (OFB)
+▪
+▪
+▪
+
+Initialisierungsvektor wird verschlüsselt
+− Initialisierungsvektor zufällig/einzigartig, aber nicht geheim
+Verschlüsselter Initialisierungsvektor wird an andere Blöcke weitergereicht
+− Schlüsselstrom kann vorausberechnet werden, dann paralellisierbar
+Jeder Klartext-Block per XOR mit dem Ciphertext-Block verkettet
+− Bitfehler zerstört nur das betreffende Bit im Klartext-Block
+− Bitfolge für XOR kann ohne Klartext vorausberechnet werden
+
+(Image: Wikimedia)
+Prof. Buchmann - Kryptographie
+
+28
+
+Counter Mode (CTR)
+▪
+▪
+
+Vereinfachung des Output Feedback Mode
+Counter wird auf Initialisierungsvektor aufaddiert, anstelle verschlüsselten
+Initialisierungsvektor an den nächsten Block weiterzureichen
+− Initialisierungsvektor zufällig/einzigartig, aber nicht geheim
+− Counter mit zufälligem Startwert, ebenfalls nicht geheim
+− Bitfehler zerstört nur das betreffende Bit im Klartext-Block
+− Vollständig parallelisierbar, auch Schlüsselstrom
+
+(Image: Wikimedia)
+Prof. Buchmann - Kryptographie
+
+29
+
+Diskussion AES
+▪
+
+AES ist performant
+−
+−
+−
+
+▪
+
+▪
+
+Nur „billige“ Operationen
+128 Bit Blockgröße passt sehr gut in CPU- oder GPU-Register
+Hardware-Implementierung möglich, z.B. auf FPGA
+
+AES ist sicher
+−
+
+Bester Angriff (2011) nur um Faktor 4 schneller als Brute Force
+→ kein ernsthafter Angriff, vollst. Suche 2128 – 2256 Möglichkeiten,
+nun Suchraum reduziert auf 2126 - 2254 Möglichkeiten
+
+−
+
+Erfolgreichere Angriffe bisher auf Implementierung, nicht auf AES selbst
+
+Nachteile
+−
+
+Sicherer Kanal für die Schlüsselübertragung
+Viele Kommunikationspartner = viele Schlüssel (s. nächste Folie)
+
+−
+
+Verarbeitet nur ganze Datenblöcke (s. übernächste Folie)
+
+−
+
+Prof. Buchmann - Kryptographie
+
+30
+
+Stromverschlüsselung
+
+Stromverschlüsselung vs. Blockverschlüsselung
+▪
+
+▪
+
+Blockverschlüsselung
+–
+
+Eingabedaten werden Block für Block verschlüsselt
+
+–
+
+Für die Verschlüsselung von im Ganzen vorliegenden Daten
+z.B. Dateien, Bilder, aber auch größere Datenströme
+
+–
+
+Ansätze: DES, AES, RC2, Blowfish, Twofish
+
+Stromverschlüsselung
+–
+
+Eingabedaten werden sequenziell Bit für Bit verschlüsselt
+
+–
+
+Für die Verschlüsselung von Echtzeitdaten
+z.B. Voice over IP, Video, Audio
+
+–
+
+Üblicherweise weniger sicher als Blockverschlüsselung
+
+–
+
+Ansätze: RC4, E0 (Bluetooth-Standard), WEP, WPA2, WPA3
+
+Prof. Buchmann - Kryptographie
+
+32
+
+RC4
+▪
+
+1987 von Ron Rivest (das R in RSA) entwickelt
+
+▪
+
+In HTTPS, SSH, WEP/WPA (wegen Sicherheitslücken werden heute
+Nachfolger mit etwas anderer S-Box verwendet,)
+
+▪
+
+Funktionsweise:
+−
+
+Eine rekursive S-Box ähnlich derjenigen in AES erzeugt einen endlosen
+Bitstrom Xi=0...∞ aus dem Schlüssel K
+
+−
+
+Verschlüsselung: Xi → Xi XOR Pi
+
+Key: 1101 0010
+
+S-Box
+
+1010 1001 0000 1000 ….
+XOR
+
+Cipher: 1010 0000 1111 1001 ...
+
+Plaintext: 0000 1001 1111 0001 ….
+Prof. Buchmann - Kryptographie
+
+33
+
+Diskussion RC4
+▪
+
+Keine Garantie der Integrität (wie bei jedem Stromcipher)
+–
+
+▪
+
+Wenn ein Bit im Cipher-Strom verändert wird, verändert sich dasselbe
+Bit im Klartext
+(vgl. Output Feedback Mode, Counter Mode von AES)
+
+Eine Chosen-Plaintext-Attacke enthüllt den Schlüssel
+–
+–
+
+Genau genommen, den Schlüsselstrom aus der S-Box
+Nie, nie niemals nicht denselben Schlüssel mehrmals verwenden
+(in AES auch ein Problem, wenn Initialisierungsvektor oder Klartext
+einiger Blöcke erraten werden kann)
+
+Prof. Buchmann - Kryptographie
+
+34
+
+Asymmetrische Verschlüsselung
+
+Symmetrische Verschlüsselung: Viele Schlüssel
+▪
+
+N Nutzer wollen miteinander privat kommunizieren
+–
+
+Jeder der N Nutzer benötigt N-1 Schlüssel um mit den anderen zu
+kommunizieren
+
+–
+
+Gesamtanzahl Schlüssel im System:
+
+●
+
+Beispiel für 5 Nutzer:
+10 Schlüssel
+
+●
+
+Beispiel für 500 Nutzer:
+124.750 Schlüssel
+
+●
+
+( N ( N −1))
+N
+( )=
+2
+2
+B
+
+C
+
+D
+
+A
+E
+
+Alle Schlüssel müssen über sicheren Kanal vereinbart werden
+Prof. Buchmann - Kryptographie
+
+36
+
+Asymmetrische Verschlüsselung
+▪
+
+auch: Public-Key-Verschlüsselung
+
+▪
+
+Öffentlicher Schlüssel P zur Verschlüsselung, Übertragung
+ungesichert
+
+▪
+
+Privater Schlüssel Q zur Entschlüsselung,
+wird vom Empfänger geheimgehalten
+K
+
+encP(K)
+
+C
+
+Alice
+
+decQ(C)
+
+K
+Q
+
+Bob
+
+P
+▪
+
+Alice → Bob und
+Bob → Alice erfordern
+unterschliedliche Schlüssel
+
+Carol
+
+Prof. Buchmann - Kryptographie
+
+37
+
+RSA-Chiffre
+▪
+
+1977 von Ron Rivest, Adi Shamir, Leonard Adleman am MIT
+entwickelt
+
+▪
+
+Erstes veröffentlichtes Public-Key-Verschlüsselungsverfahren
+
+▪
+
+Trapdoor-Funktion: Multiplikation von zwei Primzahlen ist „billiger“
+als Primfaktorzerlegung
+
+▪
+
+Public Key
+
+▪
+
+−
+
+Für die Verschlüsselung, kann veröffentlicht werden
+
+−
+
+Schlüssel: {RSA-Modul, Verschlüsselungskomponente}
+(Produkt zweier Primzahlen, Hilfswert)
+
+Private Key
+−
+
+Für die Entschlüsselung, muss geheim bleiben
+
+−
+
+Schlüssel: {RSA-Modul, Entschlüsselungsexponent}
+(Produkt zweier Primzahlen, anderer Hilfswert)
+Prof. Buchmann - Kryptographie
+
+38
+
+Schlüsselerzeugung für RSA
+▪
+
+Wähle zwei große Primzahlen p,q
+
+▪
+
+Berechne den RSA-Modul
+N = p*q
+
+▪
+
+Berechne die Eulersche φ-Funktion des RSA-Moduls
+φ(N) = ( p-1 ) * ( q-1 )
+
+▪
+
+Wähle zufällig eine zu φ(N) teilerfremde Zahl e mit
+1 < e < φ(N)
+
+▪
+
+Bestimme einen Entschlüsselungsexponenten d, so dass gilt
+d * e ≡ 1 MOD φ(N)
+
+▪
+
+Die Parameter p,q und φ(N) können nun gelöscht werden
+
+▪
+
+Public Key: {N,e}
+
+▪
+
+Private Key: {N,d}
+
+Prof. Buchmann - Kryptographie
+
+Be
+isp
+iel
+
+39
+
+Verschlüsselung mit RSA
+▪
+
+Public Key: {N,e}
+
+▪
+
+Private Key: {N,d}
+
+▪
+
+Verschüsselung: C = Ke MOD N
+
+▪
+
+Entschlüssselung: K = Cd MOD N
+
+▪
+
+Beispiel: Verschlüssele den Wert 7
+
+Hilfsvariablen:
+N = p*q
+φ(N) = (p-1)*(q-1)
+e = zu φ(N) teilerfremde Zahl
+d * e ≡ 1 MOD φ(N)
+
+festgelegt
+
+berechnet
+
+p = 11, q = 13
+
+N = 11*13
+= 143
+φ(N) = (11-1)*(13-1)
+= 120
+1< e < 120
+e = 23
+d * 23 ≡ 1 MOD 120 d = 47
+
+Klartext
+K=7
+
+Be
+isp
+iel
+
+← Public/Private Key
+← Public Key
+← Private Key
+
+enc(7) = (7^23) MOD (11*13) = 2
+
+Prof. Buchmann - Kryptographie
+
+40
+
+Entschlüsselung mit RSA
+
+Hilfsvariablen:
+N = p*q
+φ(N) = (p-1)*(q-1)
+e = zu φ(N) teilerfremde Zahl
+d * e ≡ 1 MOD φ(N)
+
+▪
+
+Public Key: {N,e}
+
+▪
+
+Private Key: {N,d}
+
+▪
+
+Verschüsselung: C = Ke MOD N
+
+▪
+
+Entschlüssselung: K = Cd MOD N
+
+▪
+
+Beispiel: Entschlüssele den Ciphertext 2
+Private Key
+
+Ciphertext
+
+N = 143
+d = 47
+
+C=2
+
+Be
+isp
+iel
+
+dec(2) = (2^47) MOD (143) = 7
+
+Prof. Buchmann - Kryptographie
+
+41
+
+Diskussion Public-Key-Verfahren
+▪
+
+Asymmetrische Verschlüsselung ist langsam
+−
+−
+
+▪
+
+Zwei verschiedene Schlüssel für Ver- und Entschlüsselung
+−
+−
+
+▪
+
+Viele Modulo-Divisionen
+Sehr große Primzahlen mit wenigstens 1024 Bit
+→ in der Praxis mit symmetrischer Verschlüsselung kombiniert
+
+Öffentlichen Schlüssel wie authentifizieren / zurückziehen?
+→ komplexe Lösungen zum Schlüsselmanagement erforderlich
+Es sind immer Chosen-Plaintext-Angriffe möglich
+→ Angreifer kennt öffentlichen Schlüssel, kann beliebig chiffrieren
+
+Asymmetrische Verschlüsselung ist sicher
+−
+
+Aber: hängt davon ab, dass es keine Möglichkeit gibt, bestimmte
+Rechnungen effizient durchzuführen (RSA: Primzahlzerlegung)
+
+−
+
+Aber: hängt auch wieder von der Implementierung ab (Padding mit
+Zufallswerten muss Chosen Plaintext-Angriffe verhindern)
+Prof. Buchmann - Kryptographie
+
+42
+
+Probabilistische Verschlüsselung
+
+Zuordnungsangriffe
+▪
+
+▪
+
+Bisher vorgestellte Verschlüsselungsverfahren sind deterministisch
+−
+
+Bei jeder Verschlüsselung:
+Identischer Klartext → identischer Ciphertext
+
+−
+
+Public-Key-Verfahren erlauben Chosen-Plaintext-Angriffe,
+d.h., man kann ausprobieren, ob man den Klartext erraten kann
+
+Beispiel: Befindet sich „Alice“ in einer verschlüsselten DB?
+−
+
+Angreifer kennt Public Key:
+„Alice“ → „H71A00EF91“
+Person
+
+Krankheit
+
+Alter
+
+AA73F9E001
+
+Magersucht
+
+24
+
+H71A00EF91
+
+Diabetes
+
+31
+
+3429A9F64E
+
+Schnupfen
+
+26
+
+Prof. Buchmann - Kryptographie
+
+44
+
+Frequenzangriffe
+▪
+
+▪
+
+Bisher vorgestellte Verschlüsselungsverfahren sind deterministisch
+−
+
+Bei jeder Verschlüsselung:
+Identischer Klartext → identischer Ciphertext
+
+−
+
+Aus der Verteilung von identischen Ciphertexten kann auf Inhalte
+geschlossen werden
+
+Beispiel: Was ist das Gehalt von
+„Alice“ in verschlüsselter Datenbank?
+
+Person
+
+Gehalt
+
+Angreifer weiß, dass ca. die Hälfte
+der Kollegen durch Tarifbindung
+60.000 € verdienen
+
+Alice
+
+A7
+
+Bob
+
+EF
+
+Carol
+
+A7
+
+Dave
+
+A7
+
+Eve
+
+21
+
+Frank
+
+FF
+
+−
+
+Prof. Buchmann - Kryptographie
+
+45
+
+Probabilistische Verschlüsselung
+▪
+
+Bei jeder Verschlüsselung desselben Klartexts anderer Ciphertext
+
+▪
+
+Strategie: Zufall einbauen
+−
+
+z.B.: tausche die deterministische Trapdoor-Funktion in RSA
+gegen eine probabilistsche Trapdoor-Funktion
+(Trapdoor-Funktion: lässt sich nur in einer Richtung effizient berechnen)
+
+▪
+
+Beispiel: Goldwasser-Micali-Kryptosystem [4]
+−
+
+Public-Key-Verschlüsselung
+
+Prof. Buchmann - Kryptographie
+
+46
+
+Goldwasser-Micali-Kryptosystem
+▪
+
+▪
+
+▪
+
+Be
+isp
+iel
+
+Schlüsselerzeugung
+−
+
+Wähle zwei Primzahlen p, q so dass (p, q) ≡ 3 MOD 4
+
+−
+
+Berechne n = p * q und x = n – 1
+
+−
+
+Public Key: {x, n}
+
+Private Key: {p, q}
+
+Ein Bit m verschlüsseln
+−
+
+Wähle Zufallszahl z mit 1 < z < n
+
+−
+
+C = xm *z2 MOD n
+
+Ein Bit entschlüsseln
+−
+
+Wenn C(p-1)/2 ≡ 1 MOD p und C(q-1)/2 ≡ 1 MOD q,
+dann m = 1, sonst 0
+
+Prof. Buchmann - Kryptographie
+
+47
+
+Sicherheitsbeweis: IND-CPA
+▪
+
+▪
+
+Indistinguishability under Chosen-Plaintext Attack (IND-CPA)
+−
+
+Nachweis, dass Angreifer nicht zwischen der Verschlüsselung zweier
+beliebiger Klartexte gleicher Länge unterscheiden kann
+
+−
+
+Sicherheit asymm. Verschlüsselung gegen Chosen-Plaintext Angriff
+
+Input:
+−
+
+▪
+
+Verschlüsselungsfunktion C = enc(K)
+
+Angriff: Für eine große Zahl von Runden
+−
+
+Challenger erzeugt Private/Public Key, sendet Public Key an Adversary
+
+−
+
+Adversary sendet 2 beliebige, gleich lange Klartexte K0, K1 an Challenger
+
+−
+
+Challenger wählt Zufallsbit M, sendet CM = enc(KM) an Adversary
+
+−
+
+Angriff ist erfolgreich, wenn Adversary mit Wahrscheinlichkeit > 50% + ε
+das Bit M bestimmen kann
+(ε ist „Sicherheitsmarge“ für polynomiale Beschränktheit des Angreifers.
+Ein ratender Angreifer erzielt eine Trefferwahrscheinlichkeit von 50%)
+
+Prof. Buchmann - Kryptographie
+
+48
+
+Secure Multiparty Computation
+
+Secure Multiparty Computation
+▪
+
+▪
+
+Verteiltes Protokoll
+
+privat
+
+−
+
+mehrere Parteien
+
+−
+
+jede Partei speichert geheime Daten
+
+−
+
+es soll ein öffentliches Anfrageergebnis
+berechnet werden
+
+−
+
+Parteien vertrauen sich nicht,
+arbeiten nur im Protokoll zusammen,
+ohne Rohdaten auszutauschen
+
+Schutzziele
+−
+
+Rohdaten bleiben geheim
+und/oder
+
+−
+
+Herkunft der Rohdaten bleibt geheim
+
+Prof. Buchmann - Kryptographie
+
+Daten
+
+Verteiltes
+Protokoll
+Daten
+
+Daten
+
+privat
+
+privat
+Ergebnis
+
+50
+
+Ziele der Secure Multiparty Computation
+▪
+
+Gegeben:
+−
+
+▪
+
+Correctness
+−
+
+▪
+
+▪
+
+Ergebnis der Berechnungen e = f(D0, D1, … Dn) ist prüfbar korrekt
+
+Privacy
+−
+
+Eingabedaten bleiben geheim, und/oder
+
+−
+
+Es bleibt geheim, von wem welche Daten kommen
+
+Output Delivery
+−
+
+▪
+
+Parteien P0, P1, ... Pn speichern Daten D0, D1, … Dn
+
+Protokoll endet erst, wenn alle Parteien Ergebnis bekommen haben
+
+Fairness
+−
+
+Entweder alle Parteien bekommen das gültige Endergebnis oder keine
+
+(Anm.: Nicht jedes Ziel muss immer erfüllt/erfüllbar sein)
+Prof. Buchmann - Kryptographie
+
+51
+
+Anwendungsbeispiele
+▪
+
+Private Auktion
+−
+
+▪
+
+Privates Machine Learning
+−
+
+▪
+
+Öffentlich werden das Gewinner-Gebot und der Gewinner der Auktion,
+alle anderen Daten bleiben geheim
+
+Ein Data-Mining-Modell oder künstliches Neuronales Netz anlernen auf
+geheimen Trainingsdaten, nur das fertige Modell wird öffentlich
+
+Private Datenaggregation
+−
+
+Verteilte Berechnungen auf sensiblen Daten, z.B. zur Frühwarnung vor
+Infektionskrankheiten aus medizinischen Datensätzen, die nicht
+weitergegeben werden dürfen
+
+Prof. Buchmann - Kryptographie
+
+52
+
+Angreifermodell Secure Multiparty Computation
+▪
+
+Korrumpierte Knoten tauschen Informationen aus
+−
+
+▪
+
+▪
+
+Zwischenergebnisse, Protokollschritte
+D0
+
+Ressourcen des Angreifers
+−
+
+P0
+
+Threshold Adversaries
+Schwellwert t,
+Angreifer kann Set von
+{Pi, ...Pj} ⊆ {P0, … Pn} Knoten mit
+|{Pi, ...Pj}| ≤ t übernehmen
+
+typische Beispiele
+− t<n/2 – Honest Majority,
+Mehrheit der Knoten ist ehrlich
+− 51% – Angreifer korrumpiert die Mehrheit
+der Knoten im Protokoll
+− n-1 – Angreifer kontrolliert alle Knoten
+bis auf einen ehrlichen
+Prof. Buchmann - Kryptographie
+
+P2
+
+Verteiltes
+Protokoll
+
+D2
+
+P1
+
+D1
+
+e
+
+53
+
+Herausforderungen
+▪
+
+Effizienz, Skalierbarkeit
+−
+
+▪
+
+P0
+
+Möglichst besser als homomorphe
+Verschlüsselung
+
+D0
+
+Wie sicherstellen, dass das
+Ergebnis korrekt ist?
+−
+
+Ein "malicious"-Angreifer kann
+falsche Werte ins Protokoll
+einschleusen
+
+P2
+
+Verteiltes
+Protokoll
+
+D2
+
+▪
+
+P1
+
+D1
+
+Wie sicherstellen, dass Daten
+geheim bleiben?
+−
+
+Korrumpierte Knoten arbeiten zusammen,
+tauschen Informationen über Zwischenergebnisse
+und Protokollschritte von ehrlichen Knoten aus
+
+Prof. Buchmann - Kryptographie
+
+e
+
+54
+
+Beispiel 1: Yao's Millionärsproblem
+▪
+
+Verschlüsselung schön und gut, aber was, wenn man keine Daten
+weitergeben will?
+
+▪
+
+Yao's Millionärsproblem:
+−
+
+Zwei Millionäre wollen wissen, wer von ihnen der reichere ist
+
+−
+
+Kein Millionär will sein Vermögen offenbaren
+
+?
+−
+
+Formal: löse a ≤ b ohne a und b zu offenbaren
+
+Prof. Buchmann - Kryptographie
+
+55
+
+Lösungsansatz
+▪
+
+Bob nutzt den RSA-Algorithmus, um eine Reihe von Zufallszahlen zu
+verschlüsseln; eine davon ist Zufallszahl + echter Wert b
+
+▪
+
+Alice verändert alle Zahlen, die an einer Stelle in der Folge stehen,
+die größer ist als a, kodiert sie und sendet sie an Bob
+
+▪
+
+Kodierung erfolgt so, dass Bob nur seinen Zufallswert b wieder
+entschlüsseln kann, falls a ≥ b
+Alice
+
+Bob
+
+a
+
+b
+
+(Anm.: Lösungsansatz ist eine Variante von Oblivious Transfer-Protokollen)
+Prof. Buchmann - Kryptographie
+
+56
+
+Be
+isp
+iel
+
+Rechenbeispiel (1/2)
+▪
+
+Alice: a = 5, Public Key {3337, 79}, Private Key {3337, 1019}
+
+▪
+
+Bob:
+
+▪
+
+b = 6, Zufallszahl x = 1234
+
+−
+
+verschlüssele x mit Public Key von Alice
+also Cipher C = 123479 MOD 3337 = 901
+
+−
+
+sende C – b + 1= 896 an Alice
+
+Alice:
+−
+
+Erzeuge Zahlenreihe im fraglichen Wertebereich, hier von 3<z<8
+
+−
+
+entschlüssele y = 896 + z, d.h., rechne (896+z)1019 MOD 3337
+z=4: dec(896+4) = 2918
+z=5: dec(896+5) = 358
+z=6: dec(896+6) = 1234 ← Zufallszahl von Bob, Alice weiß es nicht
+z=7: dec(896+7) = 296
+Beispiel von [2]
+Prof. Buchmann - Kryptographie
+
+57
+
+Be
+isp
+iel
+
+Rechenbeispiel (2/2)
+▪
+
+▪
+
+Alice: Wähle eine Primzahl p = 107
+−
+
+Für z ≤ a: berechne y MOD p
+Für z > a: berechne (y MOD p) + 1
+z=4: 2918 MOD 107
+= 29
+z=5: 358 MOD 107
+= 64
+z=6: 1234 MOD 107 + 1 = 58
+z=7: 296 MOD 107 + 1 = 83
+
+−
+
+Sende diese Zahlenreihe und Primzahl p an Bob
+
+Bob:
+−
+
+Zufallszahl x = 1234 MOD Primzahl p = 107: Ergebnis = 57
+
+−
+
+Steht in der Zahlenreihe von Alice für z = 6 die 57?
+JA:
+a≥b
+NEIN:
+a < b ← Bob ist reicher
+
+−
+
+Bob erfährt nur, ob a < b, aber nicht um wieviel kleiner!
+
+Prof. Buchmann - Kryptographie
+
+58
+
+Beispiel 2: Secure Sum
+▪
+
+Erweiterung von Yao's Millionärsproblem:
+Berechne die Summe aus k verteilt vorliegenden Werten, ohne die
+Summanden Dp zu enthüllen
+Formal: berechne ∑p=0...(k-1) (Dp) ohne Dp zu offenbaren
+
+∑=?
+
+D1=15
+
+D0=10
+
+D2=25
+Prof. Buchmann - Kryptographie
+
+59
+
+Einfachster Ansatz (Clifton et al.)
+▪
+
+Algorithmus
+−
+
+P0 erzeugt Zufallszahl R, schickt S = R + D0 an P1
+
+−
+
+P1 schickt S = S + D1 an P2
+…
+
+−
+
+P0 erhält S
+Ergebnis = S – R
+
+15
+
+R=5
+
+D1=15
+▪
+
+Problem
+−
+
+Wenn Pl-1 und Pl+1
+zusammenarbeiten,
+erfahren sie den
+Wert von Pl
+
+D0=10
+30
+55
+D2=25
+
+Prof. Buchmann - Kryptographie
+
+60
+
+Distributed k-Secure Sum
+▪
+
+k Nutzer: P0, P1, … Pk-1 mit geheimen Daten D0, D1, … Dk-1
+
+▪
+
+Jeder Nutzer p teilt Dp in soviele Segmente Dp,q auf wie Nutzer,
+Summe der Blöcke bleibt erhalten Dp = ∑q=0...(k-1) Dp,q
+
+▪
+
+Algorithmus:
+for p = 0 to k-1
+Pp send k-1 segments randomly to other users
+mix Dp,*
+end
+S=0
+for j = 0 to k-1
+//Zeile
+for i = 0 to k-1 //Spalte
+Pi send S = S + Di,j to user (i+1) MOD k
+end
+end
+P0 send S to all other users
+
+D0=10
+
+∑=?
+
+D1=15
+
+D2=25
+
+Anm.: Übertragungen erfolgen verschlüsselt
+
+Prof. Buchmann - Kryptographie
+
+61
+
+Be
+isp
+iel
+
+Rechenbeispiel
+▪
+
+k = 3 Nutzer
+
+−
+1. Runde:
+P0 sendet 0+ 2 an P1
+P1 sendet 2+10 an P2
+P2 sendet 12+ 3 an P0
+2. Runde:
+P0 sendet 15+ 1 an P1
+P1 sendet 16+ 8 an P2
+P2 sendet 24+ 3 an P0
+3. Runde:
+P0 sendet 27+12 an P1
+P1 sendet 39+ 5 an P2
+P2 sendet 44+ 6 an P0
+
+D*,0 =
+D*,1 =
+D*,2 =
+
+D0=10
+
+D1=15
+
+5
+2
+3
+
+8
+6
+1
+
+D2=25
+
+12
+3
+10
+
+gemischt
+
+D*,0 =
+D*,1 =
+D*,2 =
+
+2
+1
+12
+
+10
+8
+5
+
+3
+3
+6
+
+Ergebnis: S=50
+
+Prof. Buchmann - Kryptographie
+
+62
+
+Sicherheit des Verfahrens
+▪
+
+Fall 1: alle Teilnehmer arbeiten korrekt
+−
+
+▪
+
+Fall 2: der Protokoll-Initiator arbeitet unkorrekt
+−
+
+▪
+
+▪
+
+Protokoll ist sicher
+
+Ergebnis wird falsch, aber Privatheit der Daten gewahrt
+
+Fall 3: zwei Teilnehmer kooperieren (Honest Majority)
+−
+
+Teilnehmer tauschen sich aus, welche Daten sie erhalten haben
+
+−
+
+Simples Protokoll: die Daten eines Teilnehmers werden offenbar
+
+−
+
+Distributed k-Secure Sum: Da ein Teilnehmer jeweils Datensegmente
+aller anderen Teilnehmer hat, bleibt die Privatheit der Daten gewahrt
+
+Fall 4: alle Teilnehmer außer einem kooperieren (n-1 Threshold)
+−
+
+Daten des einen Teilnehmers werden offenbar
+Prof. Buchmann - Kryptographie
+
+63
+
+Post Quantum Computing
+An die Mathematiker und Physiker:
+Bitte verzeihen Sie mir die krassen Vereinfachungen ;-)
+
+Seltsame Regeln der Quantenphysik
+▪
+
+Superposition: Teilchen
+befinden sich bis zur
+Messung des Zustands
+in mehreren Zuständen
+gleichzeitig (Analogie:
+
+Schrödingers Katze in der Kiste)
+
+▪
+
+Quantenverschränkung:
+Separate Teilchen sind
+miteinander verbunden,
+so dass eine Messung
+eines Teilchens den
+Zustand des anderen
+Teilchens mitbestimmt
+(Analogie: verknotete Schnüre)
+
+Prof. Buchmann - Kryptographie
+
+65
+
+Quantencomputer mit neuen Eigenschaften (1/3)
+▪
+
+Ein Qubit in Superposition
+−
+
+1 Atom speichert komplexe Linearkombination aus Basisvektoren c0, c1
+
+(d.h., einen Punkt auf der
+Oberfläche einer Bloch-Sphäre,
+falls Sie einen Mathematiker
+beeindrucken wollen)
+
+−
+
+Auslesen liefert das eine Ergebnis mit der höchsten Wahrscheinlichkeit
+Anmerkung: Sie bekommen aus N Qubits nur N Bits an Daten heraus,
+aber als Ergebnis einer Parallelverarbeitung auf der Linearkombination.
+Bild: Davide Pastorello, University of Bologna
+Prof. Buchmann - Kryptographie
+
+66
+
+Quantencomputer mit neuen Eigenschaften (2/3)
+▪
+
+Register aus N verschränkten Qubits
+−
+
+Repräsentiert einen Vektor aus komplexen Zahlen im
+2N-dimensionalen Hilbert-Raum
+
+Anmerkung: Klassische Computer bilden mit N Bits jeweils 2N Zustände ab.
+Die Zahl der Zustände wächst also quadratisch mit N.
+Quantencomputer bilden mit N Qubits einen 2N-dimensionalen Vektorraum in
+der Ebene der Komplexen Zahlen C (Hilbert-Raum) ab.
+Die Zahl der Zustände wächst also exponentiell mit N.
+
+Prof. Buchmann - Kryptographie
+
+67
+
+Quantencomputer mit neuen Eigenschaften (3/3)
+▪
+
+Quanten-Gatter
+−
+
+Matrix-Operation U auf den Basisvektoren (α, β) der Qubits in C
+
+−
+
+Beispieloperation NOT:
+Anmerkung: Klassische Gatter sind binäre Operationen im Zahlenraum {0, 1}.
+Quanten-Gatter sind physikalische Manipulationen des Spins von Elektronen
+
+Bild: Wikimedia
+Prof. Buchmann - Kryptographie
+
+68
+
+Was bringt das?
+▪
+
+Manche bisher nicht technisch lösbare Aufgaben werden lösbar
+(aus der Komplexitätsklasse NP - nichtdeterministisch polynomielle Zeit)
+
+▪
+
+z.B. Diskrete Fourier-Transformation
+−
+
+bilde ein periodisches Signal
+x=(x0, x1, … xn) auf einen Vektor von
+Komponenten w=(w0, w1, ... wn)
+in einem Frequenzspektrum ab
+
+−
+
+Klassische Vorgehensweise
+1) Überführe Signal (Amplitude + Phase) in Raum der komplexen Zahlen C
+
+2) Viele Matritzenmultiplikationen mit
+Fast Fourier Transformation braucht
+dafür O(n log(n)) Operationen
+−
+
+Shor's Algorithmus für Quanten-Fourier braucht O(log(n)3) Operationen
+Prof. Buchmann - Kryptographie
+
+69
+
+Warum erzählen Sie mir das?
+▪
+
+Eine Folge, die sich alle 7
+Schritte wiederholt, hat
+7 als gemeinsamen Teiler
+
+Shor's Algorithmus (1994)
+−
+
+Nimm eine zusammengesetzte
+natürliche Zahl N
+
+−
+
+Mache daraus ein diskretes
+periodisches Signal
+▪
+
+Wähle Zufallszahl q, dann liefert f(x) = qx mod N dieses Signal
+
+−
+
+Wende darauf die Quanten-Fourier-Transformation an
+
+−
+
+Aus Komponenten-Vektor lassen sich die Primfaktoren von N berechnen
+
+▪
+
+Wir haben die Public-Key-Verschlüsselung „RSA“ geknackt ;-)
+
+▪
+
+Wieviele Qubits braucht man dafür?
+−
+
+Shor's Algorithmus: 2n+2 logische Qubits für eine Zahl mit n Binärstellen
+
+−
+
+Ein paar Millionen physischer Qubits für die Fehlerkorrektur
+
+(Wahrscheinlichkeit für korrektes Ergebnis ist mit 2n+2 rauschenden Qubits ist beinahe 0
+und Qubits verlieren ihren Zustand in wenigen Millisekunden durch externe Störungen)
+Prof. Buchmann - Kryptographie
+
+70
+
+Welche Quanten-Algorithmen gibt es überhaupt?
+Algorithm
+Abelian Hidden Subgroup
+Adiabatic Algorithms
+Bernstein-Vazirani
+Center of Radial Function
+Class Group
+Collision Finding and Element
+Distinctness
+Constraint Satisfaction
+Counterfeit Coins
+Decoding
+Deutsch-Jozsa
+Discrete-log
+Electrical Resistance
+Factoring
+Finite Rings and Ideals
+Formula Evaluation
+Gauss Sums
+Gradients, Structured Search, and
+Learning Polynomials
+Graph Collision
+Graph Properties in the Adjacency
+List Model
+Graph Properties in the Adjacency
+Matrix Model
+Group Commutativity
+Group Isomorphism
+Group Order and Membership
+Hidden Nonlinear Structures
+Hidden Shift
+Junta Testing and Group Testing
+Knot Invariants
+Linear Systems
+Machine Learning (class of Alg.)
+Matrix Commutativity
+Matrix Elements of Group
+Representations
+
+Speedup
+Superpolynomial
+Unknown
+Polynomial Directly, Superpolynomial
+Recursively
+Polynomial
+Superpolynomial
+Polynomial
+Polynomial
+Polynomial
+Varies
+Exponential over P, none over BPP
+Superpolynomial
+Exponential
+Superpolynomial
+Superpolynomial
+Polynomial
+Superpolynomial
+Polynomial
+Polynomial
+Polynomial
+Polynomial
+Polynomial
+Superpolynomial
+Superpolynomial
+Superpolynomial
+Superpolynomial
+Polynomial
+Superpolynomial
+Superpolynomial
+Varies
+Polynomial
+Superpolynomial
+
+: Verwendet Quantum Fourier / Shor
+
+Algorithm
+Matrix Multiplication over
+Semirings
+Matrix Powers
+Matrix Rank
+Network flows
+Non-Abelian Hidden Subgroup
+Ordered Search
+Partition Functions
+Pattern matching
+Pell's Equation
+Polynomial interpolation
+Primality Proving
+Principal Ideal
+Quantum Approximate
+Optimization
+Quantum Cryptanalysis
+Quantum Dynamic Programming
+Quantum Simulation
+Search with Wildcards
+Searching
+Semidefinite Programming
+Simulated Annealing
+Solving Differential Equations
+Solving Exponential Congruences
+Statistical Difference
+String Rewriting
+Subset finding
+Subset-sum
+Tensor Principal Component
+Analysis
+Three-manifold Invariants
+Unit Group
+Verifying Matrix Products
+Weight Enumerators
+Welded Tree
+Zeta Functions
+
+Speedup
+Polynomial
+Superpolynomial
+Polynomial
+Polynomial
+Superpolynomial
+Constant factor
+Superpolynomial
+Superpolynomial
+Superpolynomial
+Varies
+Polynomial
+Superpolynomial
+Superpolynomial
+Various
+Polynomial
+Superpolynomial
+Polynomial
+Polynomial
+Polynomial(with some exceptions
+Polynomial
+Superpolynomial
+Polynomial
+Polynomial
+Superpolynomial
+Polynomial
+Polynomial
+Polynomial (quartic)
+Superpolynomial
+Superpolynomial
+Polynomial
+Superpolynomial
+Superpolynomial
+Superpolynomial
+
+https://quantumalgorithmzoo.org/
+
+Prof. Buchmann - Kryptographie
+abgerufen 17.10.23
+
+71
+
+Wie weit ist die technische Entwicklung heute?
+▪
+
+Verschalten von Quantenbits per Supraleiter ist unglaublich störanfällig
+
+▪
+
+Quantencomputer brauchen Qubits nicht nur für Berechnung, sondern
+auch für Fehlerkorrektur
+Größte Quantencomputer weltweit (Stand 2023)
+−
+
+−
+
+Funktionsfähig: IBMs Quanten-Prozessor „Osprey“ mit 433 Qubits
+▪
+
+−
+
+erste Systeme sollten Ende 2023 in Betrieb gehen
+
+IBM will 2033 einen Quantencomputer mit 100.000 Qubits fertig haben
+
+Bild: IBM, 2022
+Prof. Buchmann - Kryptographie
+
+72
+
+Noisy Intermediate-Scale Quantum (NISQ)
+▪
+
+▪
+
+Zur Einordnung der Zahlen eben:
+Alle genannten Prozessoren sind NISQ!
+−
+
+Keine „stabilen“ Qubits, keine Fehlertoleranz, keine Quantum Error
+Correction, stattdessen Dekohärenz durch Umgebungseinflüsse
+
+−
+
+Bedeutet im Wesentlichen: aktuelle Quantenprozessoren liefern
+brauchbare Schätzwerte, wenn man die Berechnungen oft wiederholt
+
+Feb 22, 2023: Google hat es als
+erster geschafft, aus 49 NISQ-Qubits
+ein einzelnes logisches Qubit mit
+Quantum Error Correction zu bauen
+−
+
+d.h., 1 Qubit, das nicht mehr nur
+stochastische Schätzungen liefert
+
+−
+
+Googles Sycamore Quanten-CPU
+hat 54 NISQ-Qubits
+
+Prof. Buchmann - Kryptographie
+
+73
+
+Googles Quantum Computer Roadmap
+
+https://quantumai.google/qecmilestone
+Prof. Buchmann - Kryptographie
+
+74
+
+Post-Quantum Cryptography
+▪
+
+Problem
+−
+
+Quantencomputer können klassische Trapdoor-Funktionen lösen
+
+−
+
+Quantencomputer sind noch nicht allgemein verfügbar,
+d.h., können noch nicht für die Kryptographie eingesetzt werden
+
+Bild:
+Futurezone.at
+
+▪
+
+Lösung
+−
+
+Suche Trapdoor-Funktion, die auf klassischen Computern läuft,
+aber weder von klassischen noch Quantencomputern gebrochen wird
+Prof. Buchmann - Kryptographie
+
+75
+
+Angreifermodell "Harvest Now, Decrypt Later"
+(HNDL attack)
+▪
+
+Verschlüsselte Daten
+speichern
+
+▪
+
+Auf Quantum Supremacy
+in der Zukunft warten
+
+▪
+
+Daten entschlüsseln
+
+▪
+
+Warum ist das schlimm?
+−
+
+Versteckter Angriff
+
+−
+
+Risiko in der Zukunft
+
+−
+
+Bedroht alle langfristig
+sensiblen Daten
+(Staatliche/geheimdienstliche
+Kommunikation, wirtschaftliche
+oder persönliche sensible
+Daten, Gesundheitsdaten … )
+
+Prof. Buchmann - Kryptographie
+
+76
+
+NIST Post-Quantum Cryptography Standardization
+▪
+
+Kooperation aus National Security Agency (NSA), Cybersecurity and
+Infrastructure Security Agency (CISA), and National Institute of
+Standards and Technology (NIST)
+
+▪
+
+2016 Ausschreibung
+für Standard für PostQuantum Cryptography
+−
+
+▪
+
+soll bestehende
+asymmetrische KryptoVerfahren ersetzen
+
+Standardisiert seit Aug. 2024, implementiert u.A. in OpenSSL 3.5.0:
+−
+
+FIPS 203: Module Lattice-Based Key-Encapsulation (s. nächste Folie)
+
+−
+
+FIPS 204: Module Lattice-Based Digital Signatures
+
+−
+
+FIPS 205: Stateless Hash-based Digital Signatures
+Prof. Buchmann - Kryptographie
+
+77
+
+FIPS 203: Module-Lattice-Based Key-Encapsulation
+▪
+
+Set von Algorithmen zur sicheren Vereinbarung eines Shared Secret
+über einen öffentlichen Kanal
+−
+
+Ersatz für Diffie-Hellmann Key Exchange (s. Kapitel Web-Sicherheit)
+
+−
+
+Schlüsselaustausch ist Public-Key-Verfahren, Ergebnis ist ein Shared
+Secret als Schlüssel für ein symmetrisches Verfahren
+
+−
+
+Trapdoor auf der Basis von Module-Learning With Errors (LWE)
+
+Prof. Buchmann - Kryptographie
+
+78
+
+Learning With Errors (1/2)
+▪
+
+Lineares Gleichungssystem mit Rauschen ("≈" heißt +/-1 )
+−
+
+Lattice mit Zufallswerten als Faktoren in S
+
+Folie: Oded Regev, Tel Aviv Uni, 2010
+Prof. Buchmann - Kryptographie
+
+79
+
+Learning With Errors (2/2)
+▪
+
+Zufallswerte: (rA, rb) haben praktisch Gleichverteilung
+
+▪
+
+Rauschen:
+
+keine exakte Lösung durch Termumformung des Lattice
+
+Folie: Oded Regev, Tel Aviv Uni, 2010
+Prof. Buchmann - Kryptographie
+
+80
+
+Weitere Herausforderungen
+für die Zukunft
+
+DNA Computing (1/2)
+▪
+
+DNA Computing als extremer Parallelrechner
+
+▪
+
+Schritt 1:
+
+▪
+
+−
+
+Transformation von Daten in
+RNA-Abschnitte
+
+−
+
+Transformation eines Problems
+so, dass es sich durch RNA
+-Rekombination lösen lässt
+
+Schritt 2:
+−
+
+RNA in Reagenzglas bringen
+
+−
+
+Chemisch vervielfachen
+
+Prof. Buchmann - Kryptographie
+
+82
+
+DNA Computing (2/2)
+▪
+
+Schritt 3:
+Zufällige RNA-Abschnitte
+hinzugeben
+− Reagenzglas schütteln
+−
+
+▪
+
+Schritt 4:
+−
+
+▪
+
+Reagenzglasinhalt auslesen (Sequenzierungsautomat)
+
+Riesige Datenmengen parallel verarbeiten
+−
+
+Alle Daten aller Datacenter weltweit im Kofferraum eines PKW)
+▪
+
+−
+
+Haken an der Sache: diese Daten schnell in RNA kodieren
+
+Immernoch klassische Informatik, d.h., keine Überraschungen
+▪
+
+Richtigen AES-Schlüssel superschnell durch ausprobieren finden
+(nachdem Sie den vorher monatelang als RNA kodiert haben)
+Prof. Buchmann - Kryptographie
+
+83
+
+Abschluss
+
+Zusammenfassung
+▪
+
+▪
+
+▪
+
+Etablierte Verschlüsselungsverfahren können Daten effektiv
+gegen ausspähen schützen
+−
+
+Aber: keine absolute Sicherheit!
+
+−
+
+Angreifermodell Harvest Now, Decrypt Later
+
+−
+
+„esoterische“ Verfahren wie Quantencomputing, DNA-Computing
+
+Durch Datenschutz neue Ziele für die Kryptographie
+−
+
+Plausible Abstreitbarkeit
+
+−
+
+Berechnungen ohne Zusammenführung von Eingabedaten
+
+In dieser Vorlesung
+−
+
+Symmetrische und asymmetrische Verschlüsselung
+
+−
+
+Probabilistische Verschlüsselung und Secure Multiparty Computation als
+Mittel gegen Frequenz- und Zuordnungsangriffe
+Prof. Buchmann - Kryptographie
+
+85
+
+Literatur
+[1] Rashid Sheikh et al.: A Distributed k-Secure Sum Protocol for Secure
+Multi-Party Computations. In: Journal of Computing, 2(3), 2010
+[2] Rechenbeispiel zu Yao's Millionärsproblem
+https://eprint.iacr.org/2017/1129.pdf
+http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.9.8089&rep=rep1&type=pdf
+
+[3] Johannes Buchmann: Einführung in die Kryptographie. Springer
+Verlag, 2003
+[4] S. Goldwasser, S. Micali: Probabilistic encryption. Journal of
+Computer and System Sciences, 28(2), 1984
+
+Prof. Buchmann - Kryptographie
+
+86
+
+Mögliche Prüfungsfragen
+▪
+
+Warum ist es prinzipiell nicht möglich, einfache Verfahren wie
+Schiebe-Chiffren oder Ersetzungs-Chiffren sicher zu machen? Also
+warum benötigt man die Komplexität von Verfahren wie AES?
+
+▪
+
+Erklären Sie, was alles gegeben sein muss, damit RSA und AES
+sicher sind. Also welche Technologien, Ressourcen und welches
+Hintergrundwissen dürfen Angreifer NICHT haben?
+
+▪
+
+Nennen Sie ein Einsatzszenario, in dem eine probabilistische
+Verschlüsselung sinnvolle Sicherheitsgarantien bietet.
+
+Prof. Buchmann - Kryptographie
+
+87
+
+
