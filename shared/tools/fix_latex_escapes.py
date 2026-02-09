@@ -124,6 +124,18 @@ def fix_bytes(data: bytes) -> tuple[bytes, int, int, int, int, int]:
     if right_count:
         data = data.replace(b"\night", b"\\right")
 
+    # Fix nested delimiters like "\(\[...\]\)" -> "\[...\]" or "\(\(...\)\)" -> "\(...\)".
+    nested_open_count = data.count(b"\\(\\[") + data.count(b"\\(\\(")
+    nested_close_count = data.count(b"\\]\\)") + data.count(b"\\)\\)")
+    if b"\\(\\[" in data:
+        data = data.replace(b"\\(\\[", b"\\[")
+    if b"\\]\\)" in data:
+        data = data.replace(b"\\]\\)", b"\\]")
+    if b"\\(\\(" in data:
+        data = data.replace(b"\\(\\(", b"\\(")
+    if b"\\)\\)" in data:
+        data = data.replace(b"\\)\\)", b"\\)")
+
     # Undo previous CR->'r' conversion at line ends if it happened.
     stray_r_count = data.count(b"\"r\n") + (1 if data.endswith(b"\"r") else 0)
     if b"\"r\n" in data:
@@ -138,7 +150,14 @@ def fix_bytes(data: bytes) -> tuple[bytes, int, int, int, int, int]:
         raw_tab_count,
         raw_ff_count,
         raw_cr_count,
-        cmd_count + dbl_count + right_count + stray_r_count + malformed_count + apostrophe_count,
+        cmd_count
+        + dbl_count
+        + right_count
+        + stray_r_count
+        + malformed_count
+        + apostrophe_count
+        + nested_open_count
+        + nested_close_count,
     )
 
 
