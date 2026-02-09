@@ -466,7 +466,7 @@ B: Anzahl der Einsen im Bereich als Zweierpotenz = die Größe des DGIM-Bereichs
 − Jedes 1-Bit fällt in genau einen Bereich
 − Das rechte Ende eines Bereichs enthält eine Eins
 − Die Größe eines Bereichs (Anzahl der Einsen) muss eine Zweierpotenz sein
-→ Speicherung der Größe benötigt nur log 2 log 2 N Bits
+→ Speicherung der Größe benötigt nur log 2 ( log 2 N) Bits
 − Von dem neuesten zu älteren Bereichen ist dessen Größe monoton steigend
 − Bereiche verschwinden, wenn dessen Zeitpunkt außerhalb des Sliding Windows
 liegt
@@ -552,11 +552,11 @@ Bits
 − Stream: Weltweiter Verkauf von Kinokarten
 − Ziel: Auflistung der derzeit populärsten Filme
 
-001001
+…001001
 
 − Mögliche Lösung:
 
-100110
+…100110
 
 − Ein Bitstream pro Film
 − 1 an Stelle i bedeutet, i-tes verkauftes Ticket war
@@ -565,10 +565,10 @@ für diesen Film
 − Schätze Anzahl von Einsen z.B. via DGIM
 − Bewerte Filme anhand der geschätzten Anzahl
 
-010000
+…010000
 
 − Funktioniert für Filme, da "geringe" Anzahl an Filmen
-− Nachteil:
+− Nachteil (bei DGIM-Methode):
 − Gewichtung unabhängig von Aktualität
 − Funktioniert nicht für Amazon-Artikel, X-User, o.ä. da zu viele Elemente bzw. zu
 viel Speicher nötig
@@ -670,11 +670,10 @@ von S gleichmäßig auf die Menge {0,1, … , 𝑛 − 1} abbildet
 − Setze alle Bits auf 0
 − Für jedes 𝑠 𝑆, setze 𝐵[ℎ(𝑠)] = 1
 
-− Gegeben ein Element eines Datenstroms mit Attribut a: Wähle
-Element genau dann aus, wenn 𝐵[ℎ(𝑎)] = 1
+− Anwendung: Gegeben ein Element eines Datenstroms mit Attribut a:
+Wähle Element genau dann aus, wenn 𝐵[ℎ(𝑎)] = 1
 
 Element a
-
 HashFunktion h
 
 Ausgabe des Elements, falls
@@ -686,12 +685,11 @@ Verwirf Element, falls 𝑩[𝒉(𝒂)] = 𝟎
 10-33
 
 FILTER ÜBER EINE EINZELNE HASH-FUNKTION
-− Sei S eine Menge von 𝑚 Elementen und B eine Array aus 𝑛 Bits
-(𝑚 < 𝑛)
-− z.B. 𝑚 = 109 Trustful Mail-Adressen, 𝑛 = 8 ∗ 109 𝐵𝑖𝑡 (1 Gbyte) RAM
+− Sei S eine Menge von 𝑚 Elementen und B ein Array aus 𝑛 Bits (𝑚 < 𝑛)
+− z.B. 𝑚 = 109 Trustful Mail-Adressen, 𝑛 = 8 ∗ 109 𝐵𝑖𝑡 (1 GB) RAM
 
-− Ungefähr ein Anteil
-− ca.
+− ungefähr ein Anteil
+−
 
 𝑚
 aller Bits sind auf Eins gesetzt
@@ -700,49 +698,43 @@ aller Bits sind auf Eins gesetzt
 𝑚
 109
 1
-=
-=
-= 0.125 : 12,5% aller Bits in B sind auf 1
-𝑛
-8∗109
-8
+ca. 𝑛 = 8∗109 = 8 = 0.125 : 12,5% aller Bits in B sind auf 1
 
-− Falls ein Attribut a zu S gehört, dann ist 𝐵[ℎ(𝑎)] = 1 garantiert →
-Keine False Negatives
-− Falls ein Attribut b nicht zu S gehört, wird es mit einer
+− Falls ein Element a zu S gehört, dann ist 𝐵[ℎ(𝑎)] = 1 garantiert,
+d.h. das Element a wird durchgelassen
+→ Keine False Negatives
+− Falls ein Element b nicht zu S gehört, wird es mit einer
 Wahrscheinlichkeit von ungefähr 𝟏 – 𝒆−𝒎Τ𝒏 einem Bit mit einer Eins
-zugeordnet
+zugeordnet.
 → False Positive
-− Füb obiges Beispiel: 1 – 𝑒 −1Τ8 = 0.1175 : Ein Element wird mit einer Wkt. von
-11,75% fälschlicherweise durchgelassen
-
+− Für obiges Beispiel: 1 – 𝑒 −1Τ8 = 0.1175 : Ein Element wird mit einer
+Wahrscheinlichkeit von 11,75% fälschlicherweise durchgelassen.
 10-34
 
 ALTERNATIVE: BLOOM FILTER
 − Verwende 𝑘 unabhängige Hash-Funktionen ℎ1 , ℎ2 , …, ℎ𝑘
 − Initialisierung:
-− Setze alle Bits von 𝐵 auf 0
+− Setze alle Bits von 𝐵 auf 0 (es gibt nur ein 𝐵)
 − Für jedes 𝑠 𝑆 setze 𝐵[ℎ𝑖 (𝑠)] = 1 für alle 𝑖 = 1, . . , 𝑘
 
-− Für ein Element aus dem Datenstrom mit Attribut a:
+− Für ein Element a aus dem Datenstrom:
 − Falls 𝐵[ℎ𝑖 (𝑎)] = 1 für alle 𝑖 = 1, . . , 𝑘, gib Element aus
 − Ansonsten: Verwirf Element
 
-− Wahrscheinlichkeit, dass ein gegebenes Bit in B auf Eins
-𝑘𝑚
-gesetzt wurde:
+− Initialisierung: Wahrscheinlichkeit, dass ein gegebenes
+Bit in B auf Eins gesetzt wurde:
 1
 1− 1–
-
 𝑛
+
+𝑘𝑚
 
 ≈ 1 – 𝑒 −𝑘𝑚Τ𝑛
 
-− Wahrscheinlichkeit eines False-Positive:
-Τ𝑛 𝑘
-−
-𝑘𝑚
-1– 𝑒
+− Anwendung: Wahrscheinlichkeit eines False-Positive:
+1 – 𝑒 −𝑘𝑚Τ𝑛
+
+𝑘
 10-35
 
 BLOOM FILTER: OPTIMIERUNG
@@ -751,16 +743,16 @@ gesetzt wurde:
 0.2
 
 − 𝑘 = 1: 1 – 𝑒 −1Τ8 ≈ 0.12
-2
 
-≈ 0.05
-
-− 𝑘 = 3:
-
-3
-1 – 𝑒 −3Τ8 ≈ 0.03
+− 𝑘 = 3: 1 – 𝑒 −3Τ8
 
 − 𝑘 = 4:
+
+2
+3
+
+≈ 0.05
+≈ 0.03
 
 Τ2 4
 −
@@ -774,9 +766,7 @@ gesetzt wurde:
 𝑚
 
 − Beispiel: 𝑘𝑜𝑝𝑡 = 8 ln 2 ≈ 6
-− Fehler für 𝑘 = 6: 1 – 𝑒
-
-−6Τ8 6
+− False Positive Rate für 𝑘 = 6:
 
 False Positive Rate
 
@@ -812,7 +802,10 @@ False Positive Rate
 18
 
 Anzahl Hash-Funktionen k
-
+Τ8 6
+−
+6
+1– 𝑒
 ≈ 0.0216
 10-36
 
@@ -821,7 +814,7 @@ Anzahl Hash-Funktionen k
 ZUSAMMENFASSUNG BLOOM FILTER
 − keine "False Negatives"
 − "False Positives" möglich
-− Speicher-Effizient
+− Speicher-effizient
 − Ideal für „schnelle“ Vorverarbeitung des Streams
 − aufwendigere Nachbearbeitung dann auf deutlich weniger
 Elementen
@@ -836,50 +829,46 @@ werden
 − Ziehen einer Stichprobe
 − Anfragen mit Sliding Window
 − Filter
-− Anzahl eindeutiger Elemente
+− Anzahl verschiedene Elemente
 − Momente von Häufigkeitsverteilungen
 
 10-38
 
-ANZAHL EINDEUTIGER ELEMENTE
-− Frage nach Anzahl der eindeutigen Elemente, die bisher auftraten
+ANZAHL VERSCHIEDENE ELEMENTE
+− Cardinality-Estimation problem
+− Frage: Wie viele verschiedene Elemente gibt es?
+− Frage nach Anzahl der verschiedenen Elemente, die bisher auftraten
 − Wie viele verschiedene Nutzer haben eine Webseite im letzten Monat
 besucht?
 − Wie viele verschiedene Webseiten wurden von einem Nutzer
 aufgerufen?
 − Wie viele verschiedene Produkte wurden letzte Woche verkauft?
 
-− Cardinality-Estimation problem
 − Welches Vorgehen eignet sich, wenn die bisher gesehenen
 Elemente nicht in den Hauptspeicher passen bzw. tausende
 Datenströme gleichzeitig verarbeitet werden?
-− Ziel
-− Schätzung der Anzahl mit möglichst geringem Fehler
+− Ziel: Schätzung der Anzahl mit möglichst geringem Fehler
 10-39
 
 FLAJOLET-MARTIN ALGORITHMUS
-− Hash-Funktion ℎ, die eine Menge von m verschiedenen Elementen
-auf eine Sequenz von mind. log 2 m Bits abbildet
+− Ziel: Schätzung der Anzahl verschiedener Elemente
+− Annahme: Menge mit 𝑚 verschiedenen Elementen
+− Hash-Funktion ℎ bildet ein Element e auf eine Sequenz von mind.
+log 2 m Bits ab.
 − z.B. ℎ 𝑒 = 10100
 
 − Für jedes Element 𝑒, sei 𝑟(𝑒) die Anzahl der hinteren Nullen von ℎ(𝑒)
 − z.B. falls ℎ 𝑒 = 10100, dann ist 𝑟 𝑒 = 2
 
-− Speichere 𝑅 als das Maximum von 𝑟 𝑒 über alle bisherigen
-Elemente
-− Schätzer für die Anzahl der eindeutigen Element: 𝟐𝑹
-
-10-40
-
-FLAJOLET-MARTIN ALGORITHMUS
-INTUITION
-
+− Sei 𝑅 das Maximum von 𝑟 𝑒 über alle bisherigen Elemente
+− Schätzer für die Anzahl der eindeutigen Elemente: 𝟐𝑹
+− Intuition:
 − Je mehr verschiedene Elemente beobachtet werden (je größer m),
-desto mehr unterschiedliche Hash-Werte werden berechnet
+desto mehr unterschiedliche Hash-Werte werden berechnet.
 − Je mehr unterschiedliche Hash-Werte berechnet werden, desto
-wahrscheinlicher ist das Auftreten eines sehr seltenen Hash-Wertes
-
-10-41
+wahrscheinlicher ist das Auftreten eines Hash-Wertes mit vielen hinteren
+Nullen.
+10-40
 
 FLAJOLET-MARTIN SCHÄTZER: BEGRÜNDUNG
 − Die Werte von ℎ 𝑒 haben gleiche Wahrscheinlichkeit
@@ -894,13 +883,6 @@ Nullen durch die Eingabe von 𝑚 verschiedenen Elementen zu
 beobachten ist
 1 − 2−𝑟 𝑚 = 1 −
 
-1−
-− Beispiel: 𝑚 = 1000
-
-− Beste Schätzung: 𝑅 = 10
-
-→
-
 𝑚
 𝑟 𝑚2−𝑟
 − 𝑟
@@ -908,6 +890,12 @@ beobachten ist
 2
 1−2
 ≈1−𝑒 2
+
+1−
+− Beispiel: 𝑚 = 1000 (z.B. Nutzer), m soll geschätzt werden
+− Beste Schätzung: 𝑅 = 10
+
+→
 
 2𝑅 = 210 = 1024
 
@@ -936,7 +924,7 @@ beobachten ist
 = 0.38
 
 Problem: Überschätzung
-10-42
+10-41
 
 FLAJOLET-MARTIN SCHÄTZER: PROBLEME
 − Simulation mit 𝑚 = 1000 und
@@ -948,11 +936,12 @@ von 𝑚 durch 2𝑅 = 1024
 − Aber extreme Überschätzung, falls 𝑅 > 10 (38% der Fälle) durch z.B.
 211 = 2048 (17%) oder 212 = 4096 (9%)
 − Lösung: Verwendung mehrerer Hash-Funktionen
-− Mittelwert: anfällig gegenüber Ausreißern (Simulation: 5243)
+− Mittelwert: sehr anfällig gegenüber Extremwerten (Simulation: 5243)
 − Median: nur Zweierpotenzen (Simulation: 1024)
 − Alternative: Unterteilung in kleine Gruppen von Hash-Funktionen und
-Mittelwert der Mediane (Simulation mit Gruppen aus 50 HashFunktionen: 1048)
-10-43
+Mittelwert der Mediane
+(Simulation mit Gruppen aus 50 Hash-Funktionen: 1048)
+10-42
 
 FLAJOLET'S WEITERENTWICKLUNG
 − 1984: Flajolet-Martin Algorithmus, 2003: LogLog
@@ -966,7 +955,7 @@ Komprimierung großer Datensätze und von Google zur
 Zählung täglicher Suchanfragen
 − Anwendung in Elasticsearch und AWS Redshift
 Paper: https://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf
-10-44
+10-43
 
 INHALTSVERZEICHNIS
 − Einführung
@@ -976,7 +965,7 @@ Paper: https://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf
 − Anzahl eindeutiger Elemente
 − Momente von Häufigkeitsverteilungen
 
-10-45
+10-44
 
 HÄUFIGKEITSVERTEILUNG
 − Gegeben: Datenstrom aus natürlichen Zahlen
@@ -1004,7 +993,7 @@ Datenstrom
 6
 5
 0
-10-46
+10-45
 
 MOMENTE
 − Betrachtung des Falls: Alle 𝑚𝑖 passen nicht in den Hauptspeicher
@@ -1024,13 +1013,13 @@ Datenstrom
 σ 𝑚
 |𝐴| 𝑖∈𝐴 𝑖
 
-− 2te Moment = Maß der Ungleichheit
+− 2te Moment = Maß der Ungleichheit (Varianz)
 − z.B. Datenstrom aus 100 Elementen mit 𝐴 = 1, 2, . . , 11
 − 𝑚𝑖 : 10, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9 → 2tes Moment: 82.7
 − 𝑚𝑖 : 90, 1, 1, 1, 1, 1, 1, 1 ,1, 1, 1 → 2tes Moment: 737.3
 
 − Anmerkung: Empirische Varianz: (2te Moment) – (1te Moment)2
-10-47
+10-46
 
 ALON-MATIAS-SZEGEDY (AMS) ALGORITHMUS
 − Schätzung des 2-ten Moments
@@ -1057,7 +1046,7 @@ Anzahl an Variablen 𝑋1 , 𝑋2 , …, 𝑋𝑙 mit 𝑋𝑗 = 𝑋𝑗 . 𝑒
 ∗ ෍ 𝑓 𝑋𝑗
 |𝐴| 𝑙
 𝑗=1
-10-48
+10-47
 
 ALON-MATIAS-SZEGEDY ALGORITHMUS
 − Momente höherer Ordnung
@@ -1079,7 +1068,7 @@ Mittelwerte von kleineren Gruppen von Variablen
 − Falls das 𝑛-te Element als neue Variable gewählt wird, entferne eine
 1
 existierende Variable mit Wahrscheinlichkeit 𝑙
-10-49
+10-48
 
 ZUSAMMENFASSUNG
 − Data Stream Model
@@ -1100,6 +1089,6 @@ Zwischenspeicher (State)
 − Schätzung des 2. Moments z.B. via Alon-Matias-Szegedy
 Algorithmus
 
-10-50
+10-49
 
 
