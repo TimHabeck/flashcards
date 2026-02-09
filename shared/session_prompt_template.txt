@@ -9,3 +9,10 @@ After reading the shared procedures, locate the course folder based on the slide
 4. `[COURSE_FOLDER]/flashcards_master.csv`
 
 Finally, begin processing the following source file:
+{{SLIDE_PATH}}
+
+Relevant Topics for exam (focus on them):
+
+
+
+

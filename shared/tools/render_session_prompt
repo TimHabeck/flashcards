@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+
+PLACEHOLDER = "{{SLIDE_PATH}}"
+
+
+def main() -> int:
+    if len(sys.argv) != 2:
+        script_name = Path(sys.argv[0]).name
+        print(f"Usage: {script_name} /path/to/slide.txt", file=sys.stderr)
+        return 2
+
+    slide_path = sys.argv[1]
+
+    template_path = Path(__file__).resolve().parent.parent / "session_prompt_template.txt"
+    try:
+        template_text = template_path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        print(f"Template not found: {template_path}", file=sys.stderr)
+        return 1
+
+    if PLACEHOLDER in template_text:
+        rendered = template_text.replace(PLACEHOLDER, slide_path)
+    else:
+        rendered = f"{template_text.rstrip()}\n{slide_path}\n"
+
+    print(rendered, end="")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
