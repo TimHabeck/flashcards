@@ -1,0 +1,2 @@
+course_name: Grundlagen IT Sicherheit
+semester: WS25/26
