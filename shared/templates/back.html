@@ -1,0 +1,46 @@
+<div class="card front">
+    {{Front}}
+</div>
+
+<hr id=answer>
+
+<div class="card back">
+    {{Back}}
+</div>
+
+<br>
+
+<!-- 
+  Anki Card Scripts
+  -----------------
+  This script ensures Mermaid diagrams are rendered correctly across 
+  Anki Desktop, AnkiMobile (iOS), and AnkiDroid (Android).
+-->
+<script type="module">
+    async function renderMermaid() {
+        try {
+            // 1. Check for Mermaid containers
+            const elements = document.querySelectorAll('.mermaid');
+            if (elements.length === 0) return;
+
+            // 2. Load Mermaid from CDN if not already present
+            if (typeof mermaid === 'undefined') {
+                const { default: mermaidLib } = await import('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs');
+                window.mermaid = mermaidLib;
+                mermaid.initialize({
+                    startOnLoad: false,
+                    theme: 'default',
+                    securityLevel: 'loose'
+                });
+            }
+
+            // 3. Run rendering
+            await window.mermaid.run();
+        } catch (e) {
+            console.error("Mermaid rendering error:", e);
+        }
+    }
+
+    // Execute on load
+    renderMermaid();
+</script>
