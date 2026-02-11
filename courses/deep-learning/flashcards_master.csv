@@ -1,4 +1,4 @@
-"id","front","back","source_file","tag"
+"id","front","back","source_file","tags"
 "20260121-1618-01-1","What are the three fundamental properties of the inner product u · v?","Linearity, Symmetry, Positive Definiteness","week 1 - slides_l2_logreg.txt","week-1 logistic-regression machine-learning inner-product"
 "20260121-1618-01-2","How is the angle theta between two vectors u and v related to their inner product?","cos(theta) = (u · v) / (||u|| ||v||)","week 1 - slides_l2_logreg.txt","week-1 logistic-regression machine-learning inner-product"
 "20260121-1618-01-3","For unit vectors ||u|| = ||v|| = 1, what does the inner product u · v represent?","Similarity measure based on the angle (1 if same, 0 if orthogonal, -1 if opposite)","week 1 - slides_l2_logreg.txt","week-1 logistic-regression machine-learning inner-product"

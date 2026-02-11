@@ -53,8 +53,11 @@ All visual formatting is governed by **`shared/flashcard_style_guide.md`**.
 
 ## 5. File & Folder Logic
 
+-   **Folder Structure**:
+    -   All course folders are located in `[PROJECT_ROOT]/courses/`.
+    -   Example: `flashcards/courses/deep-learning/`
 -   **Course Folder Discovery**:
-    -   Infer `[COURSE_FOLDER]` from the slide path (parent of `slides/`).
+    -   Infer `[COURSE_FOLDER]` from the slide path (e.g., if slide is in `.../courses/deep-learning/slides/`, then course folder is `.../courses/deep-learning`).
     -   Verify using `course_info.txt`.
 -   **Path Handling**:
     -   Use absolute paths for all file operations.
