@@ -26,6 +26,18 @@ This document defines the rules for creating the content and structure of each f
 
 This section dictates how to use HTML to format the content on the back of a card.
 
+-   **Structure & Flow**:
+    -   **Detailed Structure**: Break down complex answers into bullet points (`<ul>`) or numbered lists (`<ol>`) whenever possible. Avoid large blocks of text.
+    -   **Punctuation**:
+        -   **No Trailing Periods**: Do NOT put a period at the end of any content that consists of a single sentence. This applies to **both** bullet points and standalone paragraphs.
+        -   **Exception**: Use periods ONLY if a single bullet point or paragraph contains multiple sentences.
+        -   **Formulas**: NEVER put a period after a mathematical formula.
+
+-   **Quotes & Definitions**:
+    -   **Use Sparingly**: Only use `<blockquote>` for verbatim definitions or critical, emphasized statements.
+    -   **Don't Quote Everything**: Never wrap the entire answer in a blockquote. It loses its impact.
+    -   **Example**: `<blockquote>Authentication is the process of verifying identity.</blockquote>`
+
 -   **Mathematical Notation (LaTeX)**:
     -   Use `\(...\)` for inline expressions and `\[...\]` for display expressions.
     -   **CRITICAL**: Do NOT use `$...$` or `$$...$$`.
@@ -35,10 +47,6 @@ This section dictates how to use HTML to format the content on the back of a car
         -   Never emit double backslashes in the final field (e.g., `\\frac` or `\\(`).
         -   Use explicit LaTeX for spacing and text in math (`\text{...}`) so spaces render correctly.
         -   Prefer standard commands for structure (`\frac`, `\left...\right`, `\lvert...\rvert`) over ad‑hoc ASCII approximations.
-
--   **Definitions:**
-    -   Place concise definitions inside a `<blockquote>`.
-    -   **Example:** `<blockquote>A model that processes data in sequences, using its internal memory to remember previous inputs.</blockquote>`
 
 -   **Lists:**
     -   Use `<ul>` for unordered (bulleted) lists.
@@ -63,11 +71,27 @@ This section dictates how to use HTML to format the content on the back of a car
             B --> C{Output Layer};
         </div>
         ```
+
+-   **Legends (Abbreviations & Variables):**
+    -   Creating a "legend" at the bottom of the card is **mandatory** if the card uses abbreviations or mathematical variables.
+    -   **Placement**: Add a `<br><br>` separator after the main answer content.
+    -   **Format**: Use a simple `<div>` with `class="legend"` (if available, otherwise plain div) containing lines for each term.
+    -   **Structure**: `Term: Definition`. One per line. No bullet points.
+    -   **Example**:
+        ```html
+        <br><br>
+        <div>
+        SSO: Single Sign-On<br>
+        M: Probabilistic Matrix<br>
+        r: Rank
+        </div>
+        ```
+
 -   **Reasoning and Edge Cases:**
     -   Use `<ul>` to list conditions or consequences.
     -   **Example:**
         -   **Front:** "What happens to the Binary Cross-Entropy loss if the model predicts 0 but the ground truth is 1?"
-        -   **Back:** "The loss approaches **infinity** ($\lim_{x \to 0, x > 0} -\ln(x) = \infty$)."
+        -   **Back:** "The loss approaches **infinity**" (followed by formula without period)
 
 ## 5. Tagging Strategy
 
