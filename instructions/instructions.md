@@ -6,13 +6,13 @@ This document outlines the workflow and core principles for generating exam-read
 
 The agent follows this loop for every source file:
 
-1.  **Initialization**: Read `shared/flashcard_style_guide.md`, `[COURSE_FOLDER]/course_info.txt`, and load `flashcards_master.csv`.
+1.  **Initialization**: Read `instructions/flashcard_style_guide.md`, `[COURSE_FOLDER]/course_info.txt`, and load `flashcards_master.csv`.
 2.  **Source Processing**: Read one `.txt` file from `slides/`.
 3.  **Card Generation**:
     a.  **Identify Concept**: Select an exam-relevant topic.
     b.  **De-duplication**: Check `flashcards_master.csv` (Front column) to avoid duplicates.
     c.  **Draft Content**: Create the raw Question and Answer text.
-    d.  **Apply Formatting**: Use `shared/flashcard_style_guide.md` to format the content (HTML/LaTeX).
+    d.  **Apply Formatting**: Use `instructions/flashcard_style_guide.md` to format the content (HTML/LaTeX).
     e.  **Generate ID & Tags**: Create unique ID and tags (including `source::filename`).
 4.  **Saving Data**:
     a.  **Append to Master CSV**: Add `id,front,back,source_file,tags` to `flashcards_master.csv`.
@@ -34,7 +34,7 @@ These rules ensure the **content** (not format) is high quality:
 
 ## 3. Formatting Standards
 
-All visual formatting is governed by **`shared/flashcard_style_guide.md`**.
+All visual formatting is governed by **`instructions/flashcard_style_guide.md`**.
 
 -   **Refer to the Style Guide for:**
     -   Detailed HTML structure (Lists, Tables)
@@ -42,7 +42,7 @@ All visual formatting is governed by **`shared/flashcard_style_guide.md`**.
     -   Code block classes (`hljs`)
     -   Mermaid diagrams
     -   Mandatory Legends (Abbreviations)
--   **CSS**: The visual theme is defined in `shared/anki_styling.css`.
+-   **CSS**: The visual theme is defined in `instructions/anki_styling.css`.
 
 ## 4. Handling Imperfect Text
 

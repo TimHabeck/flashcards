@@ -6,8 +6,12 @@ import glob
 
 # Configuration
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-TEMPLATES_DIR = os.path.join(BASE_DIR, 'shared', 'templates')
-OUTPUT_FILE = 'Flashcards_All_Courses.apkg'
+PROJECT_ROOT = os.path.normpath(os.path.join(BASE_DIR, '..'))
+TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
+EXPORTS_DIR = os.path.join(PROJECT_ROOT, 'exports')
+
+# Ensure exports directory exists
+os.makedirs(EXPORTS_DIR, exist_ok=True)
 
 def load_file(filename):
     with open(os.path.join(TEMPLATES_DIR, filename), 'r', encoding='utf-8') as f:
@@ -63,7 +67,7 @@ parser.add_argument('course_folder', nargs='?', help='Optional: Specific course 
 args = parser.parse_args()
 
 # 3. Iterate through courses and create packages
-COURSES_DIR = os.path.join(BASE_DIR, 'courses')
+COURSES_DIR = os.path.join(PROJECT_ROOT, 'courses')
 print(f"Scanning for courses in {COURSES_DIR}...")
 
 if not os.path.exists(COURSES_DIR):
@@ -139,9 +143,9 @@ for course in courses:
                 
                 course_deck.add_note(my_note)
     
-    # Save the Package PER COURSE
+    # Save the Package PER COURSE in the EXPORTS_DIR
     output_filename = f"{course_name}.apkg"
-    output_path = os.path.join(BASE_DIR, output_filename)
+    output_path = os.path.join(EXPORTS_DIR, output_filename)
     print(f"  Saving package to {output_filename}...")
     genanki.Package(course_deck).write_to_file(output_path)
 

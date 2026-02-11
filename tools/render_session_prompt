@@ -16,7 +16,7 @@ def main() -> int:
 
     slide_path = sys.argv[1]
 
-    template_path = Path(__file__).resolve().parent.parent / "session_prompt_template.txt"
+    template_path = Path(__file__).resolve().parent.parent / "instructions" / "session_prompt_template.txt"
     try:
         template_text = template_path.read_text(encoding="utf-8")
     except FileNotFoundError:
