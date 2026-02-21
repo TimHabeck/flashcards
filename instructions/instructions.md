@@ -1,64 +1,113 @@
 # Flashcard Generation Instructions
 
-This document outlines the workflow and core principles for generating exam-ready Anki flashcards. It acts as the "Controller" for the flashcard generation process.
+This document outlines the process for generating Anki flashcards from course materials. It should be read by the agent at the beginning of every session to ensure consistency.
 
 ## 1. Overall Workflow
 
-The agent follows this loop for every source file:
+The process is designed to be robust, stateful, and produce high-quality, formatted flashcards for import into Anki.
 
-1.  **Initialization**: Read `instructions/flashcard_style_guide.md`, `[COURSE_FOLDER]/course_info.txt`, and load `flashcards_master.csv`.
-2.  **Source Processing**: Read one `.txt` file from `slides/`.
-3.  **Card Generation**:
-    a.  **Identify Concept**: Select an exam-relevant topic.
-    b.  **De-duplication**: Check `flashcards_master.csv` (Front column) to avoid duplicates.
-    c.  **Draft Content**: Create the raw Question and Answer text.
-    d.  **Apply Formatting**: Use `instructions/flashcard_style_guide.md` to format the content (HTML/LaTeX).
-    e.  **Generate ID & Tags**: Create unique ID and tags (including `source::filename`).
-4.  **Saving Data**:
-    a.  **Append to Master CSV**: Add `id,front,back,source_file,tags` to `flashcards_master.csv`.
-        -   *Crucial*: Double-quote all fields. Escape literal quotes as `""`.
-    b.  **Append to Anki Export CSV**: Add `front_html,back_html,tags` to `anki_exports/[week_file].csv`.
-        -   *Crucial*: NO Header row. ONLY 3 columns.
+1.  **Initialization**: At the start of a session, read:
+    - `instructions/instructions.md` (this file)
+    - `instructions/flashcard_style_guide.md`
+    - `[COURSE_FOLDER]/course_info.txt` - for course-specific metadata
+    - `[COURSE_FOLDER]/flashcards_master.csv` - to load the current state for this course
+2.  **Source Processing**: Process one `.txt` file from the `[COURSE_FOLDER]/slides/` directory at a time.
+3.  **Card Generation**: For each piece of content in the source file, perform the following:
+    a.  **Identify Potential Card**: Find a key concept, definition, code block, or other piece of information suitable for a flashcard.
+        - **Content-only filter**: Prefer exam-relevant, generalizable knowledge. Skip organizational/administrative details (course logistics, schedules, platforms, enrollment, announcements, etc.).
+    b.  **De-duplication**: Perform a semantic check against the `front` text of all cards in the loaded `flashcards_master.csv`. If a similar card already exists, discard the new one and move on.
+    c.  **Content Creation**: Generate the raw `front` and `back` text for the card.
+        - **No source phrasing**: Do not reference the slides/lecture in the card text (e.g., avoid “in the slides” or “in the introduction”). The source should only appear in tags.
+        - **Avoid over-specific attribution**: Do not ask for definitions “by author/group” unless that distinction is essential to the exam content.
+    d.  **Formatting**: Using the full context from the source text and the rules in `flashcard_style_guide.md`, create the final HTML-formatted `front_html` and `back_html`.
+    a.  **ID Generation**: Generate a unique ID for each card using the format `YYYYMMDD-HHMM-SS-N` (e.g., `20240520-1430-15-1`).
+    b.  **Tag Generation**: Create a space-separated tag string that includes:
+        - Week tag (e.g., `week-1`)
+        - Semester tag from `[COURSE_FOLDER]/course_info.txt` (e.g., `winter-2025-2026`)
+        - Topic tags (e.g., `logistic-regression`, `machine-learning`)
+        - Source file tag using the format `source::filename` (e.g., `source::week-1-slides-l2-logreg`)
+        - **Example**: `week-1 winter-2025-2026 logistic-regression machine-learning source::week-1-slides-l2-logreg`
+    c.  **File Updates**:
+        i.  Append the new, **raw** content (id, front, back, source_file, tags) to the `[COURSE_FOLDER]/flashcards_master.csv` file. 
+        ii. **Data Integrity**: Ensure all CSV fields are double-quoted. Escape literal double quotes by doubling them (`""`).
+        iii. Append the new, **HTML-formatted** content (front_html, back_html, tags) to the corresponding Anki export file (e.g., `[COURSE_FOLDER]/anki_exports/week_1_logistic_regression.csv`).
+            - **IMPORTANT**: Anki export files should have ONLY 3 columns: `front_html`, `back_html`, `tags`
+            - Do NOT include `id` or `source_file` columns in Anki exports
+            - Do NOT include a header row in Anki export files (Anki doesn't expect it)
+            - The source file information is embedded in the tags as `source::filename`
 
-## 2. Content Principles ("Exam-Ready")
+## 2. Handling Imperfect Text Extractions
 
-These rules ensure the **content** (not format) is high quality:
+The source `.txt` files may contain garbled text from the PDF extraction process.
 
--   **Derivations**: Don't just show formulas. Ask about logical steps and assumptions.
--   **Visual Intuition**: Ask about the *shape* and behavior of functions (e.g., "What happens as $x \to \infty$?").
--   **Relationships**: Connect concepts (e.g., "Compare X vs Y").
--   **Uncertainty**: Include questions about model confidence and limitations.
--   **Context**: 
-    -   **Avoid Source References**: Don't say "In the slides...".
-    -   **Ensure Topic Context**: The question MUST clearly state the topic it refers to. A card like "What are the 3 types?" is invalid; it must be "What are the 3 types of **access control**?".
-
-## 3. Formatting Standards
-
-All visual formatting is governed by **`instructions/flashcard_style_guide.md`**.
-
--   **Refer to the Style Guide for:**
-    -   Detailed HTML structure (Lists, Tables)
-    -   Exact LaTeX syntax (`\(...\)`)
-    -   Code block classes (`hljs`)
-    -   Mermaid diagrams
-    -   Mandatory Legends (Abbreviations)
--   **CSS**: The visual theme is defined in `instructions/anki_styling.css`.
-
-## 4. Handling Imperfect Text
-
--   **Truth**: Do not invent content if text is garbled.
--   **Placeholder**: If a key section is unreadable, create a placeholder card:
+-   The agent's primary source of truth is the provided text. The agent should **not** invent content or try to guess the meaning of severely garbled text.
+-   If a section of text is unreadable but seems to contain a potentially important concept, the agent should create a **placeholder card**.
+-   **Placeholder Format**:
     -   **Front**: `[POTENTIALLY CORRUPTED CONTENT]`
-    -   **Back**: "The source file `[filename]` contains unreadable text on `[topic]`. Please check PDF."
+    -   **Back**: "The source file `[source_file_name]` contains a section on `[inferred_topic]` that appears to be unreadable or corrupted. Please review the original PDF for this content."
 
-## 5. File & Folder Logic
+## 3. File Structure
+
+-   **`instructions/`**: Common resources used across all courses
+    -   `instructions.md`: This file - core instructions (course-agnostic)
+    -   `flashcard_style_guide.md`: Formatting and style rules
+    -   `anki_styling.css`: CSS for Anki cards (copy to Anki Note Type once)
+    -   `session_prompt_template.txt`: Template for starting sessions
+
+-   **`[COURSE_FOLDER]/`**: Course-specific folder under `courses/` (e.g., `courses/deep-learning/`)
+    -   `course_info.txt`: Course metadata with format:
+        ```
+        course_name: Deep Learning
+        semester: winter-2025-2026
+        ```
+    -   `flashcards_master.csv`: Master database for this course only
+        - **Format**: `id,front,back,source_file,tags` (5 columns)
+        - **Purpose**: Internal tracking and de-duplication within this course
+    -   `slides/`: Source lecture slides for this course
+    -   `anki_exports/`: Anki-ready CSV files for this course
+        - **Format**: `front_html,back_html,tags` (3 columns only, **no header row**)
+        - **Purpose**: Direct import into Anki
+        - **Note**: Source file information is embedded in tags as `source::filename`
+
+## 4. Card Formatting and Styling
+
+To ensure high-quality, readable, and consistent flashcards, the following tools and standards will be used.
+
+-   **Styling (CSS)**: The visual appearance of the cards (colors, fonts, etc.) is defined in `instructions/anki_styling.css`. The content of this file is to be manually copied into the Anki Note Type's styling section one time by the user.
+-   **Formatting (HTML)**: All rich text formatting (bold, lists, tables) will be done using standard HTML tags.
+-   **Mathematical Notation (LaTeX)**: Use Anki's LaTeX delimiters for mathematical expressions:
+    - **Inline math**: Use `\(...\)` for inline expressions (e.g., `\(x^2 + y^2\)`)
+    - **Display math**: Use `\[...\]` for display/block expressions (e.g., `\[\sum_{i=1}^{n} x_i\]`)
+    - **CRITICAL**: Do NOT use `$...$` or `$$...$$` - these will not render in Anki
+    - **Example**: `\(f(x) = w \cdot x + b\)` for inline, `\[\text{RMSE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}\]` for display
+    - **LaTeX Safety**:
+        - Treat LaTeX as **raw text**. Do not "escape" backslashes for JSON/CSV/string literals.
+        - Never introduce double backslashes like `\\frac` or `\\(` in the final CSV fields.
+        - Avoid accidental escape sequences: `\t`, `\f`, `\r`, `\n` must remain **literal** inside LaTeX commands (e.g., `\text`, `\frac`, `\right`).
+        - Do not allow control characters (TAB/FORMFEED/CR) inside LaTeX; these corrupt commands and spacing.
+        - Prefer explicit, standard LaTeX for norms and fractions (e.g., `\frac{1}{\lvert w \rvert}` rather than `1/\|w\|`).
+-   **Code Blocks**: Code snippets will be formatted using `<pre><code class="hljs language-xyz">...</code></pre>` tags. This dual-class approach ensures compatibility with both standard CSS and Highlight.js. The agent will attempt to infer the correct language (e.g., 'python', 'bash', 'json') from the context. If the language is unknown, use `plaintext`.
+-   **Diagrams (Mermaid.js)**: Diagrams will be generated using Mermaid.js syntax. The user must include the rendering script from `instructions/anki_scripts.html` in their Anki card template. This ensures diagrams render correctly on all devices.
+## 5. "Exam-Ready" Content Principles
+
+To ensure cards are sufficient for exam preparation (especially when the user only reads slides once), follow these additional rules:
+
+-   **Derivations**: Don't just provide the final formula. Create cards for the **key logical steps** or assumptions in a derivation (e.g., "Why can we pull $P(Y_0)$ out of the summation over $Y_1, \dots, Y_n$?").
+-   **Visual/Intuitive Understanding**: Create cards that describe or ask about the **shape** of functions (sigmoid, loss curves).
+    -   *Example*: "What happens to the logistic sigmoid curve as the scaling factor $c$ increases?" 
+    -   *Answer*: "The transition from 0 to 1 becomes **steeper**, eventually approaching a step function."
+-   **Edge Cases & Limits**: Always include cards for the behavior of functions at $0, \infty, -\infty$.
+-   **Qualitative Reasoning**: Include cards about **uncertainty** and **confidence** based on model outputs.
+-   **Inter-theory Connections**: Ask about the *relationship* between concepts (e.g., "What is the connection between Maximum Likelihood and Cross-Entropy?").
+-   **Comparison Cards**: Always compare different approaches mentioned in the slides (e.g., "Logistic vs. Probit").
+
+## 6. Course Folder Discovery
+
+To simplify the user's workflow, the agent should be able to identify the `[COURSE_FOLDER]` automatically based on the provided slide file path.
 
 -   **Folder Structure**:
     -   All course folders are located in `[PROJECT_ROOT]/courses/`.
     -   Example: `flashcards/courses/deep-learning/`
--   **Course Folder Discovery**:
-    -   Infer `[COURSE_FOLDER]` from the slide path (e.g., if slide is in `.../courses/deep-learning/slides/`, then course folder is `.../courses/deep-learning`).
-    -   Verify using `course_info.txt`.
--   **Path Handling**:
-    -   Use absolute paths for all file operations.
-    -   Convert filenames to lowercase/hyphenated for `source::...` tags.
+-   **Extraction**: If the user provides a path like `/absolute/path/to/flashcards/courses/course-name/slides/week-2-slides.txt`, the `[COURSE_FOLDER]` is the parent of the `slides/` directory (in this case, `/absolute/path/to/flashcards/courses/course-name/`).
+-   **Validation**: After inferring the `[COURSE_FOLDER]`, the agent must verify that it contains the required `course_info.txt` and `flashcards_master.csv` before proceeding.
+-   **Fallback**: If the folder structure does not follow this convention, the agent should ask the user to explicitly provide the course folder path.
