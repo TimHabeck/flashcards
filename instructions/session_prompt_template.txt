@@ -1,8 +1,8 @@
 Start a new flashcard generation session.
 
 Your first step is to read and fully understand the project's established procedures:
-1. `shared/instructions.md`
-2. `shared/flashcard_style_guide.md`
+1. `instructions/instructions.md`
+2. `instructions/flashcard_style_guide.md`
 
 After reading the shared procedures, locate the course folder based on the slide file path provided below and load:
 3. `[COURSE_FOLDER]/course_info.txt`
@@ -12,7 +12,6 @@ Finally, begin processing the following source file:
 {{SLIDE_PATH}}
 
 Relevant Topics for exam (focus on them):
-
 
 
 
