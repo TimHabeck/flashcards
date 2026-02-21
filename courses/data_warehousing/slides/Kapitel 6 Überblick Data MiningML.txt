@@ -1,0 +1,1662 @@
+DATA WAREHOUSING
+
+Kapitel 6: Überblick Data Mining/ML-Verfahren
+Victor Christen
+christen@informatik.uni-leipzig.de
+Universität Leipzig
+Institut für Informatik
+Abteilung Datenbanken
+
+AGENDA
+− Einführung Data Mining / maschinelles Lernen
+− KDD-Prozess
+− Anwendungsbeispiele
+
+− Assoziationsregeln / Warenkorbanalyse
+− Support und Konfidenz
+− A Priori-Algorithmus
+− Frequent Pattern (FP)-Trees
+
+− Clusteranalyse
+− k-Means-Algorithmus
+− Canopy Clustering
+
+− Klassifikation
+− Klassifikationsprozess
+− Entscheidungsbäume
+− Neuronale Netze
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-2
+
+KNOWLEDGE DISCOVERY IN DATABASES (KDD)
+− (semi-)automatische Extraktion von Wissen aus Datenbanken, das
+− gültig (im statistischen Sinn)
+− bisher unbekannt
+− und potenziell nützlich ist
+
+− Kombination von Verfahren zu Datenbanken, Statistik und KI
+(maschinelles Lernen)
+Selektion
+Vorverarbeitung/
+Transformation
+
+Rohdaten
+
+Data Mining
+
+Daten
+Interpretation
+
+Daten
+Muster
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Wissen
+6-3
+
+DATA MINING / MACHINE LEARNING
+− Data Mining: Anwendung effizienter Algorithmen zur Erkennung von
+Mustern in großen Datenmengen
+− Machine Learning: lernbasierte (KI-) Ansätze für Vorhersagen /
+Wissensgenerierung
+− Data Mining/ML für Big Data / Datenbanken bzw. Data Warehouses
+− Skalierbarkeit auf große Datenmengen (nicht nur im Hauptspeicher)
+− parallele Realisierungen
+
+− umfassende Datenaufbereitung und Vorverarbeitung erforderlich
+− Diskretisierung numerischer Attribute (Aufteilung von Wertebereichen in
+Intervalle, z.B. Altersgruppen)
+− Erzeugen abgeleiteter Attribute (z.B. Aggregationen für bestimmte
+Dimensionen, Umsatzänderungen)
+− Extraktion von analyserelevanten Merkmalen / Features aus
+unstrukturierten Daten
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-4
+
+ANALYSETECHNIKEN
+− Assoziationsregeln
+− Warenkorbanalyse (z.B. Kunde kauft A und B => Kunde kauft C)
+− Sonderformen zur Berücksichtigung von Dimensionshierarchien (z.B.
+Produktgruppen), quantitativen Attributen, zeitlichen Beziehungen (sequence
+mining)
+
+− Clusteranalyse
+− Objekte werden aufgrund von Ähnlichkeiten in Klassen eingeteilt • •
+••
+(Segmentierung)
+
+− Klassifikation
+
+•
+
+• • ••
+• •
+
+•
+
+•
+
+− Zuordnung von Objekten zu Gruppen/Klassen mit gemeinsamen Eigenschaften
+bzw. Vorhersage von Attributwerten
+− Verwendung von Stichproben (Trainingsdaten)
+− Ansätze: Entscheidungsbaum-Verfahren, neuronale Netze, statistische
+Auswertungen (z.B. Maximum Likelihood-Schätzung / Bayes-Schätzer)
+
+− weitere Ansätze:
+− genetische Algorithmen (multivariate Optimierungsprobleme, z.B. Identifikation
+der besten Bankkunden)
+− Regressionsanalyse zur Vorhersage numerischer Attribute . . .
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-5
+
+DATA MINING/ML: ANWENDUNGSBEISPIELE
+− Warenkorbanalyse: Produkt-Platzierung im Supermarkt,
+Preisoptimierung, ...
+− Kundensegmentierung für Marketing
+− Gruppierung von Kunden mit ähnlichem Kaufverhalten / ähnlichen
+Interessen
+− Nutzung für gruppenspezifische Empfehlungen, Product Bundling, ...
+
+− Bestimmung der Kreditwürdigkeit von Kunden
+− elektronische Vergabe von Kreditkarten
+− schnelle Entscheidung über Versicherungsanträge, ...
+
+− Entdeckung wechselbereiter Kunden
+− Entdeckung von Kreditkarten-Missbrauch
+− Erkennung von Spam-Emails
+− Auswahl personalisierter Behandlungsstrategien für Krebspatienten
+…
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-6
+
+EVALUATION/INTERPRETATION
+− Ablauf
+− Präsentation der gefundenen Muster, z.B. über Visualisierungen
+− Bewertung der Muster durch den Benutzer
+− falls schlechte Bewertung: erneute Analyse mit anderen
+Parametern, anderem Verfahren oder anderen Daten
+− falls gute Bewertung: Integration des gefundenen Wissens in die
+Wissensbasis / Metadaten und Nutzung für zukünftige KDDProzesse
+
+− Bewertung der gefundenen Muster: Interessantheit,
+Vorhersagekraft
+− sind Muster schon bekannt oder überraschend?
+− wie gut lassen sich mit „Trainingsdaten“ (Stichproben) gefundene
+Muster auf zukünftige Daten verallgemeinern?
+− Vorhersagekraft wächst mit Größe und Repräsentativität der
+Stichprobe
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-7
+
+ASSOZIATIONSREGELN
+− Warenkorbanalyse auf Transaktions-Datenbank
+− Transaktion umfasst alle gemeinsam getätigten Einkäufe, innerhalb
+eines Dokuments vorkommenden Worte, innerhalb einer Web-Sitzung
+referenzierten Seiten, ...
+
+− Regeln der Form “Rumpf → Kopf [support, confidence]”
+− Beispiele
+− kauft(“Papier”) → kauft(“Toner”) [0.5%, 60%]
+− 80% aller Kunden, die Reifen und Autozubehör kaufen,
+bringen ihr Auto auch zum Service
+
+− relevante Größen
+− Support einer Regel X → Y: Anteil der Transaktionen, in denen alle
+Objekte X und Y vorkommen
+− Konfidenz einer Regel X → Y: Anteil der Transaktionen
+mit Rumpf-Objekten X, für die Regel erfüllt ist (d.h. für
+die auch Objekte Y vorliegen)
+− Interessantheit: hoher Wahrscheinlichkeitsunterschied für
+Y gegenüber zufälliger Verteilung
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-8
+
+ASSOZIATIONSREGELN (2)
+− Aufgabe: Bestimmung aller Assoziationsregeln, deren
+Support und Konfidenz über bestimmten Grenzwerten
+liegen
+− Gegeben:
+− R eine Menge von Items/Objekten (z.B. Produkte, Webseiten)
+− t eine Transaktion, t  R
+− r eine Menge von Transaktionen
+− smin  [0,1] die minimale Unterstützung,
+− confmin  [0,1] die minimale Konfidenz
+
+− Aufgabe: Finde alle Regeln c:
+X → Y mit X  R, Y  R, X  Y = {}
+supp( r , c) =
+
+ t  r X  Y  t
+r
+
+Abteilung Datenbanken
+
+ smin
+
+ t  r X  Y  t
+conf (r , c) =
+ conf
+ t  r X  rt 
+
+DATA WAREHOUSING
+
+min
+
+6-9
+
+BEISPIEL: WARENKORBANALYSE
+
+EinkaufsID
+
+Aftershave
+
+Bier
+
+Chips
+
+1
+
+0
+
+1
+
+1
+
+2
+
+1
+
+1
+
+0
+
+3
+
+0
+
+1
+
+1
+
+4
+
+1
+
+0
+
+1
+
+5
+
+1
+
+1
+
+1
+
+{Aftershave}
+{Bier}
+{Aftershave}
+{Chips} →
+{Aftershave}
+
+→ {Bier}
+→ {Chips}
+→ {Chips}
+{Aftershave}
+→ {Bier,Chips}
+
+Abteilung Datenbanken
+
+s = 2/5, conf = 2/3
+s= 3/5, conf = 3/4
+
+s=
+
+DATA WAREHOUSING
+
+conf=
+
+10
+
+WEITERE BEISPIELE
+− Assoziationsregeln:
+− A→C
+−
+
+− C →A
+
+s=2/4=0,5
+c=2/3
+
+s= 0,5
+c=
+
+− 5 Warenkörbe:
+
+TransaktionsID
+2000
+1000
+4000
+5000
+
+Items
+A,B,C
+A,C
+A,D
+B,E,F
+
+smin
+= 0,5
+minsup
+= 50%,
+
+minconf
+= 50%
+conf
+min= 0,5
+
+Assoziationsregel: PC → Drucker
+s=
+c=
+
+− Drucker, Papier, PC, Toner
+− PC, Scanner
+− Drucker, Papier, Toner
+− Drucker, PC
+− Drucker, Papier, PC, Scanner, Toner
+− Abteilung Datenbanken
+DATA WAREHOUSING
+
+6-11
+
+FREQUENT ITEMSETS
+− Frequent Item-Set (häufige Mengen):
+− Menge von Items/Objekten, deren Support Schranke smin übersteigt
+− Bestimmung der Frequent-Itemsets wesentlicher Schritt zur
+Bestimmung von Assoziationsregeln
+
+− effiziente Realisierung über A-Priori-Algorithmus
+− Nutzung der sog. A-Priori-Eigenschaft:
+− wenn eine Menge häufig ist, so auch all ihre Teilmengen (Anti-Monotonie)
+− wenn eine Menge selten ist, so auch all ihre Obermengen (Monotonie)
+
+− Support jeder Teilmenge und damit jedes einzelnen Items muss über
+Schranke smin liegen
+− iterative Realisierung beginnend mit 1-elementigen Itemsets
+− schrittweise Auswertung von k-Itemsets (k Elemente, k >=1),
+− Ausklammern von Kombinationen mit Teilmengen, die Support smin nicht
+erreichen („Pruning“)
+− wird „A Priori“ getestet, bevor Support bestimmt wird
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-12
+
+{A, B, C, D}
+Wenn häufig
+
+dann häufig
+
+{A,B,C} {A,B,D} {B,C,D} {A,C,D}
+
+k+1=3
+
+{A,B} {A,C} {B,C} {B,D} {C,D} {A,D}
+
+k=2
+
+{A}
+
+{B}
+
+{C}
+{}
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+{D}
+
+Häufige Mengen L k
+ergeben Kandidaten
+Ck+1
+
+A-PRIORI-ALGORITHMUS
+Apriori(R, r, smin, confmin)
+L:= Häufige-Mengen(R, r, smin)
+c:= Regeln (L, confmin)
+Return c
+Häufige-Mengen(R, r, smin)
+k=1
+L1:= {i  R, supp(i)>= smin}//häufige Items
+while Lk  {}
+Ck+1 := Erzeuge-Kandidaten(Lk)
+Lk+1 := Prune(Ck+1, r) // eliminiere Itemsets, die smin nicht
+erreichen
+k:= k+1
+
+k
+
+Return  L
+j
+j =2
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-14
+
+A-PRIORI-ALGORITHMUS (2)
+Erzeuge-Kandidaten(Lk)
+Ck+1 := {}
+Forall l1, l2 in Lk,
+so dass l1 = {i1,...,ik-1 , ik}
+l2 = {i1,...,ik-1,i‘k} ik < i‘k
+l := {i1, ..., ik-1 , ik, i‘k}// sortierte Items pro
+Itemset
+if (alle k-elementigen Teilmengen von l in Lk) then
+Ck+1 := Ck+1  {l}
+
+Return Ck+1
+Beispiel:
+L3 ={ABC, ABD, ACD, BCD, CDE}
+L4 ={ABCD, BCDE, ACDE}
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-15
+
+A-PRIORI-ALGORITHMUS: BEISPIEL
+− 5 PC-Warenkörbe (Forderung: minimaler Support smin 60%)
+− Drucker, Papier, PC, Toner
+− PC, Scanner
+− Drucker, Papier, Toner
+− Drucker, PC
+− Drucker, Papier, PC, Scanner, Toner
+
+− Algorithmus-Ausführung
+− k=1: Drucker 4, Papier 3, PC 4, Toner 3, Scanner 2
+−
+L1= C1 = {Drucker, Papier, PC, Toner}
+− k=2: Drucker-Papier: 3, Drucker-PC: 3, Drucker-Toner: 3,
+Papier-PC: 2, Papier-Toner: 3, PC-Toner: 2
+−
+L2= {Drucker-Papier, Drucker-PC, Drucker-Toner, Papier-Toner}
+− k=3: Drucker-Papier-PC? Drucker-Papier-Toner? Drucker-PC-Toner?
+− k=4:
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-16
+
+REGELGENERIERUNG
+− Itemset I = {i1, ..., ik-1 , ik} erlaubt viele Regeln der
+Form X → Y, mit X  Y=I, X  Y = { }
+− Konfidenz: conf (X → Y)= supp (I) / supp (X)
+− Generierung der Assoziationsregeln aus Itemset I
+− wenn Konklusion (rechte Seite) länger und somit die linke Seite
+kürzer wird, kann Konfidenz sinken
+− die Ordnung der Attribute kann ausgenutzt werden
+− c1 = {i1, ..., ik-1 } → { ik } conf 1
+− c2 = {i1, ... } → {ik-1, ik } conf 2 ...
+− ck = {i1} → {..., ik-1 , ik } conf k
+
+− Es gilt dann: conf 1  conf 2 ...  conf k
+− Elimination aller Kombinationen, deren Konfidenz Minimalwert
+unterschreitet
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-17
+
+REGELGENERIERUNG: BEISPIEL
+− Regeln für ({Drucker, Papier, Toner}, minimaler Support
+smin 60%
+− Bestimmung aller Regen mit minimaler Konfidenz conf min
+75%
+− conf ({Drucker, Papier} →{Toner} ) =
+supp(Dr.,Pap.,Toner)/supp(Dr.,Pap.)= 3/3=1
+− conf ({Drucker, Toner} →{Papier} ) = 3/3 = 1
+− conf ({Papier, Toner} →{Drucker} ) = 3/3= 1
+− conf ({Drucker} →{Papier, Toner} ) =
+− conf ({Papier} →{Drucker, Toner} ) =
+− conf ({Toner} →{Drucker, Papier} ) =
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-18
+
+ASSOZIATIONSREGELN: WEITERE ASPEKTE
+− Nutzbarkeit u.a. für Cross-Selling, Produkt-Platzierung ...
+− Amazon: Kunden die dieses Buch gekauft haben, kauften auch ...
+
+− Sonderfall: Sequenzanalyse (Erkennung sequenzieller Muster)
+− Berücksichtigung der Zeit-Dimension
+− Bsp. 1: in 30% der Fälle, wenn Produkt A gekauft wurde, wird bei einem
+späteren Besuch Produkt B gekauft
+− Bsp. 2: in 20% aller Fälle, in denen ein Nutzer über Werbung auf die
+Web-Site gelangt und die Site vorher schon besucht hat, kauft er einen
+Artikel (betrifft 10% der Sessions)
+
+− Probleme
+− sehr viele Produkte / Web-Seiten / Werbeaktionen / Besucher etc.
+erfordern Bildung gröberer Bezugseinheiten
+− es können sinnlose Korrelationen ohne kausalen Zusammenhang
+ermittelt werden
+− z.B. Schmutzeffekte aufgrund transitiver Abhängigkeiten (Bsp.: Haarlänge
+korreliert negativ mit Körpergröße)
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-19
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+FREQUENT PATTERN-BAUM (FP-BAUM)
+− Probleme des A-Priori-Algorithmus
+− exponenziell wachsende Anzahl zu prüfender Kandidaten
+− Bsp.: 104 häufige Objekte;
+> 107 2-Itemsets; ca. 1030 Kandidaten für 100-Itemsets
+
+− FP-Tree: Berechnung von Assoziationsregeln ohne
+Kandidatengenerierung
+− komprimierte Repräsentation aller Transaktionen durch
+Frequent-Pattern Tree (FP-Baum)
+− effiziente Erkennung von Frequent Itemsets (Pattern Mining) mit
+Divide-and-Conquer-Suche auf Teilbäumen
+− oft eine Größenordnung schneller als A-Priori
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-21
+
+FP-BAUM: GENERIERUNG (1)
+− Input: Transaktionsdatenbank D, Schwellwert min-support smin
+− Erstellung Objekttabelle / FP-Baum
+− Scan von D, Erstellen der Menge F häufiger Objekte und ihrer
+Häufigkeiten, Ordnen von F in absteigender Häufigkeit (Objekttabelle)
+
+− Wurzel des FP-Baums ist leere Menge
+− pro Transaktion in D: ordne Objekte gemäß F (absteigende Häufigkeit);
+füge Pfad in FP-Baum ein (Knotenformat: Objekt-Id, Zähler für
+Verwendungshäufigkeit in Transaktionen mit gleichem Präfix)
+− Knoten mit gleicher Objekt-ID werden untereinander verkettet
+(ausgehend von Objekttabelle F)
+min_support = 0.5
+
+TID
+Objekte
+e
+10 Drucker, Papier, PC, Toner
+20 PC, Scanner
+30 Drucker, Papier, Toner
+40 Drucker, PC
+50 Drucker, Papier, PC,Scanner, Toner
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Objekttabelle F
+
+Objekt
+Drucker
+PC
+Papier
+Toner
+
+count
+4
+4
+3
+3
+6-22
+
+FP-BAUM: GENERIERUNG (2)
+gemäß F-Ordnung
+Drucker, PC, Papier, Toner
+PC
+Drucker, Papier, Toner
+Drucker, PC
+Drucker,
+
+TID
+Objekte
+e
+10 Drucker, Papier, PC, Toner
+20 PC, Scanner
+30 Drucker, Papier, Toner
+40 Drucker, PC
+50 Drucker, Papier, PC, Scanner, Toner
+
+{}
+
+min_support = 0.5
+ObjektTabelle F
+
+Objekt count Head
+Drucker
+4
+PC
+4
+Papier
+3
+Toner
+3
+
+Drucker:1
+PC:1
+Papier:1
+Toner:1
+
+pro Transaktion gibt es Pfad, wobei gemeinsame Präfixe nur einmal repräsentiert
+werden (Komprimierungseffekt)
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-23
+
+FP-BAUM: ERKENNUNG HÄUFIGER MENGEN
+− Erkennung von Frequent Itemsets durch rekursive Suche
+auf Teilbäumen (Divide and Conquer)
+− für jeden Knoten im FP-Baum erzeuge Musterbasis
+(conditional pattern base)
+− gehe Objekt-Tabelle von unten (selten) nach oben durch. Die
+Verweise führen zu den Pfaden, in denen das Objekt vorkommt.
+− das Objekt wird als Suffix betrachtet und alle Präfixe davon als
+Bedingungen für dieses Suffix. Die Präfixpfade eines Suffixes
+bilden seine Musterbasis
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-24
+
+FP-BAUM: ERKENNUNG HÄUFIGER MENGEN
+− für jede Musterbasis erzeuge reduzierten FP-Baum
+(conditional FP tree)
+− Häufigkeiten der Präfixe (für das betrachtete Suffix) werden von
+unten nach oben propagiert.
+− Gleiche Präfixpfade zu einem Suffix (vom Anfang bis zu einer
+bestimmten Stelle) werden zusammengelegt und die
+ursprünglichen Häufigkeiten addiert.
+− nur Präfixpfade, die min_support erfüllen, verbleiben im
+reduzierten FP-Baum
+
+− rekursives Ableiten von Frequent Itemsets aus
+reduzierten FP-Trees
+− bei einzigem Pfad im Baum: Aufzählen aller KnotenKombinationen
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-25
+
+REDUZIERTE FP-BÄUME MIT EINEM PFAD
+− bei nur einem Pfad T kann weitere (rekursive)
+Auswertung entfallen
+− Bestimmung der Frequent Itemsets durch Aufzählung
+aller Kombinationen von Knotern / Teil-Pfaden
+{}
+a:3
+
+
+b:3
+c:3
+
+Frequent Itemsets
+bezüglich d
+d,
+ad, bd, cd,
+abd, acd, bcd,
+abcd
+
+reduzierter FP-Baum
+für Suffix d (d-reduzierter FP-Baum)
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-26
+
+ALGORITHMUS FP-GROWTH (TREE, I)
+−Finden häufiger Muster durch sukzessives Wachstum von PatternFragmenten initialer Aufruf mit FP-Growth (FP-Baum, {})
+
+Input: FP-Baum tree, Frequent Itemsets I
+Output: vollständige Menge häufiger Itemsets
+if tree hat nur einen Pfad P then
+foreach Kombination K von Knoten in P do
+return IK mit support = minimaler Support
+der Items in K
+else
+foreach Item i in Tabelle F (in umgekehrter
+Häufigkeitsreihenfolge) do
+K = Ii mit support = Support von i;
+Erstelle Musterbasis von K und reduzierten FPBaum FPK ;
+if FPK nicht leer then FP-Growth (FPK ,K)end
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-27
+
+SCHRITT 1: MUSTERBASIS-ERSTELLUNG
+− Gehe Objekt-Tabelle von unten (selten) nach oben durch. Die
+Verweise führen zu den Pfaden, in denen das Objekt vorkommt.
+− Objekt wird als Suffix betrachtet und alle Präfixe davon als
+Bedingungen für dieses Suffix. Die transformierten Präfixpfade eines
+Suffixes bilden seine Musterbasis
+{}
+Objekt count Head
+Drucker
+4
+PC
+4
+Papier
+3
+Toner
+3
+Objekt-Tabelle F
+
+Drucker:4
+PC:3
+Papier:2
+
+PC:1
+Papier:1
+Toner:1
+
+Toner:2
+
+Objekt
+
+Musterbasis
+
+Toner
+
+Drucker,PC,Papier:2,
+Drucker, Papier:1
+
+Papier
+
+Drucker, PC: 2
+Drucker: 1
+
+PC
+Drucker
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-28
+
+SCHRITT 2: ERZEUGE REDUZIERTE FP-BÄUME
+− propagiere Counts pro Objekt der Musterbasis von unten nach oben.
+− nur Knoten/Präfix-Pfade, die min_support erfüllen, verbleiben im
+reduzierten FP-Baum
+Musterbasis für Toner
+
+reduzierter FP-Baum für Toner
+
+{}
+
+{}
+
+Drucker:2
+
+Drucker:1
+
+PC:2
+
+Papier:1
+
+Drucker:3
+
+Frequent Itemsets:
+Toner
+Papier, Toner
+Drucker, Toner
+Drucker, Papier, Toner
+
+Papier:3
+
+Papier:2
+
+reduzierter FP-Baum für Papier
+
+{}
+Musterbasis
+für Papier
+
+Drucker:2
+
+Drucker:1
+
+Papier
+Drucker, Papier
+
+Drucker:3
+
+PC:2
+Abteilung Datenbanken
+
+{}
+
+Frequent Itemsets:
+
+DATA WAREHOUSING
+
+6-29
+
+ERGEBNISSE IM BEISPIEL
+Objekt
+
+Musterbasis
+
+reduzierter FP-Baum
+
+Toner
+
+{(Drucker,PC,Papier:2,
+Drucker, Papier:1}
+
+{ (Drucker:3, Papier:3)} | Toner Toner
+Papier, Toner
+Drucker, Toner
+Drucker, Papier, Toner
+
+Papier
+
+{(Drucker,PC:2,
+Drucker:1}
+
+{ (Drucker:3)} | Papier
+
+Papier
+Drucker, Papier
+
+PC
+
+{(Drucker:3) }
+
+{ (Drucker:3)} | PC
+
+PC
+Drucker, PC
+
+{}
+
+{}
+
+Drucker
+
+Drucker
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Frequent
+Itemsets
+
+6-30
+
+ALTERNATIVBEISPIEL ZUR REKURSIVEN
+AUSWERTUNG
+− reduzierter FP-Baum bezüglich Suffixobjekt e, minsupport=2
+e-reduzierter FP-Baum
+
+{}
+a:8
+
+{}
+
+b:2
+
+c:1
+
+c:2
+d:1
+
+d:1
+e:1
+
+a:2
+c:1
+
+c:1
+e:1
+
+e:1
+
+{}
+a:2
+
+d:1
+
+d:1
+
+Nutzung dieses Baums zur
+Bestimmung der Frequent Itemsets für
+Suffixe de, ce und ae
+
+{}
+
+c:1
+
+a:2
+d:1
+
+d:1
+
+-> Frequent Itemsets: de, ade
+
+de-reduzierter FP-Baum
+
+Pfade mit Suffix de
+Abteilung Datenbanken
+
+Quelle: Han/Kamber
+
+DATA WAREHOUSING
+
+6-31
+
+Einführung Data Mining / maschinelles Lernen
+KDD-Prozess
+Anwendungsbeispiele
+
+Assoziationsregeln / Warenkorbanalyse
+Support und Konfidenz
+A Priori-Algorithmus
+Frequent Pattern (FP)-Trees
+
+Clusteranalyse
+k-Means-Algorithmus
+Canopy Clustering
+
+Klassifikation
+Klassifikationsprozess
+Entscheidungsbäume
+Neuronale Netze
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+CLUSTERANALYSE
+− Ziele
+− automatische Identifikation einer endlichen Menge von
+Kategorien, Klassen oder Gruppen (Cluster) in den
+Daten
+− Objekte im gleichen Cluster sollen möglichst ähnlich sein
+dist ( x , y ) =  ( x − y )
+− Objekte aus verschiedenen Clustern sollen
+möglichst
+unähnlich zueinander sein
+d
+
+i
+
+i
+
+2
+
+i =1
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-33
+
+CLUSTERANALYSE
+− Ähnlichkeitsbestimmung
+− meist: Distanzfunktion dist(o1,o2) für Paare von Objekten
+o1 und o2
+d
+
+( xi − yi ) 2
+− z.B. Euklidische Distanz für numerische Attribute: dist ( x, y) = 
+i =1
+
+− spezielle Funktionen für kategorische Attribute oder
+Textdokumente
+
+− Clustering-Ansätze: hierarchisch, partitionierend,
+dichtebasiert, ...
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-34
+
+CLUSTERANALYSE (2)
+− oft nicht 2, sondern 10 oder 10.000 Dimensionen
+− fast alle Objektpaare sind ähnlich weit voneinander entfernt
+− Methoden zur Dimensionsreduzierung erforderlich
+
+− Beispiel: ähnliche Musik-Alben
+− einige wenige Kategorien vs. käuferspezifische Präferenzen
+− jeder Musikkunde bildet potenziell eigene Dimension
+− ähnliche Alben haben ähnliche Kunden und umgekehrt
+
+− ähnliche Text-Dokumente / News-Meldungen
+− ähnliche Mengen von Keywords
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-35
+
+HIERARCHISCHES CLUSTERING
+Top-Down (aufteilend)
+− beginne mit 1 Cluster
+− rekursives Splitten in Teil-Cluster
+Agglomerativ (Bottom-Up-Ansatz)
+− zunächst ist jeder Punkt eigenes Cluster
+− wiederholte Vereinigung der “ähnlichsten” Cluster
+− Kernproblem: Bestimmung der Merge-Kandidaten
+− naiv: kubische Komplexität
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-36
+
+HIERARCHISCHES CLUSTERING
+− Repräsentation durch Dendogramme
+
+1 2
+
+3
+
+4 5
+
+Bestimmung von Cluster-Repräsentanten
+− z.B. Cendroid (bei Euklidischer Distanz)
+− „Clustroid“: ex. Punkt, der am nächsten zu allen anderen
+im Cluster liegt
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-37
+
+K-MEANS ALGORITHMUS
+Ausgangssituation
+− Objekte besitzen Distanzfunktion (meist Euklidische Distanz)
+− für jedes Cluster wird damit Clusterzentrum bestimmt („Mittelwert“)
+− Anzahl k der Cluster wird vorgegeben
+Basis-Algorithmus
+Schritt 1 (Initialisierung): k Clusterzentren werden (zufällig) gewählt
+Schritt 2 (Zuordnung): Jedes Objekt wird dem nächst gelegenen
+Clusterzentrum zugeordnet
+Schritt 3 (Clusterzentren): Für jedes Cluster wird Clusterzentrum neu
+berechnet
+Schritt 4 (Wiederholung): Abbruch, wenn sich Zuordnung nicht mehr
+ändert, sonst zu Schritt 2
+Probleme: Konvergenz zu lokalem Minimum, d.h. Clustering muss nicht
+optimal sein; relativ hoher Aufwand für Abstandsberechnungen
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-38
+
+K-MEANS ALGORITHMUS: BEISPIEL
+− Clustering der Zahlen 1, 3, 6, 14, 17, 24, 26, 31 in 3
+Cluster (k=3)
+(1) Zentren: 10, 21, 29 (zufällig gewählt, müssen nicht existieren)
+(2) Cluster: C1={1, 3, 6, 14}, C2={17, 24}, C3={26, 31}
+(3) Zentren (arithmetisches Mittel): C1: 6
+C2: 20,5
+C3: 28,5
+
+(2) Cluster: C1={1, 3, 6}, C2={14, 17, 24}, C3={26, 31}
+(3) Zentren: C1: 3,3
+C2: 18,3
+C3: 28,5
+(2) Cluster: C1={1, 3, 6}, C2={14, 17}, C3={24, 26, 31}
+(3) Zentren: C1: 3,3
+C2: 15,5
+C3: 27
+(2) Cluster: C1={1, 3, 6}, C2={14, 17}, C3={24, 26, 31}
+Abbruch, da sich das Clustering nicht mehr geändert hat.
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-39
+
+K-MEANS: 2-D-BEISPIEL (K=3)
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-40
+
+CANOPY CLUSTERING*
+Bildung von überlappenden Clustern (Canopies)
+− oft Nutzung als erster Schritt in mehrstufigem
+Analyseverfahren (Pre-Clustering)
+− skalierbar auf sehr große Datenmengen
+− auf String-Daten einsetzbar (mit StringÄhnlichkeits/Distanzfunktionen)
+− Clusteranzahl nicht vorzugeben
+Eingabe
+− Punktmenge
+− Distanzfunktion
+− 2 Schwellwerte T1 und T2 (T1 > T2 )
+T1
+
+T2
+
+* McCallum, A. et al.:Efficient clustering of high-dimensional data sets with application to reference matching Proc. ACM KDD, 2000
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-41
+
+CANOPY CLUSTERING (2)
+T2
+
+Algorithmus
+Schritt 1 (Initialisierung): Kandidatenliste für Wahl der
+Canopy-Zentren wird mit allen Objekten initialisiert
+Schritt 2 (Canopy-Zentrum): Zentrum Z wird (zufällig)
+aus Kandidatenliste gewählt
+Schritt 3 (Zuordnung): alle Objekte, deren Abstand zu Z T1
+geringer ist als Schwellwert T1, werden (Canopy) Z zugeordnet
+Schritt 4 (Kandidatenliste): alle Objekte, die innerhalb des
+Schwellwertes T2 zu Z liegen, werden aus Kandidatenliste gelöscht
+Schritt 5 (Ende/Wiederholung): Abbruch, wenn Kandidatenliste leer ist,
+sonst zu Schritt 2
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-42
+
+CANOPY CLUSTERING ALGORITHMUS: BEISPIEL
+Clustering der Zahlen 1, 2, 3, 8, 9, 15
+Abstandsfunktion absolute Differenz, T1= 6, T2= 4
+(1) Kandidatenliste = {1, 2, 3, 8, 9, 15}
+(2) Canopyzentrum sei 1
+(3) Canopy bilden
+(4) Entferne
+aus Kandidatenliste
+(5) Kandidatenliste = {
+(2) Canopyzentrum:
+(3) Canopy bilden
+(4) Entferne
+
+}
+
+aus Kandidatenliste
+
+(5) Kandidatenliste = {
+(2) Canopyzentrum:
+(3) Canopy bilden
+(4) Entferne
+aus Kandidatenliste
+
+}
+
+(5) Abbruch, da Kandidatenliste leer
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-43
+
+KLASSIFIKATION
+Klassifikationsproblem
+− gegeben sei Stichprobe (Trainingsmenge) O von Objekten des Formats (a1,
+. . ., ad) mit Attributen Ai, 1  i  d, und Klassenzugehörigkeit ci, ci  C = {c1 ,
+. . ., ck}
+− gesucht: die Klassenzugehörigkeit für Objekte aus D \ O
+d.h. ein Klassifikator K : D → C
+weiteres Ziel:
+− Generierung (Lernen) des expliziten Klassifikationswissens
+(Klassifikationsmodell, z.B. Klassifikationsregeln oder Entscheidungsbaum)
+Abgrenzung zum Clustering
+− Klassifikation: Klassen vorab bekannt (überwachte Verfahren, „supervised“)
+− Clustering: Klassen werden erst gesucht („unsupervised“)
+Klassifikationsansätze
+− Entscheidungsbaum-Klassifikatoren, Bayes-Klassifikatoren (Auswertung der
+bedingten Wahrscheinlichkeiten von Attributwerten)
+− neuronale Netze
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-44
+
+KLASSIFIKATIONSPROZESS
+Klassifikationsalgorithmus
+
+1. Konstruktion des Klassifikationsmodells
+
+Rank
+
+Years
+
+Tenured
+
+Assistant Prof
+
+3
+
+No
+
+Assistant Prof
+
+7
+
+Yes
+
+Professor
+
+2
+
+Yes
+
+Associate Prof
+
+7
+
+Yes
+
+Assistant Prof
+
+6
+
+No
+
+Associate Prof
+
+3
+
+No
+
+2. Anwendung des Modells
+zur Vorhersage (Prediction)
+
+Unbekannte Daten
+
+Klassifikator
+Trainingsdaten
+
+if rank = ‘professor’
+or years > 6
+then tenured = ‘yes’
+
+Klassifikator
+
+Tenured?
+
+(Professor, 4)
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-45
+
+ENTSCHEIDUNGSBÄUME
+− explizite, leicht verständliche Repräsentation des Klassifikationswissens
+Autotyp
+ID
+1
+2
+3
+4
+5
+
+◼
+
+Alter
+23
+17
+43
+68
+32
+
+Autotyp
+Familie
+Sport
+Sport
+Familie
+LKW
+
+40
+
+Familie
+
+Risiko
+hoch
+hoch
+hoch
+niedrig
+niedrig
+
+= LKW
+
+ LKW
+
+Risikoklasse = niedrig
+
+Alter
+> 60
+
+Risikoklasse = niedrig
+
+<=60
+
+Risikoklasse = hoch
+
+Entscheidungsbaum ist Baum mit folgenden Eigenschaften:
+– ein innerer Knoten repräsentiert ein Attribut
+– eine Kante repräsentiert einen Test auf dem Attribut des Vorgängerknotens
+– ein Blatt repräsentiert eine der Klassen
+
+◼
+
+jeder Pfad von Wurzel zu Blatt entspricht einer Klassifikationsregel
+– Bsp: Autotyp  LKW AND Alter > 60 -> Risiko=niedrig
+
+◼
+
+Anwendung zur Vorhersage :
+
+– Top-Down-Durchlauf des Entscheidungsbaums von der Wurzel zu einem der Blätter
+– eindeutige Zuordnung des Objekts zur Klasse des erreichten Blatts
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-46
+
+KONSTRUKTION EINES ENTSCHEIDUNGSBAUMS
+− Basis-Algorithmus (divide and conquer)
+− Anfangs gehören alle Trainingsdatensätze zur Wurzel
+− Auswahl des nächsten Attributs (Split-Strategie): Maximierung des
+Informationsgewinns (meßbar über Entropie o.ä.)
+− Partitionierung der Trainingsdatensätze mit Split-Attribut
+− Verfahren wird rekursiv für die Partitionen fortgesetzt
+
+− Abbruchbedingungen
+− keine weiteren Split-Attribute
+− alle Trainingsdatensätze eines Knotens gehören zur selben Klasse
+
+− Typen von Splits
+− kategorische Attribute: Split-Bedingungen der Form „attribut = a“ oder
+„attribut  set“ (viele mögliche Teilmengen)
+− numerische Attribute: Split-Bedingungen der Form „attribut < a“ (viele
+mögliche Split-Punkte)
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-47
+
+NEURONALE NETZE
+− neuronales Netz (NN) besteht aus mehreren Schichten
+− Eingabe-/Ausgabeschicht
+− mind. einer verdeckten (hidden) Schicht
+
+− jede Schicht besteht aus Neuronen, die mit anderen
+Neuronen verbunden sind
+− Verbindungen / Kanten verwenden Zahlen, z.B. Gewichte (𝒘i∈ℝ)
+
+− Deep Learning: mehrere hidden layers
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-48
+
+DEEP LEARNING
+− Lernen einer Datenrepräsentation(Embeddings) auf großen Mengen
+an Trainingsdaten
+− Nutzen des gelernten Wissens für Klassifikation, Vorhersagen etc.
+vor allem für unstrukturierte Daten (Bilder, Sprache, Text) mit
+verborgener Struktur
+− zahlreiche Anwendungsfälle
+− Erkennung von Bildern
+− Erkennung von Handschriften
+− Spracherkennung
+− Verarbeitung von Texten …
+
+− verschiedene Varianten von Netzen
+− Autoencoder networks (Erzeugung verbesserter Repräsentationen)
+− Convolutional deep Neural Networks (CNN), v.a. für Bildklassifizierung
+− Recurrent Neural Networks (RNN), u.a. LSTM (Long short-term
+memory),
+− u.a. für Text/Sprachverarbeitung oft unter Nutzung von Word Embeddings
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-49
+
+BEWERTUNG VON KLASSIFIKATOREN
+− Klassifikator ist für die Trainingsdaten optimiert
+− liefert auf der Grundgesamtheit der Daten evtl. schlechtere Ergebnisse (->
+Overfitting-Problem)
+
+− Bewertung mit von Trainingsmengen unabhängigen
+Testmengen
+− Klassifikationsgenauigkeit/Accuracy:
+− Anteil der korrekten Klassenzuordnungen in Testmenge
+
+− Klassifikationsfehler:
+− Anteil der falschen
+Klassenzuordnungen
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-50
+
+BEWERTUNG (2)
+Klassifikationsgenauigkeit (Accuracy)
+− n Sätze/Objekte, nr korrekt zugeordnet
+𝑛𝑟
+𝐴𝑐𝑐𝑢𝑟𝑎𝑐𝑦 =
+𝑛
+− alle Kategorien gehen gleichberechtigt ein
+− bei 2 Kategorien (positive/negative) gilt
+− 𝐴𝑐𝑐𝑢𝑟𝑎𝑐𝑦 =
+
+𝑇𝑃+𝑇𝑁
+𝑛
+
+− Accuracy problematisch, falls eine der
+Kategorien stark dominiert (z.B. nonMatches)
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+real:
+class C
+
+real:
+not class
+C
+
+predicted True
+:
+Positive
+class C
+TP
+
+False
+Positive
+FP
+
+predicted False
+:
+Negative
+not class FN
+C
+
+True
+Negative
+TN
+
+6-51
+
+BEWERTUNG (2)
+Precision / Recall / F-Measure
+− fokussieren auf eine der Kategorien C (z.B. Risiko,
+Krankheit, Match) in binären Entscheidungsproblemen
+− seien nc der n Objekte von dieser Kategorie
+− Klassifikationsmodell ordne mc Objekte dieser Klasse zu,
+davon mcr (TP) richtig
+− 𝑅𝑒𝑐𝑎𝑙𝑙 =
+
+𝑚𝑐𝑟
+𝑛𝑐
+
+𝑚𝑐𝑟
+
+𝑃𝑟𝑒𝑐𝑖𝑠𝑖𝑜𝑛 =
+𝑚𝑐
+2 ∙ 𝑃𝑟𝑒𝑐𝑖𝑠𝑖𝑜𝑛 ∙ 𝑅𝑒𝑐𝑎𝑙𝑙
+𝐹 − 𝑀𝑒𝑎𝑠𝑢𝑟𝑒 =
+𝑃𝑟𝑒𝑐𝑖𝑠𝑖𝑜𝑛 + 𝑅𝑒𝑐𝑎𝑙𝑙
+
+− Beispiel binäres Entscheidungsproblem
+− n=100, nc = 20, mc = 25, mcr = 15
+− Recall=
+− Precision=
+− Accuracy=
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+F-Measure=
+
+6-52
+
+BEWERTUNG (3)
+− Konfusionsmatrix
+A
+
+B
+
+C
+
+Summe
+
+a
+
+37
+
+12
+
+4
+
+53
+
+b
+
+5
+
+23
+
+11
+
+39
+
+c
+
+12
+
+8
+
+42
+
+62
+
+Summ
+e
+
+54
+
+43
+
+57
+
+154
+
+− Accuracy: (37+23+42)/154=102/154 = 66,2%
+− kategoriebezogene Bewertungen
+− Recall für Kat. C:
+42/57=0,74
+− Precision für Kat. C: 42/62=0,68
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-53
+
+ZUSAMMENFASSUNG (1)
+− Data Mining/ML-Verfahrensklassen: Assoziationsregeln,
+Clusteranalyse, Klassifikation,
+− zahlreiche Nutzungsmöglichkeiten: Kundensegmentierung,
+Vorhersage des Kundenverhaltens, Warenkorbanalyse etc.
+− Assoziationsregeln, u.a. zur Warenkorbanalyse
+− Berechnung der Frequent Itemsets mit minimalem Support
+− Ableitung der Regeln mit ausreichender Konfidenz
+− Nutzung der Anti-Monotonie: Itemset ist nur häufig, wenn es alle
+Teilmengen davon sind
+− A-Priori-Algorithmus: Bottom-Up-Auswertung mit
+Kandidatengenerierung für häufige Itemsets
+− FP-Baum: schnellere Alternative mit kompakter Repräsentation von
+Transaktionen und rekursivem Pattern Mining auf Teilbäumen (Divideand-Conquer)
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-54
+
+ZUSAMMENFASSUNG (2)
+− Clusteranalyse: Segmentierung über Distanzmaß
+− K-Means: vorgegebene Anzahl von Clustern
+− Canopy Clustering: schnelle Berechnung überlappender Cluster;
+nützlich als Vorbereitung für K-Means
+
+− Klassifikation, z.B. über Entscheidungsbäume
+− erfordert Trainingsdaten mit bekannter Klassenzuordnung
+− Bestimmung der Split-Attribute eines Entscheidungsbaums gemäß
+Informationsgewinn
+
+− Bewertung von Klassifikationsergebnissen
+− Accuracy
+− für 2 Klassenprobleme: Precision/Recall/F-Measure
+
+− neuronale Netze / Deep Learning
+− vielseitige Nutzungsmöglichkeiten, u.a. für Klassifikationsprobleme für
+unstrukturierte Daten (Bilder, Texte)
+− hoher Ressourcenbedarf
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+6-55
+
+

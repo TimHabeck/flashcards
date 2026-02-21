@@ -1,0 +1,2458 @@
+DATA WAREHOUSING
+
+Kapitel 5: Performance-Techniken
+Victor Christen
+christen@informatik.uni-leipzig.de
+Universität Leipzig
+Institut für Informatik
+Abteilung Datenbanken
+
+AGENDA
+ Einleitung
+ Indexstrukturen
+ ein- vs. mehrdimensionale Indexstrukturen
+ eindimensionale Einbettung
+ Bitlisten-Indexstrukturen
+
+ Column Stores
+ Datenkompression
+
+ Datenpartitionierung
+ vertikale vs. horizontale Fragmentierung
+ mehrdimensionale, hierarchische Fragmentierung
+
+ Materialisierte Sichten
+ Verwendung
+ Auswahl
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-2
+
+EINLEITUNG
+ hohe Leistungsanforderungen
+ sehr große Datenmengen, vor allem Faktentabelle
+ kurze Antwortzeiten für viele Benutzer
+ mehrdimensionale Auswahlbedingungen, Gruppierung, Aggregationen,
+Sortierung ...
+ periodische Aktualisierung mit vielen Änderungen für DW-Tabellen und Data
+Marts
+
+ Scan-Operationen auf der Faktentabelle i.a. nicht akzeptabel
+ Bsp.: 1 TB, Verarbeitungsgeschwindigkeit 50 MB/s
+
+ Standard-Verfahren (z.B. Hash-Join) oft zu ineffizient für Star Join
+ Einsatz mehrerer DW-spezifischer Performance-Techniken
+ Indexstrukturen (1-dimensional, mehrdimensional, Bit-Indizes)
+ Column Store
+ Partitionierung der Daten (Einschränkung der zu bearbeitenden Daten) und
+Parallelverarbeitung
+ materialisierte Sichten bzw. vorberechnete Aggregationen
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-3
+
+MEHRDIMENSIONALE ANFRAGEARTEN
+
+Produkt
+
+Produkt
+
+.
+
+Produkt
+
+Produkt
+
+ Punkt- und Bereichsanfragen (exakt vs. partiell)
+
+Zeit (Tage)
+
+Zeit (Tage)
+
+Zeit (Tage)
+
+Zeit (Tage)
+
+Punktanfrage
+(exact match)
+
+Partielle Punktanfrage
+(partial match)
+
+Partielle Bereichsanfrage
+(partial range)
+
+Bereichsanfrage
+
+ Aggregation, Gruppierung (Cube, Rollup), Sortierung ...
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-4
+
+INDEXSTRUKTUREN
+ Optimierung selektiver Lesezugriffe: Reduzierung der für
+Anfrage zu lesenden Datenseiten
+ zusätzlicher Speicherbedarf und Änderungsaufwand
+
+ Standard-Indexstruktur: B*-Baum
+ eindimensionaler Index (1 Attribut bzw. Attributkombination)
+Wurzelseite
+25 61
+ Primär- oder Sekundärindex
+ balanciert, gute Speicherbelegung Zwischen8 13
+33 45
+seiten
+ mit / ohne Clusterung der Datensätze
+ geringe Höhe auch bei sehr
+Blattseiten
+großen Tabellen
+ Unterstützung von (1-dim.)
+Datenseiten
+Punkt- und Bereichsanfragen
+
+77
+
+85
+
+Clustered Index
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-5
+
+INDEXUNTERSTÜTZUNG FÜR MEHRDIMENS.
+ANFRAGEN
+
+Produkt
+
+Produkt
+
+Produkt
+
+Produkt
+
+ Eingrenzung des Datenraumes
+
+Zeit (Tage)
+
+Zeit (Tage)
+
+Zeit (Tage)
+
+Zeit (Tage)
+
+vollständiger
+Tabellen-Scan
+(full table scan)
+
+1-dimensionaler
+Index
+(mit Clusterung)
+
+mehrere 1-dimens.
+Indexstrukturen,
+Bitmap-Indizes
+
+optimaler mehrdimens. Index,
+mehrdim. Datenpartionierung
+
+ Bsp. mehrdimensionaler Indexstrukturen
+ Grid File
+ R-Baum, ...
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-6
+
+EINDIMENSIONALE EINBETTUNG
+ Transformation mehrdimensionaler Punktobjekte für eindimensionale
+Repräsentation, z.B. mit B*-Bäumen
+ möglichst Wahrung der topologischen Struktur (Unterstützung
+mehrdimensionaler Bereichs- und Nachbarschaftsanfragen)
+ Ansatz
+ Partitionierung des Datenraums D zunächst durch gleichförmiges Raster
+ eindeutige Nummer pro Zelle legt Position in der totalen Ordnung fest
+ Reihenfolge bestimmt eindimensionale Einbettung: space filling curve
+
+ Zuordnung aller mehrdimensionalen Punktobjekte einer Zelle zu
+einem Bucket (Seite)
+ jede Zelle kann bei Bedarf separat (und rekursiv) unter Nutzung
+desselben Grundmusters weiter verfeinert werden
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-7
+
+EINDIMENSIONALE EINBETTUNGEN
+0
+
+1
+
+0
+
+1
+
+0
+
+1
+
+2
+
+3
+
+3
+
+2
+
+3
+
+2
+
+5
+
+0
+
+1
+
+6
+
+7
+
+0
+
+1
+
+14
+
+15
+
+2
+
+3
+
+6
+
+7
+
+3
+
+2
+
+5
+
+4
+
+3
+
+2
+
+13
+
+12
+
+8
+
+9
+
+12
+
+13
+
+12
+
+13
+
+10
+
+11
+
+4
+
+7
+
+8
+
+11
+
+10
+
+11
+
+14
+
+15
+
+8
+
+5
+
+6
+
+9
+
+10
+
+a) z-Ordnung
+Abteilung Datenbanken
+
+9
+
+4
+
+14
+
+1
+
+15
+
+0
+
+b) Gray-Code
+DATA WAREHOUSING
+
+c) Hilbert‘s Kurve
+5-8
+
+BEISPIEL Z-KURVE
+ Range-Query bzgl. dem Suchintervall [12, 38] x [1,29]
+
+ zu lesende Kurvennummern: 3, 6, 7, 9, 11,12,
+13, 14 und 15
+
+ mögliche Suchschritte:
+
+Index Kurvennummer
+-> Seitenadresse
+
+40
+
+1. Einstieg in Seite zu Kurvennummer 3
+
+0
+
+1
+
+4
+
+5
+
+2
+
+3
+
+6
+
+7
+
+8
+
+9
+
+12
+
+13
+
+10
+
+11
+
+14
+
+15
+
+2. Lesen von Nr. 6 und 7
+3. Lesen von Nr. 9
+4. dann lineares Lesen der Seiten zu 11 bis 15
+über Listenverkettung
+0
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+0
+
+40
+5-9
+
+BEISPIEL: UB-BAUM (UNIVERSAL B-TREE)
+ Verwendung einer Z-Ordnung als raumfüllende Kurve
+ geringer Berechnungsaufwand
+ jeder Punkt wird auf skalaren Wert,
+Z-Wert, abgebildet (Zellen-Nr)
+ binäre Durchnummerierung der
+Basisintervalle jeder Dimension
+ Z-Wert ergibt sich aus Bit-Verschränkung der Dimensionswerte
+
+ Abbildung der Z-Werte als
+Schlüssel eines B*-Baum mit
+Clusterung
+ um günstige Auslastung zu
+gewährleisten, werden mehrere
+benachbarte Zellen pro Seite
+zugeordnet: Z-Region
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-10
+
+UB-BAUM (2)
+ exakte mehrdimensionale Anfragen gehen auf 1 Seite
+ Bereichssuche (Begrenzung durch
+zwei Eckpunkte LO und RU)
+ bestimme Z-Wert (Z-Region) zu LO
+ werte Suchprädikat auf alle Sätze in
+Z-Region aus
+ berechne nächsten Bereich der Z-Kurve
+innerhalb Anfragebereich
+ wiederhole die beiden vorherigen
+Schritte bis Endadresse der Z-Region
+größer ist als RU (diesen Punkt also
+enthält)
+
+ UB-Baum-Realisierung im Rahmen
+des relationalen DBS TransBase
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-11
+
+BITLISTEN-INDIZES
+
+ herkömmliche Indexstrukturen ungeeignet für
+Suchbedingungen geringer Selektivität
+ z.B. für Dimensionsattribute mit wenigen Werten (Geschlecht, Farbe, Jahr ...)
+ pro Attributwert sehr lange Verweislisten (TID-Listen) auf zugehörige Sätze
+ nahezu alle Datenseiten zu lesen
+
+ Standard-Bitlisten-Index (Bitmap Index):
+ Index für Attribut A umfasst eine Bitliste (Bitmap, Bitvektor) BAj für jeden der k
+Attributwerte A1 ... Ak
+KID
+Geschlecht
+Lieblingsfarbe
+Kunde
+ Bitliste umfasst 1 Bit pro Satz
+122
+W
+Rot
+(bei N Sätzen Länge von N Bits)
+123
+M
+Rot
+124
+W
+Weiß
+ Bitwert 1 (0) an Stelle i von BAj
+125
+W
+Blau
+gibt an, dass Satz i Attributwert
+...
+...
+...
+Aj aufweist (nicht aufweist)
+0001100010001100001100000000
+ 1-dimensionaler Index, jedoch flexible Blau
+Rot
+1100000000010010000010000001
+Kombinierbarkeit
+Weiß
+Grün
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+0010000001100000010000011110
+0000011100000001100001100000 ...
+5-12
+
+BITLISTEN INDIZES (2)
+ Vorteile
+ effiziente AND-, OR-, NOT-Verknüpfung zur Auswertung mehrdimensionaler
+Suchausdrücke
+ effiziente Unterstützung von Data-Warehouse-Anfragen (Joins)
+ geringer Speicherplatzbedarf bei kleinen Wertebereichen (k <100)
+
+ Beispielanfrage
+Select
+
+...
+
+WHERE
+
+A1=c1
+
+AND A2=c2 AND A3=c3
+
+100 Millionen Sätze zu je 200 B; pro Teilbedingung Selektivität 1%
+ ohne Index: Relationengröße 20 GB; Verarbeitung dauert bei 50 MB/s: 400 s
+mit Bitlisten:
+Bitlistengröße 12,5 MB (für c1, c2 und c3) → 37,5 MB; Einlesen dauert ca 1 s
+AND-Verknüpfung führt zu 1% von 1% von 1% von 108 Sätzen (Bits) = 100
+Sätzen
+Einlesen von 100 Sätzen (je ca 10 ms): 1 s
+Gesamtaufwand: 1s+1s=2s vs 400 s→Verbesserung um Faktor 200
+
+ Erweiterungen erforderlich für Bereichsanfragen, große
+Wertebereiche, hierarchische Dimensionen
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-13
+
+BITLISTEN-JOIN-INDEX
+ Dimensionsbedingungen vor allem im Rahmen von Star Joins
+ vollständige Scans auf Fakten-Tabelle zu verhindern -> Nutzung von
+Bitlisten-Indizes zur Bestimmung der relevanten Fakten-Tupel
+ Bitlisten-Join-Index
+
+
+
+
+
+Bitlisten-Index für Dimensions-Attribut auf der Fakten-Tabelle
+Bitliste enthält Bit pro Fakten-Tupel: entspricht vorberechnetem Join
+flexible Kombinierbarkeit für unterschiedliche Anfragen
+Auswertung der Suchbedingungen auf Indizes ermöglicht minimale Anzahl von
+Datenzugriffen auf die Fakten-Tabelle
+
+KUNDEDimension
+
+K_Id
+K_Id
+Geschlecht
+Geschlecht
+OrtOrt
+PLZ
+PLZ
+Region
+Region
+Hobby
+Hobby
+
+ZEITDimension
+
+TagTag
+Woche
+Woche
+Monat
+Monat
+Jahr
+Jahr
+
+Abteilung Datenbanken
+
+VERKAUF
+K_Id
+
+K_Id
+P_Id
+P_Id
+TagTag
+Gbetrag
+GBetrag
+EBetrag
+Ebetrag
+Anzahl
+Anzahl
+Fakten-Tabelle
+DATA WAREHOUSING
+
+PRODUKTDimension
+P_Id
+P_Id
+Marke
+Marke
+Kategorie
+Kategorie
+Größe
+Größe
+Gewicht
+Gewicht
+P_Typ
+P_Typ
+
+5-14
+
+BITLISTEN-JOIN-INDEX (2)
+ Beispielanfrage: Smartphone-Umsatz und Anzahl
+verkaufter Geräte im April mit männlichen Kunden
+select sum (GBetrag), sum (Anzahl)
+from VERKAUF v, KUNDE k, PRODUKT p, ZEIT z
+where v.K_Id = k.K_Id and v.P_Id = p.P_Id and
+v.Tag = z.Tag and z.Monat = "April" and p.Kategorie
+= „Smartphone„ and k.Geschlecht = "M"
+
+ Nutzung von 3 Bitlisten-Join-Indizes
+Monat
+
+Kategorie
+
+Januar 0001100010001 ...
+1001000000010 ...
+TV
+Febr 0000011100000 ...
+Notebook 0100000001000 ...
+März 1000000000010 ... Smartphone 0010100010101 ...
+April 0110000001100 ...
+Tablet 0000011100000 ...
+
+...
+
+Geschlecht
+M 1010010001001 ...
+W 0111101110110 ...
+
+...
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-15
+
+BEREICHSKODIERTE BITLISTEN-INDIZES
+ Standard-Bitlisten erfordern für Bereichsanfragen Auswertung vieler
+Bitlisten
+ Bereichskodierte Bitlisten-Indizes:
+ in Bitliste zu Wert w bedeutet 1-Bit für einen Satz, dass der Attributwert
+kleiner oder gleich w ist
+ Bitliste für Maximalwert kann eingespart werden (da nur „1“ gesetzt
+sind)
+
+ Für jede Bereichsanfrage max. 2 Bitlisten auszuwerten
+ Q1: Monat <= „Juni“:
+
+Q2: Monat „März“ bis „Juni“:
+Standard-Bitlisten
+
+Jan
+
+Feb
+
+Mär
+
+Apr
+
+Mai
+
+Jun
+
+Jul
+
+...
+
+Dez
+
+Bereichskodierte Bitlisten
+Jan Feb Mär Apr Mai Jun ... Nov Dez
+
+Mai
+
+0
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+...
+
+0
+
+0
+
+0
+
+0
+
+0
+
+123
+
+März
+
+0
+
+0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+...
+
+0
+
+0
+
+0
+
+1
+
+1 …..
+
+1
+
+124
+
+Januar
+
+1
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+...
+
+0
+
+1
+
+1
+
+1
+
+1 ….
+
+1
+
+125
+
+März
+
+0
+
+0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+...
+
+0
+
+0
+
+0
+
+1
+
+1 ….
+
+1
+
+126
+
+Februar
+
+0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+0
+
+...
+
+0
+
+0
+
+1
+
+1
+
+1
+
+1
+
+127
+
+Dezember
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+...
+
+1
+
+0
+
+0
+
+0
+
+0 …
+
+0 1
+
+128
+
+April
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+0
+
+...
+
+0
+
+0
+
+0
+
+0
+
+1 ….
+
+1
+
+...
+
+...
+
+...
+
+ID
+
+Monat
+
+122
+
+Abteilung Datenbanken
+
+1 ……………….1
+
+….
+
+...
+DATA WAREHOUSING
+
+5-16
+
+BEREICHSKODIERTE BITLISTEN-INDIZES (2)
+Bereichsanfragen: Beispiele
+ Bereich A < x <= E:
+ Bereich x <= E:
+
+ Bereich x > A:
+ Punktanfrage (Gleichheitsbedingung)
+ erfordert (meist) Lesen von 2 Bitlisten vs. 1 Bitliste bei StandardBitlisten-Index
+ nur Juni: B(Juni) AND
+
+ Speicherplatzreduzierung möglich durch
+verallgemeinerte Intervall-Kodierung
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-17
+
+INTERVALLKODIERTE BITLISTEN-INDIZES
+ jede Bitliste repräsentiert Wertezugehörigkeit zu bestimmtem Intervall
+fester Länge von der Hälfte des Gesamtwertebereichs
+ Beispiel I1 = [Jan, Jun],
+I2 = [Feb, Jul],
+I3 = [Mär,Aug],
+I4 = [Apr, Sep], I5 = [Mai, Okt],
+I6 = [Jun, Nov], I7 = [Jul, Dez]
+
+ für jede Punkt- und Bereichsanfrage max. 2 Bitlisten zu lesen
+z.B. Bereich März bis September:
+Monat = Februar:
+
+I3 OR I4
+
+ etwa halbierter Speicheraufwand
+Standard-Bitlisten
+Jan
+
+Feb
+
+Mär
+
+Apr
+
+Mai
+
+Jun
+
+Jul
+
+...
+
+Dez
+
+Intervallkodierte Bitlisten
+I1 I2
+I3 I4 I5 I6 I7
+
+Mai
+
+0
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+...
+
+0
+
+1
+
+1
+
+1
+
+1
+
+1
+
+0
+
+0
+
+123
+
+März
+
+0
+
+0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+...
+
+0
+
+1
+
+1
+
+1
+
+0
+
+0
+
+0
+
+0
+
+124
+
+Januar
+
+1
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+...
+
+0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+125
+
+März
+
+0
+
+0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+...
+
+0
+
+1
+
+1
+
+1
+
+0
+
+0
+
+0
+
+0
+
+126
+
+Februar
+
+0
+
+1
+
+0
+
+0
+
+0
+
+0
+
+0
+
+...
+
+0
+
+1
+
+1
+
+0
+
+0
+
+0
+
+0
+
+0
+
+127
+
+Dezember
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+...
+
+1
+
+0
+
+0
+
+0
+
+0
+
+0
+
+0
+
+1
+
+128
+
+April
+
+0
+
+0
+
+0
+
+1
+
+0
+
+0
+
+0
+
+...
+
+0
+
+1
+
+1
+
+1
+
+1
+
+0
+
+0
+
+0
+
+...
+
+...
+
+...
+
+ID
+
+Monat
+
+122
+
+Abteilung Datenbanken
+
+...
+DATA WAREHOUSING
+
+5-18
+
+KODIERTE BITLISTEN-INDIZES
+
+ Speicherplatzersparnis durch logarithmische Kodierung der k
+möglichen Attributwerte (encoded bitmap indexing)
+ Standardverfahren: pro Satz ist nur in einer der k Bitlisten das Bit
+gesetzt
+ jede der k Wertemöglichkeiten wird durch log2 k Bits kodiert => nur
+noch log2 k Bitlisten
+ hohe Einsparungen bei großen k (z.B. Kunden, Produkte)
+ k=1 Million erfordert 20 statt 1 Million Bitlisten
+Blau 0001100010001 ...
+Rot 1100000000010 ...
+Weiß 0010000001100 ...
+Grün 0000011100000 ...
+
+Kodierung
+Blau
+Rot
+Weiß
+Grün
+
+F1 F0
+0 0
+0 1
+1 0
+1 1
+
+2 Bitvektoren für 4 Farben
+F1 0 0 1 0 0 1 …
+F0 1 1 0 0 0 1 …
+
+ Auswertung von Suchausdrücken
+ höherer Aufwand bei nur 1 Bedingung (log2 k Bitlisten statt 1 abzuarbeiten)
+Farbe = Blau:
+ bei mehreren Bedingungen wird auch Auswertungsaufwand meist reduziert
+ Blau oder Rot:
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-19
+
+KODIERUNGSVARIANTEN
+Mehrkomponenten-Bit-Indizes
+ Zerlegung von Attributwerten in mehrere Komponenten
+und separate Kodierung
+ Wahl der Komponenten erlaubt Kompromiss zwischen
+Speicheraufwand (# Bitlisten) und Zugriffsaufwand
+Beispiel 1
+ Produkt-Nr (0..999) = x * 100 + y * 10 + z
+mit x,y,z aus 0..9
+ 30 Bitlisten statt 1000 (10 bei logarithmischer Kodierung) Auswertung
+eines Produktes:
+Beispiel 2
+ hierarchische Kodierung zB von Produkten innerhalb Produktart und
+Produktgruppe
+ z.B. 5/6/8 Bits für Produktgruppe/Produktart/Produkt (Muster
+gggggaaaaaapppppppp) führt zu 19 Bitlisten für max. 32*64*256=500K
+Prod.
+ Auswertungen für Produktgruppe und Produktart ohne eigene Bitlisten
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-20
+
+AGENDA
+ Einleitung
+ Indexstrukturen
+ ein- vs. mehrdimensionale Indexstrukturen
+ eindimensionale Einbettung
+ Bitlisten-Indexstrukturen
+
+ Column Stores
+ Datenkompression
+
+ Datenpartitionierung
+ vertikale vs. horizontale Fragmentierung
+ mehrdimensionale, hierarchische Fragmentierung
+
+ Materialisierte Sichten
+ Verwendung
+ Auswahl
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-21
+
+ROW STORE VS. COLUMN STORE
+
+Standard-Modell in DBS: Sätze
+von Tabellen werden vollständig
+innerhalb je einer Seite
+gespeichert
++ einfaches Hinzufügen neuer
+Sätze
+- Lesen nicht benötigter
+Attribute
+Abteilung Datenbanken
+
+Spaltenweise Zerlegung und
+Speicherung von Tabellen
++ nur relevante Daten werden
+gelesen
+- mehrere Zugriffe zum Einfügen
+neuer
+Sätze
+besonders geeignet zur AnalyseUnterstützung, z.B. für Data
+Warehouses
+
+DATA WAREHOUSING
+
+5-22
+
+COLUMN STORES
+ spaltenweise statt zeilenweise Speicherung von Tabellen
+ frühe Realisierungen im Rahmen vertikaler Partitionierung (Sybase IQ)
+ viele neue Realisierungen seit ca. 2005, v.a. zur Unterstützung von
+Analyse-Anfragen / OLAP (SAP Hana, Vertica … )
+ hybride Lösungen mit Row und Column Store (z.B. MS SQLServer,
+DB2)
+
+ v.a. im Rahmen von In-Memory-Architekturen genutzt
+Record 1
+
+Record 2
+
+Record 3
+
+Record 4
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-23
+
+VORTEILE / NACHTEILE
+ Vorteile Column Store
+ I/O-Einsparungen falls nur wenige Attribute benötigt
+ zusätzliche Einsparungen falls Attributwerte komprimiert werden
+ effiziente Aggregationsmöglichkeiten
+ OLAP-orientiert
+ oft deutlich bessere Trefferraten im CPU-Cache durch
+Fokussierung auf relevante Daten
+
+ Nachteile Column Store (→ Vorteile Row Store)
+ ungünstig für Operationen, die (fast) alle Attribute von Tupeln
+betreffen,
+z.B. für Änderungen / effizientes Einfügen neuer Tupel
+ weniger günstig für OLTP und wenn nicht alle Daten im
+Hauptspeicher
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-24
+
+ANFRAGEN – COLUMN VS. ROW STORE *
+
+* Quelle: Hasso Plattner: Enterprise Applications – OLTP and OLAP – Share One Database Architecture
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-25
+
+DATENKOMPRESSION
+ Column Stores nutzen oft komprimierte Speicherung von
+Attributwerten
+ reduzierter Speicherbedarf
+ reduzierter I/O-Aufwand
+
+ leichtgewichtige Kompression mit geringem Aufwand zur
+Dekomprimierung
+ wünschenswert: Auswertungen auf komprimierten Werten selbst
+
+ Varianten:
+ Run Length Encoding (RLE)
+ Bit Vector Encoding
+ Delta Coding
+ Wörterbuch-Kodierung
+
+ pro Spalte kann das beste Kodierungsverfahren gewählt
+werden
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-26
+
+RUN LENGTH ENCODING (RLE) /
+LAUFLÄNGENKODIERUNG
+ Zusammenfassung von Nachbarn mit gleichem Wert
+ (Wert, Startposition, #Vorkommen)
+
+ effizient bei langen Folgen gleicher Werte
+ wird durch Sortierung der Attributwerte pro Spalte unterstützt
+
+ einfache Dekodierung
+ Auswertungen auch auf komprimierten Werten möglich
+Ort
+Berlin
+
+Ort
+
+ab
+
+Anz
+
+Berlin
+
+Berlin
+
+1
+
+3
+
+Berlin
+
+Dortmund 4
+
+1
+
+Leipzig
+
+Leipzig
+
+5
+
+3
+
+Leipzig
+
+München
+
+8
+
+2
+
+Dortmund
+
+Leipzig
+München
+München
+Abteilung
+Datenbanken
+
+DATA WAREHOUSING
+
+5-27
+
+BITVEKTOR-KODIERUNG
+ Spalte wird für k mögliche Attributwerte durch k Bitvektoren
+repräsentiert
+ Bit 1 (0) für Bitliste j an Position i bedeutet, dass Satz i den Wert j
+(nicht) hat
+
+ speichergünstig bei wenigen Attributwerten
+ kann mit RLE kombiniert werden (lange 1- bzw. 0-Folgen)
+
+ effiziente Auswertungen von Selektionen
+Matnr
+
+…
+
+Stud.gang
+
+2345678
+
+Bachelor Informatik
+
+3456789
+
+Master Informatik
+
+1234567
+
+Bachelor Informatik
+
+4321876
+
+Master Data Science
+
+5678912
+
+Master Informatik
+
+6785432
+
+Bachelor Informatik
+
+2198765
+
+Master Data Science
+
+4321987
+
+Bachelor Informatik
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Bachelor Informatik
+
+1010.0101
+
+Master Informatik
+
+0100.1010
+
+Master Data Science
+
+0001.0010
+
+5-28
+
+DELTA-KODIERUNG
+ Speicherung der Differenz zu Vorgängerwerten
+ v.a. für numerische Werte
+ Einsparungen v.a bei Sortierung
+Matnr
+2345678
+
+…
+
+Matnr
+
+…
+
+2345678
+
+2345679
+2345683
+
+1
+
+2345698
+
+4
+
+2756789
+
+15
+
+2756809
+2756814
+…
+
+Abteilung Datenbanken
+
+411091
+20
+5
+…
+
+DATA WAREHOUSING
+
+5-29
+
+WÖRTERBUCH-KODIERUNG (DICTIONARY
+ENCODING)
+ Wörterbuch mit Code für alle zu ersetzende (String-)Werte
+ günstig v.a. bei wenigen und langen Attributwerten
+
+ erfordert keine Sortierung
+ Auswertung auf komprimierten Daten möglich
+ Lookup zur Dekomprimierung
+Knr
+
+Bundesland
+
+…
+
+Sachsen
+
+…
+
+Sachsen
+
+…
+
+4
+
+…
+
+Bayern
+
+…
+
+4
+
+Mecklenburg-Vorpommern
+
+…
+
+1
+
+…
+
+2
+
+…
+
+Knr
+
+Bundesland
+
+Dictionary
+
+…
+
+Sachsen-Anhalt
+
+…
+
+5
+
+…
+
+Mecklenburg-Vorpommern
+
+…
+
+2
+
+…
+
+3
+
+…
+
+4
+
+…
+
+Nordrhein-Westfalen
+
+…
+
+Sachsen
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Bayern
+
+1
+
+MecklenburgVorpommern
+
+2
+
+NordrheinWestfalen
+
+3
+
+Sachsen
+
+4
+
+Sachsen-Anhalt
+
+5
+
+5-30
+
+VERGLEICH KOMPRIMIERUNGSVERFAHREN
+Kodierung
+
+Datentyp
+
+Sortierung?
+
+Auswertung auf
+komprim.
+Daten?
+
+RLE
+
+beliebig
+
+Ja
+
+Ja
+
+Bitvektor
+Delta
+Dictionary
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-31
+
+AGENDA
+ Einleitung
+ Indexstrukturen
+ ein- vs. mehrdimensionale Indexstrukturen
+ eindimensionale Einbettung
+ Bitlisten-Indexstrukturen
+
+ Column Stores
+ Datenkompression
+
+ Datenpartitionierung
+ vertikale vs. horizontale Fragmentierung
+ mehrdimensionale, hierarchische Fragmentierung
+
+ Materialisierte Sichten
+ Verwendung
+ Auswahl
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-32
+
+DATENPARTITIONIERUNG
+ Partitionierung: logische Zerlegung von Relationen
+ Fragmentierung: Bestimmung der Verteilungseinheiten
+ Allokation: Zuordnung der Fragmente zu Partitionen
+(Rechnerknoten, Externspeicher)
+
+ Fragmentierung (Zerlegung):
+ horizontal vs. vertikal
+ Vollständigkeit der Zerlegung
+ Rekonstruierbarkeit der Ursprungstabelle
+
+F1
+Partition 1
+F2
+
+ Ziele
+ Reduzierung des
+Verarbeitungsumfangs
+ Unterstützung von
+Parallelverarbeitung
+ Lastbalancierung
+Abteilung Datenbanken
+
+...
+
+F3
+
+Partition 2
+
+...
+
+...
+
+Fn
+AusgangsRelation
+
+DATA WAREHOUSING
+
+Fragmentierung
+
+Partition d
+Allokation
+5-33
+
+VERTIKALE FRAGMENTIERUNG
+ spaltenweise Aufteilung Globale Relation
+KUNDE
+von Relationen
+ Definition der
+KNR NAME
+Fragmentierung
+K2 Schulz
+durch Projektion
+K4 Meier
+K3 Müller
+ Vollständigkeit:
+K1 Scholz
+ jedes Attribut in wenigstens
+1 Fragment enthalten
+
+K5
+
+Weber
+
+KNR NAME
+K2 Schulz
+K4 Meier
+K3 Müller
+K1 Scholz
+K5 Weber
+
+GEBDAT Filiale
+2.11.1976 F
+23.8.1972 B
+4.7.1987 B
+24.4.1959 F
+17.3.1942 L
+
+Filiale
+F
+B
+B
+F
+L
+
+KUNDE1 =
+p KNR, NAME, Filiale (KUNDE)
+
+KNR GEBDAT
+K2
+2.11.1976
+K4
+23.8.1972
+K3
+4.7.1987
+K1
+24.4.1959
+K5
+17.3.1942
+KUNDE2 =
+p KNR, GEBDAT (KUNDE)
+
+ verlustfreie Zerlegung:
+ Primärschlüssel i.a. in jedem Fragment enthalten
+ JOIN-Operation zur Rekonstruktion des gesamten Tupels
+
+ Arbeitsersparnis durch Auslagern selten benötigter
+Attribute in eigene Fragmente
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-34
+
+HORIZONTALE FRAGMENTIERUNG
+ zeilenweise Aufteilung von Relationen
+ Definition der Fragmentierung durch Selektionsprädikate Pi auf der
+Relation:
+Ri := sPi (R) (1  i  n)
+
+ Vollständigkeit: jedes Tupel ist einem Fragment eindeutig zugeordnet
+ Fragmente sind disjunkt: Ri  Rj = {}
+(i  j))
+ Verlustfreiheit: Relation ist Vereinigung aller Fragmente: R =  Ri (1  i  n)
+ Anfragen auf Fragmentierungsattribut werden auf Teilmenge der Daten begrenzt
+GEBDAT
+Filiale
+ Parallelverarbeitung unterschiedlicher Fragmente KNR NAME
+K5
+
+Weber
+
+KUNDE1 =
+
+KNR
+
+NAME
+
+GEBDAT
+
+Filiale
+
+K2
+
+Schulz
+
+2.11.1976
+
+F
+
+K4
+
+Meier
+
+23.8.1972
+
+B
+
+K3
+
+Müller
+
+4.7.1987
+
+B
+
+K1
+
+Scholz
+
+24.4.1959
+
+F
+
+KUNDE2 =
+
+K5
+
+Weber
+
+17.3.1942
+
+L
+
+KNR
+K4
+K3
+
+Globale Relation KUNDE
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+KNR
+K2
+K1
+
+17.3.1942
+s Filiale = "L"
+
+NAME
+Schulz
+Scholz
+
+(KUNDE)
+
+GEBDAT
+2.11.1976
+24.4.1959
+s Filiale = "F"
+
+NAME
+Meier
+Müller
+
+KUNDE3 =
+
+L
+
+Filiale
+F
+F
+(KUNDE)
+
+GEBDAT
+23.8.1972
+4.7.1987
+
+s Filiale = "B"
+
+Filiale
+B
+B
+
+(KUNDE)
+
+5-35
+
+MULTI-DIMENSIONALE, HIERARCHISCHE
+FRAGMENTIERUNG (MDHF)*
+ horizontale Bereichsfragmentierung auf mehreren Attributen
+(reihenfolge-unabhängig)
+ Auswahl höchstens eines Attributs pro Dimension als Fragmentierungsattribut(e)
+ Fragment-Einschränkung für alle Anfragen bzgl. Fragmentierungsdimensionen
+Beispiel: 2-dimensionale Fragmentierung FGruppeMonat der Faktentabelle Verkauf
+ProduktDimension
+
+P_ID
+Produkt
+Klasse
+Gruppe
+Familie
+Linie
+Sparte
+
+Gruppe 1,
+Monat 1
+
+VerkaufFakten-Tabelle:
+
+P_ID
+K_ID
+Z_ID
+Umsatz
+Kosten
+
+|G|
+
+Gruppe i,
+Monat 1
+
+Verkauf
+
+KundenK_ID
+Dimension
+Geschäft
+Einzelhändler
+1
+
+Zeit- Dimension
+Z_ID
+Monat
+|M|
+Quartal
+Jahr
+
+Gruppe G
+Gruppe G,
+Monat 1
+Gruppe G,
+Monat M
+
+Monat 1
+
+* Stöhr, T., Märtens, H., Rahm, E.: Multi-Dimensional Database Allocation for Parallel Data Warehouses Proc. VLDB, 2000,
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-36
+
+STERNSCHEMA-ANFRAGE UNTER MDHF
+ Zugriff oberhalb und unterhalb des Fragmentierungsebene
+(Anfrage auf Quartal und Produkt)
+ nur 3 Fragmente
+ProduktDimension
+
+P_ID
+
+Produkt
+Klasse
+Gruppe
+Familie
+Linie
+Sparte
+
+1 Produkt in 1 Gruppe
+
+VerkaufFakten-Tabelle:
+
+P_ID
+K_ID
+Z_ID
+Umsatz
+Kosten
+
+KundenK_ID
+Dimension
+Geschäft
+Einzelhändler
+1
+
+Z_ID
+Monat
+
+Zeit- Dimension
+
+Quartal
+Jahr
+
+Verkauf
+
+3 Monate
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-37
+
+DATENALLOKATION IN DB2
+ 3 –stufige Vorgehensweise
+ DISTRIBUTE BY HASH - Tabellen-Partitionierung zwischen Knoten
+ PARTITION BY RANGE – partitionsinterne Fragmentierung von
+Tabellen
+ ORGANIZE BY DIMENSIONS – Clustering innerhalb von Fragmenten
+(mehrdimensionales Clustering, MDC)
+Node 1
+
+Node 2
+
+Node 3
+
+Tabelle T1: Verteilung über 3 Partitionen (Hash)
+
+Distribute
+
+TS1
+
+TS2
+
+TS1
+
+TS2
+
+TS1
+
+TS2
+
+Jan
+
+Feb
+
+Jan
+
+Feb
+
+Jan
+
+Feb
+
+Partition
+
+North South
+
+North South
+
+North South
+
+North South
+
+North South
+
+North South
+
+Organize
+
+East West
+
+East West
+
+East West
+
+East West
+
+East West
+
+East West
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-38
+
+DB2 MULTI-DIMENSIONAL CLUSTERING
+Database Partition 1
+
+Database Partition 2
+
+Database Partition 3
+
+CREATE TABLE
+sales (recordID
+INT,
+January
+salesdate
+DATE,
+productID
+INTEGER,
+storeID
+INTEGER,
+...
+)
+February
+DISTRIBUTE BY HASH (recordID)
+PARTITION BY RANGE (salesdate) EVERY 1 MONTHS
+ORGANIZE BY (productID, storeID) ;
+
+March
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Quelle:
+IBM
+
+5-39
+
+AGENDA
+ Einleitung
+ Indexstrukturen
+ ein- vs. mehrdimensionale Indexstrukturen
+ eindimensionale Einbettung
+ Bitlisten-Indexstrukturen
+
+ Column Stores
+ Datenkompression
+
+ Datenpartitionierung
+ vertikale vs. horizontale Fragmentierung
+ mehrdimensionale, hierarchische Fragmentierung
+
+ Materialisierte Sichten
+ Verwendung
+ Auswahl
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-40
+
+MATERIALISIERTE SICHTEN
+ Unterstützung in kommerziellen DBS: Oracle, DB2, SQL Server
+ materialized views, summary tables, ...
+
+ explizite Speicherung von Anfrageergebnissen, z.B. Aggregationen,
+zur Beschleunigung von Anfragen
+ sehr effektive Optimierung für Data Warehousing
+ häufig ähnliche Anfragen (Star Queries)
+ Lokalität bei Auswertungen
+ relativ stabiler Datenbestand
+
+ Realisierungs-Aspekte
+ Verwendung von materialisierten Sichten für Anfragen (QueryUmformulierung, query rewrite)
+ Auswahl der zu materialisierenden Sichten: statisch vs. dynamisch
+(Caching von Anfrageergebnissen)
+ Aktualisierung materialisierter Sichten
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-41
+
+VERWENDUNG MATERIALISIERTER SICHTEN
+ Einsatz von materialisierter Sichten transparent für den
+Benutzer
+ DBS muss während Anfrageoptimierung relevante materialisierte
+Sichten automatisch erkennen und verwenden können
+(Anfrageumstrukturierung)
+ umgeformte Anfrage muss äquivalent zur ursprünglichen sein
+(dasselbe Ergebnis liefern)
+
+ Beispiel
+
+Anfrage Q
+
+mat. Sicht M1
+
+select sum (v.GBetrag) AS Umsatz create materialized view M1 (K, M, S,
+from VERKAUF v, PRODUKT p, ZEIT z A) AS select p.Kategorie, z.Monat, SUM
+where v.Tag = z.Tag and v.P_Id = (GBetrag), SUM (Anzahl)
+p.P_Id and z.Monat = “April" and from VERKAUF v, PRODUKT p, ZEIT z
+where v.Tag = z.Tag and v.P_Id =
+p.Kategorie = “Smartphone"
+p.P_Id
+modifizierte Anfrage Q’
+group by cube (p.Kategorie, z.Monat)
+select S AS Umsatz
+from M1
+where M=‘April” and K=“Smartphone”
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-42
+
+AUSWAHL VON MATERIALISIERTER SICHTEN
+ Optimierungs-Tradeoff:
+ Nutzen für Anfragen vs. erhöhte Speicherungs/Aktualisierungskosten
+
+ statische Bestimmung durch DBA oder Tool
+ keine Berücksichtigung aktueller Anfragen
+ keine Änderung bis zur nächsten Warehouse-Aktualisierung
+
+ dynamische Auswahl: Caching von Anfrageergebnissen
+ Nutzung von Lokalität bei Ad-Hoc-Anfragen
+ günstig bei interaktiven Anfragen, die aufeinander aufbauen (z.B.
+Rollup)
+ komplexe Verwaltung, z.B. Verdrängungsentscheidungen für
+variabel große Ergebnismengen in Abhängigkeit von
+Referenzierungshäufigkeit, Kosten der Neuberechnung etc.
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-43
+
+STATISCHE AUSWAHL MATERIALISIERTER SICHTEN
+ Auswahl vorzuberechnender Aggregationen des Aggregationsgitters
+ Aggregationsgitter: azyklischer Abhängigkeitsgraph, der anzeigt, für welche
+Kombinationen aus Gruppierungsattributen sich Aggregierungsfunktionen
+(SUM, COUNT, MAX, ...) direkt oder indirekt aus anderen ableiten lassen
+
+ vollständige Materialisierung aller Kombinationen i.a. nicht möglich
+ #Gruppierungskombinationen wächst exponentiell mit Anzahl von
+Gruppierungsattributen n
+ möglichst optimale Teilmenge zu bestimmen
+()
+
+(Monat)
+
+(Monat, Region)
+
+(Region)
+
+(P-Gruppe)
+
+1
+
+(Monat, P-Gruppe)
+
+(Region, P-Gruppe)
+
+2
+
+(Monat, Region, P-Gruppe)
+Abteilung Datenbanken
+
+0
+
+DATA WAREHOUSING
+
+3
+5-44
+
+STATISCHE AUSWAHLHEURISTIK*
+ Annahmen
+ gleiche Nutzungswahrscheinlichkeit pro Cuboid (Kombination
+von Dimensionsattributen)
+ Aufwand sei proportional zu Anzahl zu berechnender
+Sätze/Aggregate
+
+ Heuristik für vorgegebenes Limit für Speicheraufwand
+ pro Kombination von Dimensionsattributen wird Summe der
+Einsparungen berechnet, die sie für andere nicht materialisierte
+Kombinationen bewirkt
+ in jedem Schritt wird die Kombination ausgewählt, die die größte
+Summe an Einsparungen zulässt, solange der maximal
+zugelassene Speicheraufwand nicht überschritten ist
+*Harinarayan/Rajaraman/Ullman, Implementing Data Cubes Efficiently. Proc. Sigmod 1996
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-45
+
+STATISCHE AUSWAHLHEURISTIK: BEISPIEL
+()
+
+1
+
+Limit sei 50% Zusatzaufwand
+(bezogen auf Kardinalität der Detaildaten)
+
+(Region)
+50
+
+(P-Gruppe)
+200
+
+(Monat, P-Gruppe)
+4560
+
+(Region, P-Gruppe) 9843
+
+(Monat)
+24
+(Monat, Region)
+900
+
+(Monat, Region, P-Gruppe)
+
+-
+
+Vollauswertung erfordert
+12.000+15.578 = 27.578 Sätze (+ 130%)
+
+Beschränkung erforderlich
+
+12000
+
+ Schritt 1: maximale Einsparung für Monat/Region
+ nur 900 statt 12.000 Werte auszuwerten
+ Nutzung für 4 Knoten (Einsparung 4*11.100 ): (Monat, Region), (Monat),
+(Region), ()
+
+ Schritt 2:
+ Monat: zusätzliche Einsparung 2*(900 – 24) = 1752
+ Monat, P-Gruppe: zusätzliche Einsparung 2*(12.000 – 4.560) = 14.880
+ resultierender Overhead: 900+4560=5460
+
+ Schritt 3: P-Gruppe: zusätzliche Einsparung (4.560-200) + (900-200)= 5.060
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-46
+
+ZUSAMMENFASSUNG
+ mehrdimensionale vs. 1-dimensionale Indexstrukturen
+ Bitlisten-Indizes
+ effizient kombinierbar für mehrdimensionale Auswertungen / Star-Joins
+ Bereichs- und Intervallkodierung für Bereichsanfragen
+ kodierte Bitlisten-Indizes für große Dimensionen
+
+ Partitionierung
+ vertikale oder horizontale Zerlegung von Relationen zur Reduzierung des
+Arbeitsaufwandes und Unterstützung von Parallelverarbeitung
+ mehrdimens. horizontale Fragmentierung ermöglicht umfassende Einsparungen
+
+ materialisierte Sichten
+ große Performance-Vorteile durch Vorberechnung von Anfragen/Aggregationen
+ dynamische vs. statische Auswahl an materialisierten Sichten
+
+ Column Stores
+ hohe I/O-Einsparungen für OLAP, insbesondere mit komprimierten Datenwerten
+ effiziente Aggregationsmöglichkeiten
+ in Kombination mit In-Memory-DWH verlieren andere Optimierungen an Bedeutung
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+5-47
+
+

@@ -1,0 +1,914 @@
+DATA WAREHOUSING
+Kapitel 2: Architektur von Data WarehouseSystemen
+Victor Christen
+Abteilung Datenbanken
+Institut für Informatik
+Universität Leipzig
+
+AGENDA
+
+ Referenzarchitektur
+ Scheduler, Datenquellen, Datenextraktion, Transformation und
+Laden
+
+ Abhängige vs. unabhängige Data Marts
+ Operational Data Store (ODS)
+ Metadatenverwaltung
+ technische vs. fachliche Metadaten
+
+ DWH und Big Data
+ Data Lake
+ Kombinationen DWH + Lake (Data Fabric, Data Lakehouse)
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-2
+
+DW-REFERENZARCHITEKTUR
+
+Quelle: Bauer/Günzel
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-3
+
+PHASEN DES DATA WAREHOUSING
+
+ Überwachung der Quellen auf Änderungen durch
+Monitore
+ Extrahieren/Kopieren der relevanten Daten in temporären
+Arbeitsbereich
+ Transformation der Daten im Arbeitsbereich
+(Bereinigung, Integration)
+ Laden der Daten ins Data Warehouse (DW)
+ Laden der Daten in Data Marts (DM)
+ Analyse: Operationen auf Daten des DW oder DM
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-4
+
+DATENQUELLEN
+
+ Lieferanten der Daten (gehören nicht direkt zum DW)
+ Merkmale
+ intern (Unternehmen) oder extern (z.B. von Datenmarktplätzen/Web)
+ ggf. kostenpflichtig
+ i.a. autonom
+ i.a. heterogen bzgl. Struktur, Inhalt und Schnittstellen (Datenbank vs
+Dateizugriff)
+
+ Qualitätsforderungen:
+ Verfügbarkeit von Metadaten
+ Konsistenz (Widerspruchsfreiheit), Korrektheit (Übereinstimmung mit
+Realität)
+ Vollständigkeit (z.B. keine fehlenden Werte oder Attribute)
+ Aktualität, Verständlichkeit
+ Verwendbarkeit: Zugriffsmöglichkeiten auf Daten und Änderungen
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-5
+
+DATA-WAREHOUSE-MANAGER/SCHEDULER
+
+ Ablaufsteuerung: Initiierung, Steuerung und Überwachung der
+einzelnen Prozesse
+ Initiierung des Datenbeschaffungs-/Extraktionsprozesses und
+Übertragung der Daten in Arbeitsbereich
+ in regelmäßigen Zeitabständen (jede Nacht, am Wochenende etc.)
+ bei Änderung einer Quelle
+ auf explizites Verlangen durch Administrator
+
+ Fehlerfall
+ Dokumentation von Fehlern
+ Wiederanlaufmechanismen
+
+ Zugriff auf Metadaten aus dem Repository
+ Steuerung des Ablaufs
+ Parameter der Komponenten
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-6
+
+DATENEXTRAKTION
+
+ Monitore: Entdeckung von Änderungen in einer Datenquelle
+ interne Datenquellen: aktive Mechanismen
+ externe Datenquellen: Polling / periodische Abfragen
+
+ Extraktionskomponenten: Übertragung von Daten aus Quellen in
+Arbeitsbereich
+ Periodisch, auf Verlangen durch Admin oder ereignisgesteuert (z.B. sofort nach
+jeder Änderung oder nach bestimmter Zahl von Änderungen)
+
+ Kriterien
+ Online- vs- Offline Zugang zu Datenquellen
+ inkrementelle Updates oder vollständige Kopien
+
+ unterschiedliche Funktionalität der Quellsysteme
+ Nutzung von Standardschnittstellen (z.B. ODBC/JDBC) oder Eigenentwicklung
+ Nutzung spezieller Funktionalität, z.B. von DBS-Quellen
+ ggf. nur Offline-Bereitstellung von Dateien
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-7
+
+DATENEXTRAKTION - STRATEGIEN
+
+ Snapshots: periodisches Kopieren der Daten in Datei
+ Abgleich in Staging Area mit Vorversion (z.B. mit SQL MERGE
+Statement)
+
+ Change Data Capture (CDC) in Quell-Datenbanken
+ Last-Change-Timestamps in Quell-Datenbanken
+ Log-Dateien
+ Trigger-basiert: Auslösen bei Datenänderungen und Kopieren
+der geänderten Tupel in Change Tables
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-8
+
+CHANGE DATA CAPTURE - TIMESTAMP-BASIERT
+
+ Speicherung des Zeitstempels der letzten Änderung für
+jeden Record
+Ran
+IMDb
+k
+Movie Title
+Year Rating
+The Shawshank
+1 Redemption
+1994
+2The Godfather 1972
+The Shawshank
+1 Redemption
+1994
+The Dark
+2 Knight
+2008
+3Forrest Gump 1994
+
+Updated
+
+01-01-2024 Rank Movie Title
+
+9.3 2023-01-01
+9.2 2023-01-01
+9.3 2023-01-01
+
+01-01-2025
+
+9.2 2024-06-01
+8.8 2024-06-01
+
+IMDb
+Year Rating
+
+The Shawshank
+1 Redemption
+1994
+2The Godfather 1972
+The Shawshank
+1 Redemption
+1994
+2 The Dark Knight
+2008
+3 Forrest Gump
+1994
+
+9.3
+9.2
+9.3
+9.2
+8.8
+
+Cons
+Potentiell komplexe Anfragen gegen die Quelldatenbanken
+ Unzureichend um hohe Volatilität zu berücksichtigen
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-9
+
+CHANGE DATA CAPTURE-TRIGGER-BASIERT
+
+ Sofortige Erkennung von Änderungen mithilfe von
+Triggern auf den Quelltabellen
+ Speicherung in Change-Tabellen
+ Publish-Subscriber optional: Datenänderungen werden
+an Message-Queues veröffentlicht, die relevante
+Zielsysteme „abonnieren“ können
+Nachteile
+ Verringerung der Leistung der Quelldatenbank durch die
+steigende Anzahl von Schreibvorgängen bei jeder
+Operation
+ Erfordert Änderungen am Schema der Quelldatenbank
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-10
+
+CHANGE DATA CAPTURE –LOG-BASIERT
+
+ in vielen Datenbanken zur Wiederherstellung
+ Speicherung aller Änderungen (INSERT, UPDATE,
+DELETE) in einer Log-Datei
+ Auswertung der Logs zur Bestimmung von Änderungen
+und Propagierung in die Staging Area
+
+https://www.confluent.io/learn/change-data-capture/
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-11
+
+DATENEXTRAKTION – STRATEGIEN VERGLEICH
+
+Autonomie
+
+Performanz
+
+Nutzbarkeit
+
+Snapshot
+
+Log-Datei
+Timestamps
+Trigger
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-12
+
+DATENTRANSFORMATION UND LADEN
+
+ Arbeitsbereich (engl.: Staging Area)
+
+
+
+
+
+temporärer Zwischenspeicher zur Integration und Bereinigung
+Laden der Daten ins DW erst nach erfolgreichem Abschluss der Transformation
+keine Beeinflussung der Quellen oder des DW
+keine Weitergabe fehlerbehafteter Daten
+
+ Transformationskomponente: Vorbereitung der Daten für Laden
+ Data Auditing/Profiling: Datenüberprüfung, Aufspüren von Abweichungen
+ Data Cleaning: Beseitigung von Verunreinigungen, fehlerhafte oder fehlende Werte,
+Redundanzen, veralteten Werte
+ Konsolidierung: Vereinheitlich von Datentypen, Datumsangaben, Maßeinheiten,
+Kodierungen etc.
+
+ Ladekomponente: Übertragung der bereinigten und aufbereiteten (z.B.
+aggregierten) Daten in DW
+ Nutzung spezieller Ladewerkzeuge (z.B. Bulk Loader)
+ Historisierung: zusätzliches Abspeichern geänderter Daten anstatt Überschreiben
+ Offline (batch) vs. Online-Laden (Verfügbarkeit des DW während des Ladens)
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-13
+
+DATA WAREHOUSE
+
+ relationale, mehrdimensionale oder kombinierte
+Speicherung der Daten (ROLAP, MOLAP, HOLAP)
+ oft Trennung zwischen
+ relationalem Basis-DB (Warehouse) mit Detaildaten und
+ mehreren abgeleiteten Datenwürfel (Cubes) bzw. Data Marts
+mit aggregierten Daten
+
+ Änderungen im (Basis-) Data Warehouse nach Laden
+müssen auf Cubes/Data Marts angewandt werden
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-14
+
+DATA MARTS
+
+ eine Teilmenge des Data Warehouse
+ Inhaltliche Beschränkung auf bestimmten Themenkomplex
+oder Geschäftsbereich
+ führt zu verteilter DW-Lösung
+Gründe für Data Marts
+ Performance: schnellere Anfragen, weniger Benutzer, Lastverteilung
+ Eigenständigkeit, Datenschutz
+ ggf. schnellere Realisierung
+Probleme
+ zusätzliche Redundanz
+ zusätzlicher Transformationsaufwand
+ erhöhte Konsistenzprobleme
+Varianten
+ abhängige Data Marts vs unabhängige Data Marts
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-15
+
+DATA WAREHOUSE VS. DATA MART
+
+Data Warehouse
+
+Data Mart
+
+anwendungsneutral
+
+anwendungsbezogen
+
+Adressat der
+Datenbereitstellung
+Datenmenge /
+Detaillierungsgrad
+Umfang historischer
+Daten
+Optimierungsziel
+
+Unternehmen
+
+Abteilung
+
+hoch
+
+gering
+
+hoch
+
+gering
+
+Datenmenge
+
+Antwortzeiten
+
+Anzahl
+
+eins (wenige)
+
+mehrere
+
+relational
+
+multidimensional
+
+Philosophie
+
+Typische DBTechnologie
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-16
+
+ABHÄNGIGE DATA MARTS
+Sales Mart
+
+Source 1
+Source 2
+
+Data Warehouse
+
+Financial Mart
+Customer
+Service Mart
+
+Source 3
+
+ Hub-and-Spoke-Architektur („Nabe- und Speiche“)
+ Data Marts sind Extrakte aus dem zentralen Warehouse
+ strukturelle Ausschnitte (Teilschema, z.B. nur bestimmte Kennzahlen)
+ inhaltliche Extrakte (z.B. nur bestimmter Zeitraum, bestimmte Filialen ...)
+ Aggregierung (geringere Granularität), z.B. nur Monatssummen
+
+Vorteile
+ relativ einfach ableitbar (Replikationsmechanismen des Warehouse-DBS)
+ Analysen auf Data Marts sind konsistent mit Analysen auf Warehouse
+
+Nachteil
+ Entwicklungsdauer (Unternehmens-DW zunächst zu erstellen)
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-17
+
+UNABHÄNGIGE DATA MARTS
+
+Source 1
+
+Sales Mart
+
+Source 1
+
+Source 2
+
+Financial Mart
+
+Source 2
+
+Source 3
+
+Customer
+Service Mart
+
+Source 3
+
+Sales Mart
+Financial Mart
+
+DW
+
+Customer
+Service Mart
+
+Variante 1: kein zentrales, unternehmensweites DW
+ wesentlich einfachere und schnellere Erstellung der DM verglichen mit DW
+ Datenduplizierung zwischen Data Marts, Gefahr von Konsistenzproblemen
+ Aufwand wächst proportional zur Anzahl der DM
+ schwierigere Erweiterbarkeit
+ keine unternehmensweite Analysemöglichkeit
+Variante 2: unabhängige DM + Ableitung eines DW aus DM
+Variante 3: unabhängige DM + Verwendung gemeinsamer Dimensionen
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-18
+
+OPERATIONAL DATA STORE (ODS)
+
+ optionale Komponente einer DW-Architektur zur Unterstützung
+operativer (Realzeit-) Anwendungen auf integrierten Daten
+ größere Datenaktualität als Warehouse
+ direkte Änderbarkeit der Daten
+ geringere Verdichtung/Aggregation,
+da keine primäre Ausrichtung
+Ad hoc- Abfragen
+auf Analysezwecke
+
+ Probleme
+
+OLAP
+
+Data Mining
+
+Real-Time
+Anwendungen
+
+ weitere Erhöhung
+der Redundanz
+ geänderte Daten im ODS
+Kern-Data
+Warehouse
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Operational Data
+Store (ODS)
+
+2-19
+
+VERGLEICH ODS - DW
+
+Operational Data Store
+
+Data Warehouse
+
+Geeignet für
+
+Granular, einfache Anfragen
+an detaillierte operationale
+Daten
+
+Komplexe Anfragen an
+zusammengefasste oder
+aggregierte Analysedaten
+
+Zweck
+
+Operationale Reports, aktuell Historische und
+Trendanalysen Reports
+
+Zeitfenster
+
+Kurz naher Vergangenheit
+
+Komplette Historie der
+Organisationsdaten
+
+Entscheidungsfindung
+
+Unterstützung operationaler
+Entscheidung für nahe
+Zukunft
+
+Feedback für strategische
+Entscheidungen,
+allumfassendende
+Systemverbesserung
+
+Frequenz des Ladens
+
+Minütlich oder stündlich
+
+Täglich, wöchentlich,
+monatlich oder quartalsweise
+Serra: Deciphering data architectures, 2024
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+METADATEN-VERWALTUNG
+
+ Anforderungen an Metadaten-Verwaltung / Repository
+ Bereitstellung aller relevanten Metadaten auf aktuellem Stand
+ flexible Zugriffsmöglichkeiten (DB-basiert) über mächtige
+Schnittstellen
+ Versions- und Konfigurationsverwaltung
+
+ Unterstützung für technische und fachliche Aufgaben und
+Nutzer
+ Technische Metadaten vs. Business-Metadaten
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-21
+
+METADATEN-VERWALTUNG (2)
+
+ Realisierungsformen
+ werkzeugspezifisch: fester Teil von Werkzeugen (Design-Tool,
+ETL, Analyse-Tool)
+ allgemein einsetzbar: generisches und erweiterbares RepositorySchema (Metadaten-Modell)
+
+ zahlreiche proprietäre Metadaten-Modelle
+ erfordert häufigen Austausch sowie Transformation/Integration
+von Metadaten
+
+ Standardisierungsbemühungen mit begrenztem Erfolg
+ Open Information Model (OIM) - wurde 2000 eingestellt
+ Common Warehouse Metamodel (CWM) der OMG (Object
+Management Group)
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-22
+
+METADATEN IM DATA WAREHOUSE-KONTEXT
+Transformations-Jobs
+Job-Scheduling,
+-Ausführung
+
+Datenqualitäts- Warehouse-schema, Konzeptionelle,
+statistiken
+-tabellen, attribute Multidimensionale
+Datenmodelle
+
+Geschäftsbeschr.
+von Entities, Attr.,
+Dim., Kennzahlen
+
+Transformationsregeln,
+Cleaning-Regeln
+
+Business Terms
+Vokabulare
+
+Datenbankschemas,
+Flatfile-Formate
+
+Reports, Queries
+
+Quellspezifika
+(DBMS, IP, URL)
+
+Zugriffsmuster,
+-statistics
+
+Authorisierung
+(Name, Password)
+
+Nutzerprofile,
+-rolle, -rechte
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+TECHNISCHE VS. FACHLICHE METADATEN
+
+Technische Metadaten
+ Quell-, Ziel-Systeme (technische Zugriffsoptionen etc. )
+ Warehouse-Administration (Datenaktualisierung,
+-archivierung, Optimierung)
+ Job-Ausführungsstatus, Auslastungsstatistiken, …
+
+ Schemata: Datenbank-Schemata, Dateiformate
+ Datenabhängigkeiten: (technische) Mappings zur
+Datentransformation
+ operationale Systeme ↔ Data Warehouse ↔ Data Marts ↔
+Analysetools (Queries, etc. )
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-24
+
+TECHNISCHE VS. FACHLICHE METADATEN (2)
+
+Fachliche Metadaten (Business-Metadaten)
+ Informationsmodelle, konzeptuelle Datenmodelle
+ Unternehmens-/Branchen-spezifische Vokabulare (Business terms)
+ Mapping Business Terms ↔ DWH-Elemente (Dimensionsattribute,
+Fakten)
+ Nutzermerkmale (Rollen, Interessensgebieten … )
+ Geschäftsbeschreibung von Kennzahlen (Key Performance
+Indicators), Queries, Reports
+ Datenqualität
+ Herkunft (lineage): aus welchen Quellen stammen die Daten? Besitzer?
+ Richtigkeit (accuracy): welche Transformation wurden angewendet?
+ Aktualität (timeliness): wann war der letzte Aktualisierungsvorgang?
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-25
+
+DATA WAREHOUSE VS BIG DATA
+
+Data Warehouse
+ Analyse strukturierter Daten auf Basis eines Datenbankschemas
+ Schema first / Schema on Write (Speichern von Daten muss Schema
+befolgen)
+
+Big-Data
+zusätzliche Datenarten
+mit weiteren Anforderungen
+ un-/teilstrukturierte Daten sowie
+Datenströme
+ oft schemalose Speicherung
+der Daten (z.B. in Data Lake)
+bzw. Schema on Read
+für Analysen
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Serra: Deciphering data architectures, 2024
+
+2-26
+
+STUFEN DER DATENANALYSE
+
+Stage 1:
+Reactive
+Structured data is
+transacted and
+locally managed.
+Data used
+reactively.
+
+Stage 2:
+Informative
+Structured data is
+managed and
+analyzed centrally
+and informs the
+business.
+
+Stage 3:
+Predictive
+Data capture is
+comprehensive and
+scalable and leads
+business decisions
+on advanced
+analytics.
+
+Stage 4:
+Transformative
+Data transforms
+business to drive
+desired outcomes.
+Any data, any
+source, anywhere, at
+scale.
+
+Real-time intelligence
+
+Rearview mirror
+
+Serra: Deciphering data architectures, 2024
+
+ Unternehmen sind derzeit meist auf Stufe 2 mit Data
+Warehouse, insbesondere für On-Premise-Datenhaltung
+ Stufen 3 und 4: Cloud-basierte Datenverwaltung mit
+Einsatz von Machine Learning
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-27
+
+DATENARCHITEKTUREN (SERRA 2024)
+
+DATA LAKES
+
+ Speicherung heterogener Daten
+ohne gemeinsames Schema
+ Schema on Read
+
+ initiale Nutzung v.a. für
+Hadoop File System
+ Nutzung der Daten problematisch und
+aufwändig, z.B. mit Frameworks
+wie MapReduce, Apache Spark,
+Jupiter Notebooks
+Serra: Deciphering data architectures, 2024
+ fehlende Datenintegration
+ nützlich als Teil einer umfassenderen Datenarchitektur, v.a. für
+Staging / Datenaufbereitung
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-29
+
+KOMBINATION WAREHOUSE / DATA LAKE
+
+ „Modern Data Warehouse“
+nach Serra 2024,
+v.a. für weitergehende
+Analysen
+ oft kein monolithisches System,
+sondern Kombination
+verschiedener Tools
+ unterschiedliche Pipelines zur
+Datenaufbereitung je
+nach Daten- und Analyseart
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Serra: Deciphering data architectures, 2024
+
+2-30
+
+DATA FABRIC
+
+ Weiterentwicklung der hybriden Data Lake/Warehouse-Architektur
+um nahezu beliebige Datenquellen und Zugriffsmöglichkeiten
+„fabrikartig“ zu unterstützen
+ keine allgemein akzeptierte Definition
+ stärkere Unterstützung für
+ einheitliche verwaltete Metadaten
+ Masterdaten-Management (MDM)
+ Real-time data ingestion
+ virtuelle Datenanbindung (statt Datenkopien)
+
+Serra: Deciphering data architectures, 2024
+
+ Zukunft: Verwendung von Wissensgraphen zur semantischen
+Beschreibung und Verknüpfung unterschiedlicher Datenobjekte
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-31
+
+DATA LAKEHOUSE
+ Entwicklung von Fa. Databricks (2020)
+ engere Kombination von Data Lake / Data Warehouse
+ alle Daten im Lake ohne zusätzliches Warehouse für strukturierte Daten
+ dafür transaktionale Zusatzkomponente
+im Lake, um Inhalte relational nutzen zu
+können (SQL-Zugang,
+CRUD Operationen …)
+
+ alternative Realisierungen
+ Delta Lake, Apache Iceberg, Apache Hudi
+
+ Tradeoffs
+
+Serra: Deciphering data architectures, 2024
+
+ Anfragen typischerweise langsamer als mit DWH
+ stark limitierte semantische Datenintegration (Schema on read, i.a.
+Views über mehrere Dateien)
+ bessere Skalierbarkeit auf viele Datenquellen
+ Unterstützung heterogener Datenarten
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-32
+
+HISTORISCHE ENTWICKLUNG
+
+Serra: Deciphering data architectures, 2024
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-33
+
+DATA MESH
+
+ Konzept einer dezentralen
+Architektur mit mehreren
+domänen-spezifischen
+Datensammlungen innerhalb
+eines Unternehmens
+ Probleme zentraler Ansätze
+sollen umgangen werden
+
+Serra: Deciphering data architectures, 2024
+
+ Skalierbarkeit, Abhängigkeit zu zentraler IT …
+ besseres Self-Serving für Analysten
+
+ verschiedene Varianten
+ kontroverse Einschätzungen
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-34
+
+ZUSAMMENFASSUNG
+
+ wesentliche Komponenten der Referenzarchitektur
+ ETL-Komponenten inklusive Monitoring und Scheduling
+ Arbeitsbereich (Staging Area)
+ Data Warehouse und Data Marts / Cubes
+ Metadaten-Verwaltung
+
+ Extraktionsansätze:
+ Snapshot
+ Change Data Capture: Log-basier, Timestamps, Trigger
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-35
+
+ZUSAMMENFASSUNG (2)
+
+ abhängige vs. unabhängige Data Marts
+ ODS (Online Data Store): Unterstützung operativer
+Anwendungen auf integrierten Daten
+
+ Ko-Existenz DWH und Big-Data-Technologien / Data
+Lakes
+ flexible Unterstützung unstrukturierter und hoch-dynamischer
+Daten
+ parallele ETL-Verarbeitung und Datenanalyse u.a. mit Data
+Mining / Machine Learning
+ Varianten u.a. Data Fabric , Data Lakehouse
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+2-36
+
+

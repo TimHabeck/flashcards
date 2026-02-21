@@ -1,0 +1,2387 @@
+DATA WAREHOUSING
+Kapitel 3: Mehrdimensionale
+Datenmodellierung und Operationen
+Victor Christen
+Abteilung Datenbanken
+Institut für Informatik
+Universität Leipzig
+
+AGENDA
+− Grundlagen
+− Kennzahlen, Dimensionen, Cube
+− Cuboide / Aggregationsgitter
+− hierarchische Dimensionen / Cube-Operationen
+
+− multi-dimensionale Speicherung (MOLAP)
+− MDX-Abfragen
+
+− relationale Repräsentation mehrdimensionaler Daten (ROLAP)
+− Star-Schema
+− Varianten: Snowflake-, Galaxien-Schema
+
+− mehrdimensionale Gruppierungen in SQL
+− Star Join
+− Group-By-Erweiterungen: Cube, Rollup, Grouping Sets
+
+− Auswertung von Zeitreihen/Sequenzen mit SQL
+− RANK-, WINDOW-Queries
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-2
+
+KENNZAHLEN
+− Kennzahl ist numerische Größe mit konzentrierter Aussagekraft zur
+Diagnose, Überwachung und Steuerung eines Systems
+− auch: Fakten, Messgrößen, Measures, Key Performance Indicators
+(KPI)
+− meist betriebswirtschaftliche Größen, z.B. Umsatz / Gewinn /
+Rentabilität
+− KPIs oft aus einfacheren Kennzahlen abgeleitet: Umsatz pro Kunde,
+Liefertreue, Anlagenauslastung, ROI
+
+− Kennzahlen besitzen beschreibende Attribute
+− z.B. Einheit, Wertebereich, Berechnungsvorschrift
+
+− Arten von Kennzahlen
+− additive Kennzahlen (z.B. Umsatz) bzw. semi-additive Kennzahlen, für
+die additive Aggregation nur bzgl ausgewählter Dimensionen möglich
+ist (z.B. Produktbestand)
+− nicht-additive Kennzahlen wir Durchschnittswerte oder Prozentanteile
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-3
+
+DIMENSIONEN
+Sachsen
+
+Mit was?
+
+Wo?
+
+Bücher
+
+Umsatz = 67000 EUR
+...
+
+Wann?
+
+...
+
+1. Quartal
+
+− Zahlenwert einer Kennzahl ist ohne semantischen Bezug
+nichtssagend
+− Dimensionen setzen Kennzahlen in Bezug zu Eigenschaften /
+sachlichen Kriterien
+
+− Dimension: Datentyp, i.a. endlich (z.B. Aufzählung)
+− Beispiele: Menge aller Produkte, Regionen, Kunden, Zeitperioden etc.
+− Dimensionselement: Element / Ausprägung / Wert zu einer Dimension
+− Klassifikations-/Kategorienattribute (inkl. eines Primärattributs für
+detaillierteste Stufe)
+− dimensionale Attribute : zusätzliche beschreibende Eigenschaften, z.B.
+Produktfarbe / Gewicht
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-4
+
+DATA CUBE
+− Datenwürfel bzw. OLAP-Würfel (Cube), Data Cube
+− Dimensionen: Koordinaten
+− Kennzahlen: Zellen im Schnittpunkt der Koordinaten
+
+− Cube bezüglich Dimensionen D1, ...Dn und k Kennzahlen (Fakten):
+− W = { (d1, ... dn), (f1, ... fk), Dimensionselement di aus Di, i= 1..n,
+Kennzahlen fj, j = 1..k)}
+− eindeutige Zellen-Adresse: (d1, ... dn)
+− Zellen-Inhalt: (f1, ... fk)
+
+− n: Dimensionalität des Cube
+− Alternative: k Cubes mit je einer
+Kennzahl pro Zelle (Multi-Cube)
+− typischerweise 4 - 12 Dimensionen
+− Zeitdimension fast immer dabei
+− weitere Standarddimensionen:
+Produkt, Kunde, Verkäufer, Region,
+Lieferant, ...
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Region
+Ost
+
+West
+Nord
+y
+764
+
+Süd
+
+y
+563
+y
+
+1Q
+
+2Q
+
+3Q
+
+Sonstiges
+PC
+Video Produkt
+TV
+
+4Q
+
+Zeit
+3-5
+
+DATA CUBE: 3D-BEISPIEL MIT AGGREGATION
+
+1Qtr
+
+2Qtr
+
+Zeit
+3Qtr
+
+4Qtr
+
+Summe
+West
+Süd
+Ost
+
+Region
+
+TV
+PC
+VCR
+Summe
+
+Gesamtjahresabsatz
+für TV in Region West
+
+Summe
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-6
+
+CUBE MIT AGGREGATIONEN
+− Aggregationen von Kennzahlen für jede Dimension und Kombination
+von Dimensionen möglich → Cuboide
+− Basis-Cuboid: N-dimensionaler Cube
+− Hieraus lassen sich Cuboiden geringerer Dimensionsanzahl ableiten →
+Data Cube entspricht Verband (Lattice) von Cuboiden
+(Aggregationsgitter)
+− N-dimensionaler Cube hat 2N Cuboiden inkl. Basis-Cuboid (ohne
+0-D (Scheitel) Cuboid
+Dimensionshierarchien)
+− Scheitel-Cuboid: 0-dimensionale Aggregation über alle Dimensionen
+All
+1-D Cuboide
+Zeit
+Zeit,
+Produkt
+
+Region
+Produkt
+Zeit,
+Region
+
+Zeit, Produkt, Region
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Produkt,
+Region
+
+2-D Cuboide
+
+3-D (Basis)-Cuboid
+3-7
+
+CUBOID-VERBAND FÜR 4D CUBE
+All
+Zeit
+
+Produkt
+
+Zeit, Produkt Zeit, Region
+
+0-D(Scheitel) Cuboid
+Region Lieferant
+1-D Cuboide
+Produkt, Region
+
+Zeit, Lieferant
+
+Region, Lieferant
+
+Produkt, Lieferant
+
+2-D Cuboide
+
+Zeit,Region,Lieferant
+
+Zeit, Produkt,
+Region
+
+Zeit,Produkt,Lieferant
+
+Produkt, Region,
+Lieferant
+
+Zeit, Produkt, Region, Lieferant
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-D Cuboide
+
+4-D (Basis)-Cuboid
+
+3-8
+
+DIMENSIONSHIERARCHIEN (KONZEPTHIERARCHIEN)
+− häufig hierarchische Beziehungen zwischen Dimensionsobjekten
+− Top-Level pro Hierarchie für alle Dimensionselemente (Gesamt, Top, All)
+− Primärattribut: unterste (genaueste) Stufe
+− funktionale Abhängigkeiten zwischen Primärattribut und
+Klassifikationsattributen höherer Stufen
+− einfache Hierarchie (pro Element höchstens ein übergeordnetes
+Element) vs. parallele Hierarchie bzw. Halbordnung
+
+− Beispiele
+
+Produkt
+
+Zeit
+
+Region
+
+Gesamt
+
+Gesamt
+
+Gesamt
+
+Jahr
+
+Branche
+Produktgruppe
+
+Kontinent
+
+Monat
+
+Produktfamilie
+
+Bezirk
+
+Tag
+
+Produkt
+
+Ort
+
+Quartal
+
+Woche
+
+Land
+
+− Dimensionen können neben Klassifikations(Hierarchie)attributen
+noch beschreibende dimensionale Attribute aufweisen
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-9
+
+CUBE MIT HIERARCHISCHEN DIMENSIONEN
+Ort
+Land
+
+Produkt
+Gesamt
+
+Region
+Monat
+
+•••
+
+Quartal
+Jahr
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Zeit
+3-10
+
+OPERATIONEN AUF CUBES
+− Slice: Herausschneiden von „Scheiben“ aus dem Würfel durch
+Einschränkung (Selektion) auf einer Dimension
+− Verringerung der Dimensionalität
+
+− Dice: Herausschneiden einen „Teilwürfels“ durch Selektion auf
+mehreren Dimensionen
+− unterschiedlichste mehrdimensionale Aggregationen /
+Gruppierungen
+− Pivot (Austausch von Dimensionen), Sortierung, Top-n-Anfragen, ...
+Regionalleiter-Sicht
+
+Zeit
+Region
+
+ControllerSicht
+
+Produkt
+Produktleiter-Sicht
+Abteilung Datenbanken
+
+Umsatzdaten
+
+DATA WAREHOUSING
+
+Ad-HocSicht
+
+3-11
+
+BEISPIELE
+
+Quelle: J. Han, M. Kamber: Data Mining, Morgan Kaufmann
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-12
+
+NAVIGATION IN HIERARCHIEN
+Roll-Up
+
+Region (Gesamt)
+
+Land
+
+Ort
+
+Drill-Down
+
+− Drill-Down
+
+Drill across
+
+− Navigation nach „unten“ in der Hierarchie
+− Erhöhung des Detailgrad: von verdichteten Daten zu weniger
+verdichteten/aggregierten Daten
+
+− Roll-Up (Drill-Up)
+− Navigation nach „oben“ in der Hierarchie
+− von weniger verdichteten (aggregierten) Daten zu stärker verdichteten
+Daten
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-13
+
+BEISPIELE ROLL-UP, DRILL-DOWN
+
+Quelle: J. Han, M. Kamber: Data Mining, Morgan Kaufmann
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-14
+
+AGGREGATION: 2D-BEISPIEL
+− Summenbildung
+Produktgruppe
+
+Ost
+
+Süd
+
+Nord
+
+West
+
+Summe
+
+Elektronik
+
+1800
+
+1500
+
+1450
+
+2000
+
+6750
+
+Spielwaren
+
+500
+
+1700
+
+600
+
+1500
+
+4300
+
+Kleidung
+
+1200
+
+1200
+
+400
+
+1000
+
+3800
+
+Summe
+
+3500
+
+4400
+
+2450
+
+4500
+
+14850
+
+− Vorberechnung (Materialisierung) der Aggregationen zur
+schnellen Beantwortung von Aggregationsanfragen
+− hoher Speicher- und Aktualisierungsaufwand bei vielen
+Dimensionen und vielen Dimensionselementen
+− i.a. kann nur kleiner Teil benötigter Aggregationen vorberechnet
+werden
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-15
+
+GRÖßE DER CUBES
+− Größe der Basis-Cuboids
+− Anzahl der Zellen entspricht Produkt der
+Dimensionskardinalitäten Di , i=1..n
+− Beispiel: 1.000 Tage, 100.000 Produkte, 1 Million Kunden →
+1014 Kombinationen bei nur 3 Dimensionen
+− jede weitere Dimension, z.B. Region oder Verkäufer, führt zu
+einer Vervielfachung des Datenraumes
+
+− Vorberechnung von (aggregierten) Cuboiden erhöht
+Speicherbedarf
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-16
+
+GRÖßE DER CUBES
+− Größe eines hierarchisch aggregierten Cubes
+− für jedes Dimensionselement ist Aggregierung auf einer höheren
+Hierarchiestufe möglich
+− Kombinationsmöglichkeit mit jedem Element auf einer der
+Hierarchiestufen der anderen n-1 Dimensionen
+
+n
+T =  ( Li +1)
+− Anzahl Cuboiden bei n-dimensionalem Cube: i =1
+
+−
+
+Li: #Ebenen von Dimension i (ohne Top-Level)
+Kunde
+
+Produkt
+
+Zeit
+Gesamt
+
+1
+
+Gesamt
+
+1
+
+Gesamt
+
+Quartal
+
+12
+
+Branche
+
+50
+
+Kundengruppe
+
+10.000
+
+Monat
+
+36
+
+Produktgruppe
+
+Einzelkunde
+
+1 Million
+
+Tag
+
+1000
+
+Abteilung Datenbanken
+
+Produkt
+
+5.000
+
+1
+
+100.000
+
+DATA WAREHOUSING
+
+3-17
+
+UMSETZUNG DES MULTI-DIMENSIONALEN MODELLS
+− betrifft Speicherung der Daten und Formulierung / Ausführung der
+Operationen
+− MOLAP: direkte Speicherung in multi-dimensionalen Speicherungsstrukturen
+− Cube-Operationen einfach formulierbar und effizient ausführbar
+− begrenzte Skalierbarkeit auf große Datenmengen da riesige Anzahl von Zellen
+
+− ROLAP: relationale Speicherung der Daten in Tabellen
+− effiziente Speicherung sehr großer Datenmengen
+− eher umständliche Anfrageformulierung mit SQL
+− Standard-SQL nicht ausreichend (nur 1-dimensionale Gruppierung, ...)
+
+− HOLAP: hybride Lösung
+− relationale Speicherung der Detail-Daten, multidimensionale Zugriffsschnittstelle
+− unterschiedliche Kombinationen mit multidimensionaler Speicherung /
+Auswertung von aggregierten Daten
+
+− (teilweise) Vorberechnung von Aggregationen wesentlich für gute Leistung
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-18
+
+MULTI-DIMENSIONALE DATENSPEICHERUNG
+− Datenspeicherung in multi-dimensionaler Matrix
+− direkte Umsetzung der logischen Cube-Sicht
+− Vorab-Berechnung und Speicherung der Kennzahlen basierend
+auf dem Kreuzprodukt aller Wertebereiche der Dimensionen
+− schneller direkter Zugriff auf jede Kennzahl über Indexposition
+(x1, x2, ... xn)
+multi-dimensional (Kreuztabelle)
+
+Sachsen Brandenburg Thüringen
+Smartphone
+TV
+Camcorder
+
+100
+50
+20
+
+150
+170
+120
+
+200
+150
+100
+
+Anfragen:
+- wie hoch ist der Umsatz für TV in Thüringen
+- wie hoch ist der Gesamtumsatz für Camcorder?
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-19
+
+MULTI-DIMENSIONALE DATENSPEICHERUNG (2)
+− mehrdimensionale Speicherung führt oft zu dünn besetzten Matrizen
+− Beispiel (Kundenumsätze nach Regionen)
+REGION
+Kunde
+Kunde 1
+Kunde 2
+Kunde 3
+Kunde 4
+Kunde 5
+Kunde 6
+Kunde 7
+Kunde 8
+Kunde 9
+
+B
+100
+-
+
+S
+50
+-
+
+NRW
+150
+-
+
+SH
+170
+-
+
+BW
+200
+-
+
+SA
+20
+-
+
+MVP
+120
+-
+
+HH
+100
+
+TH
+100
+-
+
+− vollständig besetzte Matrizen i.a. nur für höhere Dimensionsebenen
+− Unterstützung dünn besetzter Matrizen erforderlich (Leistungseinbußen)
+− Zerlegung eines Cubes in Sub-Cubes („chunks“), die in Hauptspeicher
+passen
+− zweistufige Adressierung: Chunk-Id, Zelle innerhalb Chunk
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-20
+
+SPRACHANSATZ MDX*
+− MDX: MultiDimensional eXpressions
+− Microsoft-Spezifikation für Cube-Zugriffe / Queries
+− an SQL angelehnt
+− Extraktion von aggregierten Sub-Cubes / Cuboiden aus Cubes
+
+− Unterstützung durch Microsoft und zahlreiche Tool-Anbieter
+− Hauptanweisung
+SELECT
+[<axis_specification> [,
+<axis_specification>...]]
+FROM [<cube_specification>]
+[WHERE [<slicer_specification>]]
+− Axis_specification: Auszugebende Dimensionselemente
+− 5 vordefinierte Achsen: columns, rows, pages, chapters, and sections
+− Slicer: Auswahl der darzustellenden Werte
+* https://msdn.microsoft.com/en-us/library/ms145506.aspx
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-21
+
+MDX: BEISPIELE
+SELECT Region.CHILDREN ON COLUMNS,
+Produkt.CHILDREN ON ROWS
+FROM Verkauf
+WHERE (Umsatz, Zeit.[2019])
+
+SELECT
+
+Measures.MEMBERS ON COLUMNS,
+
+TOPCOUNT(Filiale.Ort.CHILDREN, 10,
+Measures.Anzahl) ON ROWS
+
+FROM
+
+Verkauf
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-22
+
+ER-DIAGRAMM EINES MULTI-DIMENSIONALEN
+DATENMODELLS
+Datum-ID
+KundenNr
+KundenName
+
+Tag
+
+Zeit
+
+Kunde
+
+Monat
+
+Geschlecht
+Jahr
+Verkauf
+
+Anzahl
+
+ProduktNr
+ProduktName
+
+Produkt
+
+Filialen
+
+Ort
+Land
+
+Produktgruppe
+
+Abteilung Datenbanken
+
+Fname
+
+Umsatz
+
+DATA WAREHOUSING
+
+3-23
+
+RELATIONALE SPEICHERUNG: STAR-SCHEMA
+− Faktentabelle bildet Zentrum des Star-Schemas und enthält die
+Detail-Daten mit den zu analysierenden Kennzahlen
+− 1 Dimensionstabelle pro Dimension, die nur mit Faktentabelle
+verknüpft ist (-> sternförmige Anordnung der Tabellen)
+Zeit
+
+Kunde
+KundenNr
+Geschlecht
+Alter
+Erstkauf
+
+1
+
+Datum
+Tag
+Monat
+Quartal
+Jahr
+
+1
+
+n
+
+Verkauf n
+KundenNr
+ProduktNr
+Datum
+Filiale
+
+Produkt
+
+ProduktNr
+ProduktName
+Produkttyp
+Branche
+Hersteller
+Farbe
+Preis
+
+Dimensionstabelle
+Abteilung Datenbanken
+
+Filialen
+Anzahl
+Umsatz
+
+n
+
+n
+1
+
+1
+
+Faktentabelle
+DATA WAREHOUSING
+
+Fname
+Ort
+Land
+Region
+
+Dimensionstabelle
+3-24
+
+STAR-SCHEMA (2)
+− formale Definition: Star-Schema besteht aus einer Menge
+von Tabellen D1, ...Dn, F mit
+− Dimensionstabellen Di bestehend aus (i.a. künstlichen)
+Primärschlüssel di und Dimensionsattributen
+− Faktentabelle F bestehend aus Fremdschlüsseln d1, ... dn sowie
+Messgrößen (Kennzahlen) als weiteren Attributen
+− Dimensionstabellen sind i.a. denormalisiert, d.h. nicht in dritter
+Normalform
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-25
+
+STAR-SCHEMA (2)
+− Beobachtungen
+− Anzahl der Datensätze in Faktentabelle entspricht Anzahl der
+belegten Zellen einer multi-dimensionalen Matrix
+− leere Dimensionskombinationen unproblematisch, da nur
+relevante Kombinationen in der Faktentabelle auftreten.
+− dennoch oft riesige Faktentabellen
+− Dimensionstabellen vergleichsweise klein, teilweise jedoch auch
+umfangreich (Kunden, Artikel etc.)
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-26
+
+SNOWFLAKE-SCHEMA
+− explizite Repräsentation der Dimensionshierarchien
+− normalisierte Dimensionstabellen
+− leicht geringere Redundanz, geringerer Änderungsaufwand
+− erhöhte Zugriffskosten (höherer Join-Aufwand)
+
+− Star-Schema ist Snowflake-Schema meist vorzuziehen
+Kunde
+
+Zeit
+
+KundenNr
+KundenName
+Geschlecht
+Alter
+
+Produkt
+
+ProduktNr
+PGruppe
+
+Produktgruppe
+Branche
+
+ProduktName
+Produkttyp
+Hersteller
+Farbe
+Preis
+Abteilung Datenbanken
+
+Verkauf
+KundenNr
+ProduktNr
+Datum
+Filiale
+Anzahl
+Umsatz
+
+Faktentabelle
+DATA WAREHOUSING
+
+Datum
+Tag
+Monat
+Jahr
+
+MonatQ
+
+Monat
+Quartal
+
+Filialen
+
+OrtL
+
+Fname
+Ort
+
+Ort
+Land
+
+Land
+Region
+
+3-27
+
+GALAXIEN-SCHEMA
+− Data Warehouses benötigen meist mehrere
+Faktentabellen
+-> Multi-Star-Schema (Galaxien-Schema, „Fact Constellation Schema“)
+
+− gemeinsame Nutzung von Dimensionstabellen
+− Speicherung vorberechneter Aggregate
+− separate Faktentabelle
+− im Rahmen der Faktentabelle mit Detail-Daten
+
+Zeit
+
+Kunde
+
+Verkauf
+Filiale
+
+Abteilung Datenbanken
+
+Einkauf
+
+Lieferant
+
+Produkt
+
+DATA WAREHOUSING
+
+3-28
+
+BEHANDLUNG VON ÄNDERUNGEN IN
+DIMENSIONEN
+− Änderungsarten
+− neue Dimensionselemente (z.B. neue Produktversion)
+− Änderung von Werten zu einem Dimensionselement (z.B. neuer
+Familienstand/Wohnort von Kunden) – „slowly changing
+dimensions“
+− neue Hierarchiestufe einer Dimension
+− neue Dimension
+
+− Änderung von Dimensionselementen
+− Überschreiben der alten Werte (einfachste
+Lösung; Auswertungen für ältere Zeiträume
+sind verfälscht)
+− Versionierung mit Zeitattributen für
+Änderungszeit
+und Gültigkeitszeit
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Serra: Deciphering data architectures, 2024
+
+3-29
+
+ÜBUNGSAUFGABE : WAREHOUSE-ENTWURF
+− Erstellen Sie ein Star-Schema zur Analyse einer global auftretenden Viruserkrankung
+− es sollen tagesweise die nachgewiesenen Infektionen und Todesfälle zusammen mit
+dem Ort des Auftretens/Todes erfasst werden
+− pro Infektion/Todesfall sollen anonyme Personenmerkmale wie Alter und Geschlecht
+erfasst werden
+− Auswertungen über Zahl der Infektionen und Todesfälle sollen für unterschiedliche
+Zeiträume (Tag, Monate, Jahre) sowie für Länder und deren Kontinente möglich sein.
+Pro Land sollen auch die relativen Häufigkeiten bezogen auf je 1 Million Einwohner
+berechnet werden können.
+− Dimensionen:
+−
+
+− Faktentabelle(n):
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-30
+
+3. MEHRDIMENSIONALE DATENMODELLIERUNG
+UND OPERATIONEN
+− Grundlagen
+− Kennzahlen, Dimensionen, Cube
+− Cuboide / Aggregationsgitter
+− hierarchische Dimensionen / Cube-Operationen
+
+− multi-dimensionale Speicherung (MOLAP)
+− MDX-Abfragen
+
+− relationale Repräsentation mehrdimensionaler Daten (ROLAP)
+− Star-Schema
+− Varianten: Snowflake-, Galaxien-Schema
+
+− mehrdimensionale Gruppierungen in SQL
+− Star Join
+− Group-By-Erweiterungen: Cube, Rollup, Grouping Sets
+
+− Auswertung von Zeitreihen/Sequenzen mit SQL
+− RANK-, WINDOW-Queries
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-31
+
+ANFRAGEN AUF DEM STAR-SCHEMA
+− Star-Join
+− sternförmiger Join der (relevanten) Dimensionstabellen mit der
+Faktentabelle
+− Einschränkung der Dimensionen
+− Verdichtung der Kennzahlen durch Gruppierung und Aggregation
+
+− allgemeine Form
+
+aggregierte Kennzahlen
+
+select g1, ... gk, agg(f1), ... agg (fm)
+from
+D1, ..., Dn, F
+Relationen des Star-Schemas
+where <Selektionsbedingung auf D 1> and
+... and
+<Selektionsbedingung auf Dn> and
+D1.d1 = F.d1 and
+Join-Bedingungen
+... and
+Dn.dn = F.dn
+group by
+g1, ... gk
+Ergebnis-Dimensionalität
+sort by ...;
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-32
+
+BEISPIEL EINES STAR-JOIN
+− in welchen Jahren wurden von weiblichen Kunden in
+Sachsen im 1. Quartal die meisten Autos gekauft?
+select z.Jahr as Jahr, sum (v.Anzahl) as Gesamtzahl
+from
+
+Filialen f, Produkt p, Zeit z, Kunden k, Verkauf v
+
+where
+
+z.Quartal = 1 and k.Geschlecht = ’W’ and
+p.Produkttyp = ’Auto’ and f.Land = ’Sachsen’ and
+
+v.Datum = z.Datum and v.ProduktNr = p.ProduktNr
+and v.Filiale = f. FName and v.KundenNr = k.KundenNr
+group by
+
+z.Jahr
+
+order by
+
+Gesamtzahl descending;
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Jahr
+
+Gesamtzahl
+
+2018
+2019
+2017
+
+745
+710
+650
+
+3-33
+
+MEHRDIMENSIONALE AGGREGATIONEN MIT
+GROUP BY
+− Attributanzahl in group by-Klausel bestimmt
+Hersteller
+Dimensionalität
+select Hersteller, Jahr,
+sum (Anzahl) as Anzahl
+from Verkauf v, Produkt p, Zeit z
+where v.ProduktNr = p.ProduktNr and
+v.Datum= z.Datum and p.Produkttyp =’Auto’
+group by Hersteller, Jahr;
+select Hersteller, sum (Anzahl) as Anzahl
+from Verkauf v, Produkt p
+where v. Produkt = p. ProduktNr and
+and p. Produkttyp = ’Auto’
+group by Hersteller;
+select sum (Anzahl) as Anzahl
+from Verkauf v, Produkt p
+where v. Produkt = p. ProduktNr and
+p. Produkttyp = ’Auto’;
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+VW
+VW
+VW
+Opel
+...
+BMW
+Ford
+Ford
+Ford
+
+Jahr
+
+Anzahl
+
+2017
+2018
+2019
+2017
+...
+2019
+2017
+2018
+2019
+
+2.000
+3.000
+3.500
+1.000
+...
+1.500
+1.000
+1.500
+2.000
+
+Hersteller
+
+Anzahl
+
+VW
+Opel
+Ford
+BMW
+
+8.500
+3.500
+4.500
+3.000
+Anzahl
+19.500
+3-34
+
+BEISPIEL COVID-19-DATEN
+−Datenquelle https://github.com/owid/covid-19data/tree/master/public/data
+eingebunden in LOTS https://lots.uni-leipzig.de/sql-training/
+(Stand 07.04.2022)
+−alternativ: CSV-Import in
+relationale DBS
+(MySql, PostgresSQL …)
+
+land
+
+cov
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+zeit
+3-35
+
+BEISPIEL COVID-19-DATEN
+
+Group-by kontinent + jahr (drill-down, 2-dimens.)
+
+Group-by kontinent (1-dim. Aggregation)
+
+Datenstand: 07.04.2022
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-36
+
+CUBE-OPERATOR
+− SQL- CUBE-Operator für n-dimensionale Gruppierung und
+Aggregation
+− Syntax: Group By CUBE (D1, D2, ... Dn)
+− n-dimensionale Gruppierung/Aggregation + alle Gruppierungen geringerer
+Dimensionaltät;
+
+2n Aggregationen bei n Attributen (4 bei n=2, 8 bei n=3 etc.)
+− bei niedriger Dimensionalität fasst ALL alle Werte einer
+Dimension zusammen
+− implementiert in MS SQL-Server, DB2, Oracle,
+PostgresSQL (ab V9.5), …
+
+− Beispiele Auto-Verkauf (2D-Cube)
+select p.Hersteller as Hersteller,
+z.Jahr as Jahr, sum(v.Anzahl)as Anzahl
+from Verkauf v, Produkt p, Zeit z
+where p.Produkttyp = ’Auto’ and
+v.ProduktNr = p.ProduktNr and
+v.Datum = z.Datum
+group by cube (p.Hersteller, z.Jahr);
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-37
+
+3D-CUBE
+select p. Hersteller as
+Hersteller, z. Jahr as
+Jahr, k.Geschlecht as
+Geschlecht,
+sum (v. Anzahl)as Anzahl
+from Verkauf v, Produkt p,
+Zeit z, Kunde k
+where p.Produkttyp = ’Auto’
+and v.ProduktNr =
+p.ProduktNr and v.Datum =
+z.Datum and v.KundenNr =
+k.KundenNr
+group by cube (p.Hersteller,
+z.Jahr, k.Geschlecht);
+
+Hersteller
+
+Jahr
+
+Geschlecht
+
+Anzahl
+
+VW
+VW
+...
+
+2017
+2017
+...
+
+m
+w
+...
+
+1300
+700
+...
+
+VW
+
+2017
+
+ALL
+
+2.000
+
+...
+
+...
+
+ALL
+
+...
+
+Ford
+
+2019
+
+ALL
+
+2.000
+
+VW
+
+ALL
+
+m
+
+5.400
+
+...
+
+...
+
+...
+
+...
+
+Ford
+
+ALL
+
+w
+
+...
+
+ALL
+
+2017
+
+m
+
+...
+
+...
+
+...
+
+VW
+
+ALL
+
+ALL
+
+8.500
+
+...
+
+...
+
+ALL
+
+2017
+
+ALL
+
+...
+
+ALL
+
+m
+
+...
+
+...
+
+ALL
+
+f
+...
+
+ALL
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+d
+
+ALL
+
+ALL
+
+19.500
+
+3-38
+
+CUBE-BEISPIEL COVID-19-DATEN
+− Anfrage auf LOTS-Daten (PostgresSQL)
+
+SELECT landname AS land, jahr,
+to_char(SUM(faelle),
+'FM999,999,999') AS faelle,
+to_char(SUM(todesfaelle),
+'FM999,999,999‘) AS tote
+FROM (cov NATURAL JOIN land NATURAL
+JOIN zeit)
+WHERE landname='Germany' OR
+landname='France'
+GROUP BY CUBE (land, jahr) ORDER BY
+land, jahr
+
+Datenstand: 07.04.2022
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-39
+
+ROLLUP-OPERATOR
+− CUBE-Operator: inter-dimensionale Gruppierung / Aggregierung
+− generiert Aggregate für alle 2n Kombinationsmöglichkeiten bei n
+Dimensionen
+− zu aufwendig für Roll-Up / Drill-Down innerhalb einer Dimension, da
+i.d.R. funktionale Abhängigkeiten (Land →Kontinent,
+Datum → Monat … )
+
+− ROLLUP-Operator: intra-dimensionale Aggregierung
+− Syntax: Group By ROLLUP (D1, D2, ... Dn)
+− liefert nur die n+1 Gruppierungen
+−
+d1, d2, ... , dn-1, dn, f (), (Aggregationsfunktion f)
+−
+d1, d2, ... , dn-1, ALL, f (),
+−
+...
+−
+d1, ALL, ... , ALL, f (),
+ALL, ALL, ... , ALL, f ()
+
+− Reihenfolge der Attribute relevant!
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-40
+
+ROLLUP-OPERATOR: BEISPIEL
+select p.Hersteller as Hersteller,
+p. Marke as Marke, p.Farbe as
+Farbe, sum(v.Anzahl) as Anzahl
+from Verkauf v, Produkt p
+where v.ProduktNr= p. ProduktNr
+and p.Hersteller
+in(„VW“,“Opel“)
+group by rollup (p.Hersteller,
+p.Marke, p.Farbe);
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Hersteller
+
+Marke
+
+Farbe
+
+Anzahl
+
+VW
+VW
+VW
+VW
+VW
+VW
+VW
+...
+Opel
+Opel
+Opel
+...
+
+Passat
+Passat
+Passat
+Golf
+Golf
+Golf
+...
+...
+Vectra
+Vectra
+Vectra
+...
+
+rot
+weiß
+blau
+rot
+weiß
+blau
+rot
+...
+rot
+weiß
+blau
+
+800
+600
+600
+1.200
+800
+1.000
+1.400
+...
+400
+300
+300
+
+VW
+
+Passat
+
+ALL
+
+2.000
+
+VW
+
+Golf
+
+ALL
+
+3.000
+
+VW
+
+...
+
+ALL
+
+3.500
+
+Opel
+
+Vectra
+
+ALL
+
+1.600
+
+Opel
+
+...
+
+ALL
+
+...
+
+VW
+
+ALL
+
+ALL
+
+8.500
+
+Opel
+
+ALL
+
+ALL
+
+3.500
+
+ALL
+
+ALL
+
+ALL
+
+12.000
+
+3-41
+
+ROLLUP-BEISPIEL COVID-19-DATEN
+SELECT kontinent, landname AS land, SUM(faelle) AS faelle,
+SUM(todesfaelle) AS tote, ROUND(((SUM(todesfaelle) * 1000000.0)/
+(SELECT SUM(population) FROM land l
+WHERE (cl.kontinent IS NULL) OR
+(cl.landname IS NULL AND l.kontinent = cl.kontinent)
+OR (l.landname = cl.landname))), 1) AS "ToteProMillion"
+FROM (cov NATURAL JOIN land) AS cl
+GROUP BY ROLLUP (kontinent, land) ORDER BY kontinent DESC, land DESC
+
+Datenstand: 07.04.2022
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-42
+
+GROUPING SETS
+− mehrere Gruppierungen pro Anfrage
+− GROUP BY GROUPING SETS ( <Gruppenspezifikationsliste> )
+− Gruppenspezifikation:
+(<Gruppenspezifikationsliste> ) |
+CUBE <Gruppenspezifikationsliste> |
+ROLLUP <Gruppenspezifikationsliste>
+− leere Spezifikationsliste ( ) möglich: Aggregation über gesamte Tabelle
+
+− Beispiel
+
+select p.Hersteller, p.Farbe,
+sum (v.Anzahl)
+from Verkauf v, Produkt p
+where v.ProduktNr = p. ProduktNr and
+p.Hersteller in („VW“,“Opel“)
+group by grouping sets
+((p.Hersteller), (p.Farbe));
+
+Hersteller
+
+Farbe
+
+Anzahl
+
+VW
+Opel
+ALL
+ALL
+ALL
+
+ALL
+ALL
+blau
+rot
+weiß
+
+8500
+3500
+3100
+6200
+2700
+
+− CUBE, ROLLUP, herkömmliches Group-By entsprechen speziellen
+Grouping-Sets
+− GROUP BY A,B → GROUP BY GROUPING SETS(
+− GROUP BY ROLLUP (A,B) → GROUP BY GROUPING SETS(
+− GROUP BY CUBE (A,B) → GROUP BY GROUPING SETS(
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-43
+
+GROUPING SETS: COVID-BEISPIEL
+− Umsetzung des Cube-Beispiels mit Grouping Sets
+SELECT landname AS land, jahr, SUM(faelle) AS faelle,
+SUM(todesfaelle) AS tote
+FROM (cov NATURAL JOIN land NATURAL JOIN zeit)
+WHERE landname='Germany' OR landname='France'
+GROUP BY GROUPING SETS ((land, jahr), (land), (jahr))
+ORDER BY land, jahr
+
+Datenstand: 07.04.2022
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-44
+
+ZEITREIHEN
+− viele Data-Warehouse-Fakten entsprechen Zeitreihen
+− Sequenz von Sätzen mit Zeit/Datumsangabe
+− Bsp.: Produktverkäufe, Erkrankungsfälle, Temperaturmesswerte,
+etc.
+
+− Bedarf für Auswertungen zu bestimmten Zeitbereichen
+etc.
+− SQL kann Auswertung auf Fenster/Ausschnitte von
+Satzsequenzen ausführen
+− OVER-Prädikat in Select-Klausel oder WINDOW-Klausel
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-45
+
+ZEITREIHEN
+− SQL kann Auswertung auf Fenster/Ausschnitte von
+Satzsequenzen ausführen
+− OVER-Prädikat in Select-Klausel oder WINDOW-Klausel
+
+− unterstützt erweiterte Analysemöglichkeiten auf
+Sequenzen
+− Ranking: Berechnung von Rangfolgen / Top-N
+− kumulierte Häufigkeiten/Anteile (z.B. bezüglich eines
+Jahres/Monats)
+− fortgeschrittene Vergleiche, z.B.
+− Tagesinfektionen gegenüber gleitenden Wochendurchschnitt,
+− Monatsumsatz gegenüber gleitendem 3-Monatsdurchschnitt …
+
+− Unterstützung statistischer Funktionen wie Varianz (Funktionen
+VAR_POP, VAR_SAMP), Standardabweichung (STDEV_POP,
+…) etc.
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-46
+
+OVER-PRÄDIKAT
+
+− Funktionen: SUM, AVG, RANK, DENSE_RANK,
+
+…
+
+− Berechnung bezüglich durch OVER spezifiziertes Intervall
+
+− PARTITION BY: Zerlegung in mehrere Datensequenzen/ströme
+(optional)
+− ORDER BY: Sortierreigenfolge pro Datensequenz (optional)
+− optionale Fensterangabe bei ORDER BY:
+tupelweise (ROWS) oder wertebereichsweise (RANGE) Einschränkung
+für Aggregationsfenster
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-47
+
+RANK-FUNKTION
+− Tabelle AVerkauf (Hersteller, Jahr, Anzahl)
+Select Hersteller, Anzahl,
+rank() over
+(order by Anzahl desc) as Rang,
+dense_rank() over
+(order by Anzahl desc) as DRang
+from AVerkauf
+where Jahr=2017
+order by Anzahl desc, Hersteller
+
+alternative Formulierung mit WINDOW-Klausel
+select Hersteller, Anzahl, rank()
+over w as Rang,
+dense_rank() over w as DRang
+from AVerkauf
+where Jahr=2017
+order by Anzahl desc, Hersteller
+window w as (order by Anzahl desc)
+
+Hersteller
+
+Anzahl
+
+Rang
+
+Drang
+
+VW
+
+2000
+
+1
+
+1
+
+Ford
+
+1000
+
+2
+
+2
+
+Opel
+
+1000
+
+2
+
+2
+
+BMW
+
+500
+
+4
+
+3
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+DENSE_RANK
+überspringt keine
+Nummer
+3-48
+
+RANK-BEISPIEL (COVID-DATENBANK)
+SELECT landname AS land, SUM(COALESCE(faelle, 0)) AS faelle,
+SUM(COALESCE(todesfaelle, 0)) AS tote,
+RANK() OVER w1 AS "RankCases", RANK() OVER w2 AS "RankDeaths"
+FROM (cov NATURAL JOIN land)
+WHERE NOT (faelle IS NULL AND todesfaelle IS NULL) GROUP BY land
+WINDOW w1 AS (ORDER BY SUM(COALESCE(faelle, 0)) DESC),
+w2 AS (ORDER BY SUM(COALESCE(todesfaelle, 0)) DESC) LIMIT 16
+
+Datenstand: 07.04.2022
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-49
+
+RANK-FUNKTION (2)
+− partitionsweises Ranking
+select Hersteller, Jahr, Anzahl, rank() over
+(partition by Jahr order by Anzahl desc) as Rang,
+from AVerkauf
+order by Jahr, Rang
+
+− COVID-Beispiel: Ranking eines Landes pro Kontinent
+SELECT landname AS land, kontinent,
+SUM(faelle) AS faelle,
+RANK() OVER (PARTITION BY kontinent ORDER
+BY SUM(faelle) DESC) AS "ContRank"
+FROM (cov NATURAL JOIN land) WHERE faelle
+IS NOT NULL
+GROUP BY land, kontinent ORDER BY faelle
+DESC
+
+Datenstand: 07.04.2022
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-50
+
+PARTITIONSWEISES RANKING: COVID-BEISPIEL
+WITH CRank AS (SELECT landname AS land, kontinent, SUM(faelle) AS faelle,
+RANK() OVER w1 AS "GlobalRank",
+RANK() OVER (PARTITION BY kontinent ORDER BY SUM(faelle) DESC) AS "ContRank"
+FROM (cov NATURAL JOIN land) WHERE faelle IS NOT NULL GROUP BY land, kontinent
+WINDOW w1 AS (ORDER BY SUM(faelle) DESC))
+SELECT * FROM CRank WHERE "ContRank" <=3 ORDER BY "GlobalRank"
+
+Top-3 pro
+Kontinent
+
+Datenstand: 07.04.2022
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-51
+
+WEITERE RANKING-FUNKTIONEN
+− row_number(): Position des Satzes in Sequenz
+− percent_rank()
+− relativer Anteil pro Partition (zwischen 0 und 1)
+
+− percentile_cont(p), percentile_disc(p)
+− Perzentile (Prozentränge) für kontinuierliche bzw. diskreten
+Verteilung der Attributwerte innerhalb einer Gruppe (WITHIN
+GROUP- und ORDER BY-Klauseln)
+
+− Beispiel: Median der Verkaufspreise pro Hersteller
+select Hersteller, percentile_disc(0.5) within group
+(order by Verkaufspreis)
+over (partition by Hersteller) as Preismedian,
+from verkauf natural join produkt
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-52
+
+MEDIAN-BEISPIEL
+SELECT jahr, MIN(faelle) AS minFaelle, MAX(faelle) AS
+maxfaelle, COUNT(*) AS Tage, AVG(faelle) AS durchschnitt,
+PERCENTILE_DISC(0.5) WITHIN GROUP (ORDER BY faelle) AS
+Fmedian
+FROM (cov NATURAL JOIN land NATURAL JOIN zeit)
+WHERE faelle IS NOT NULL and landname='Germany‘
+GROUP BY jahr
+
+Datenstand: 07.04.2022
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-53
+
+AGGREGATBERECHNUNG AUF WINDOWS
+− Nutzung von SUM, AVG etc. in Verbindung mit OVER
+− Anwendungsbeispiel für Tabelle sales (sdate, value)
+− Verkäufe pro Tag sowie Anteil an Gesamtsumme
+select date, value, all_sum,100.0*value/all_sum as anteil
+from (select sdate as date, value,
+sum(value) over () as all_sum from sales) as sales2
+order by 1
+sales
+
+sdate
+
+value
+
+date
+
+value
+
+all_sum
+
+anteil
+
+1.2.2019 500
+
+1.2.2019
+
+500
+
+2000
+
+25
+
+1.2.2019 300
+
+1.2.2019
+
+300
+
+2000
+
+15
+
+5.7.2019 200
+
+5.7.2019
+
+200
+
+2000
+
+10
+
+2.3.2020 400
+
+2.3.2020
+
+400
+
+2000
+
+20
+
+3.4.2020 100
+
+3.4.2020
+
+100
+
+2000
+
+5
+
+9.6.2021 500
+
+9.6.2021
+
+500
+
+2000
+
+25
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-54
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-55
+
+AGGREGATBERECHNUNG AUF WINDOWS MIT
+GROUPING
+− Group-By resultiert in Datenstrom mit 1 Satz pro Gruppe
+− Bestimmung der Gesamtsumme über alle Sätze erfordert Summe
+über Gruppensummen → sum(sum(…)
+− Summe der Verkäufe eines Tages im Verhältnis zu Verkäufen des
+Jahres
+select
+− sdate,day_sum, year_sum,
+100.0*day_sum/year_sum as janteil
+from (select sdate, sum(value) as day_sum,
+sum(sum(value)) over (partition by year(sdate)) as year_sum
+from sales group by sdate) as sales2 order by 1
+
+sales
+
+sdate
+
+value
+
+1.2.2019
+
+500
+
+1.2.2019
+
+300
+
+5.7.2019
+
+200
+
+2.3.2020
+
+400
+
+3.4.2020
+
+100
+
+9.6.2021
+
+500
+
+Abteilung Datenbanken
+
+sdate
+
+day_sum
+
+year_sum
+
+janteil
+
+1.2.2019
+
+800
+
+1000
+
+80
+
+5.7.2019
+
+200
+
+1000
+
+20
+
+2.3.2020
+
+400
+
+500
+
+80
+
+3.4.2020
+
+100
+
+500
+
+20
+
+9.6.2021
+
+500
+
+500
+
+100
+
+DATA WAREHOUSING
+
+3-56
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-57
+
+BSP.: KUMULIERTE SUMME
+− Aggregatfunktion vor OVER aggregiert bei Order By
+vom ersten bis zum aktuellen Tupel
+− nutzbar zur Berechnung einer kumulierten Summe
+Summe der Verkäufe pro Tag sowie die kumulierten Gesamtverkäufe nach
+Tagen und die kumulierten Verkäufe im jeweiligen Jahr nach Tagen sortiert
+select sdate as date, sum(value) AS day_sum,
+sum(sum(value))over(order by sdate) as cum_sum,
+sum(sum(value))over(partition by year(sdate) order by sdate)
+as cumy_sum
+from sales
+group by sdate
+sdate
+value
+order by sdate
+day_sum
+cum_sum
+1.2.2019
+500
+date
+
+cumy_sum
+
+1.2.2019
+
+300
+
+1.2.2019
+
+800
+
+800
+
+800
+
+5.7.2019
+
+200
+
+5.7.2019
+
+200
+
+1000
+
+1000
+
+2.3.2020
+
+400
+
+2.3.2020
+
+400
+
+1400
+
+400
+
+sales 3.4.2020
+9.6.2021
+
+100
+
+3.4.2020
+
+100
+
+1500
+
+500
+
+500
+
+9.6.2021
+
+500
+
+2000
+
+500
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-58
+
+COVID-BEISPIEL FÜR KUMULIERTE SUMMEN
+SELECT tag, monat, jahr, faelle, SUM(faelle) OVER w1 AS cum_sum,
+
+−Tagesfälle
+Summen insgesamt und pro Monat
+SUM(faelle)sowie
+OVER kumulierte
+w2 AS cum_msum
+
+FROM (cov NATURAL JOIN land NATURAL JOIN zeit)
+WHERE landname='Germany' and faelle<> 0
+WINDOW w1 AS (ORDER BY jahr, monat, tag),
+w2 AS (PARTITION BY jahr, monat ORDER BY jahr, monat, tag)
+
+Datenstand: 07.04.2022
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-59
+
+WINDOWING MIT EXPLIZITER FENSTERANGABE
+− Beispiel Moving Average für Tabelle sales (sdate, value)
+− Berechne pro Datum durchschnittlichen Umsatz für diesen Tag,
+den vorhergehenden Tag sowie den nächsten Tag
+select sdate, avg(value) over
+(order by sdate rows between 1 preceding and 1 following)
+−from sales
+
+sdate
+
+value
+
+sdate
+
+avg(value)
+
+2025/10/01
+
+200
+
+2025/10/01
+
+300
+
+2025/10/02
+
+400
+
+2025/10/02
+
+400
+
+2025/10/03
+
+600
+
+2025/10/03
+
+300
+
+2025/10/04
+
+500
+
+2025/10/04
+
+600
+
+2025/10/05
+
+700
+
+2025/10/05
+
+400
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-60
+
+WINDOWING MIT EXPLIZITER FENSTERANGABE
+select sdate, avg(value) over
+(order by sdate rows between 1 preceding and 1
+following)
+from sales
+
+− weitere dynamische Windows-Spezifikationen
+− rows unbounded preceding (alle Vorgänger inkl. aktuellem
+Tupel)
+− rows unbounded following (alle Nachfolger inkl. aktuellem
+Tupel)
+− rows between 2 preceding and 2 following
+(Fenster von 5 Sätzen, z.B. 5 Tage, Monate etc.)
+− rows 3 following (aktueller Satz und maximal 3 nachfolgende
+Sätze)
+− range between interval ’10’ day preceding and current row
+(wertebasierter Bereich)
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-61
+
+BEISPIEL MOVING AVERAGE (COVID)
+− Infektionen pro Tag vs. Tagesdurchschnitt sowie Inzidenz (pro
+100000) der letzten Woche
+
+SELECT tag, monat, jahr,
+COALESCE(faelle, 0) AS faelle,
+ROUND(AVG(COALESCE(faelle, 0)) OVER
+w1, 0) AS "avgCasesWeek",
+ROUND(100000 * SUM(COALESCE(faelle,
+0)) OVER w1 / population, 0) AS
+"WeekIncidence"
+FROM (cov NATURAL JOIN land NATURAL
+JOIN zeit)
+WHERE landname='Germany'
+WINDOW w1 AS (ORDER BY jahr, monat,
+tag ROWS BETWEEN 6 PRECEDING AND 0
+FOLLOWING)
+
+Datenstand: 07.04.2022
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-62
+
+EXPLIZITES WINDOWING (2)
+− partitionsweises Windowing
+− Tabelle transaction (account-number, date-time, amount)
+− Amount ist positiv für Zubuchung, negativ für Abbuchung
+
+−Bestimme Kontostand (kumulierte Summe) pro Konto nach jeder
+Kontobewegung
+select account-number, date-time,
+sum (amount) over
+(partition by account-number order by date-time
+rows unbounded preceding) as balance
+from transaction
+order by account-number, date-time
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-63
+
+ZUSAMMENFASSUNG
+− Einfachheit des mehrdimensionalen
+Modellierungsansatzes wesentlich für Erfolg von Data
+Warehousing
+− Cube-Repräsentation mit Kennzahlen und hierarchischen
+Dimensionen
+− Operationen: Slice and Dice, Roll-Up, Drill-Down, ...
+
+− multidimensionale Speicherung
+− primär für aggregierte Daten relevant, weniger zur Verwaltung
+von Detail-Fakten
+
+− relationale Speicherung auf Basis von Star-Schemas
+− Unterstützung großer Datenmengen, Skalierbarkeit
+− neue Anforderungen bezüglich effizienter Verarbeitung von StarJoins, mehrdimensionale Gruppierung und Aggregation ...
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-64
+
+ZUSAMMENFASSUNG (2)
+− Vorberechnung aggregierter Daten wesentlich für
+ausreichende Leistung
+− Sprachansätze: MDX für Cubes bzw. SQLErweiterungen
+− Mehrdimensionale Gruppierung/Aggregation: CUBE-, ROLLUP,
+GROUPING SETS
+− Windowing-Funktionen für Zeitreihen / Datenströme
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+3-65
+
+

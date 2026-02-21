@@ -1,0 +1,862 @@
+DATA WAREHOUSING
+
+Kapitel 1: Einführung
+Victor Christen
+Abteilung Datenbanken
+Institut für Informatik
+Universität Leipzig
+
+AGENDA
+− Definitionen und Merkmale
+− Grobdefinition
+− Einsatzbeispiele
+− DW-Merkmale nach Imnon
+− OLTP vs. OLAP
+− Grobarchitektur
+− virtuelle vs. physische Datenintegration
+
+− Mehrdimensionale Datensicht
+− Stern-Schema und -Anfragen
+
+− Analysearten (OLAP, Data Mining)
+− Big Data
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-2
+
+DATA WAREHOUSES
+− Ausgangsproblem
+− viele Unternehmen haben Unmengen an Daten, ohne daraus
+ausreichend Informationen und Wissen für kritische
+Entscheidungsaufgaben ableiten zu können
+
+− Data Warehouse (Def.): für Analysezwecke optimierte zentrale
+Datenbank, die Daten aus mehreren, i.a. heterogenen Quellen
+zusammenführt und verdichtet (Integration und Transformation)
+OLTP
+Online Transaction
+Processing
+
+OLAP
+Online Analytical Processing
+Decision Support-Anfragen /
+Data Mining
+
+operationale
+DB
+
+Data
+Warehouse
+
+operationale
+DB
+operationale
+DB
+
+initiales Laden und periodisches
+Auffrischen des Warehouse
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-3
+
+SZENARIO: REISEPORTAL
+Hotels
+− Spez.
+
+Nutzerverhalten
+
+Zeit
+− Buchungsanfragen
+− Verfügbarkeit
+
+Buchung
+
+− Anfragen:
+
+− Wie oft wurden Hotels in London im September gebucht?
+− Wie hat sich die Bewertung des Adlon in Berlin über die 10 Jahre
+entwickelt
+− Welche Hotels sind ähnlich bzgl. Hotelausstattung in Barcelona?
+− Welche Region hat von Juni bis August nur 10 Hotels verfügbar?
+− Wie wirkte sich die neue Suche auf die durchschnittliche Zeit von der
+Suche bis zur Buchung aus?
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-4
+
+EINSATZBEISPIELE
+− Warenhauskette
+− Verkaufszahlen und Lagerbestände aller Warenhäuser
+− mehrdimensionale Analysen: Verkaufszahlen nach Produkten,
+Regionen, Warenhäusern
+− Ermittlung von Kassenschlagern und Ladenhütern
+− Analyse des Kaufverhaltens von Kunden (Warenkorbanalyse)
+− Erfolgskontrolle von Marketing-Aktivitäten
+− Minimierung von Beständen
+− Optimierung der Produktpalette, Preisgestaltung • • •
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-5
+
+EINSATZBEISPIELE (2)
+− Versicherungsunternehmen
+− Bewertung von Filialen, Vertriebsbereichen, Schadensverlauf, ...
+− automatische Risikoanalyse
+− schnellere Entscheidung über Kreditkarten, Lebensversicherung,
+Krankenversicherung ...
+
+− Banken, Versandhäuser, Restaurant-Ketten
+− wissenschaftliche Einsatzfälle • • •
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-6
+
+DW-EIGENSCHAFTEN NACH INMON
+− A Data Warehouse is a subject-oriented, integrated,
+non-volatile, and time variant collection of data in support
+of management decisions (W. H. Inmon, Building the
+Data Warehouse, 1996)
+− Subjekt-orientiert
+operationale
+– Zweck des Systems ist nicht Erfüllung
+einer dedizierten operationalen Aufgabe
+loans
+(z.B. Personaldatenverwaltung),
+– alle Daten - unternehmensweit - über
+savings
+ein Subjekt (Kunden, Produkte,
+Regionen ...) und nicht „versteckt“ in
+bank card
+verschiedenen Anwendungen
+– Unterstützung übergreifender
+trust
+Auswertungsmöglichkeiten aus
+verschiedenen Perspektiven
+DB
+
+anwendungsorientiert
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Data Warehouse
+customer
+vendor
+product
+
+activity
+themenorientiert
+1-7
+
+DW-EIGENSCHAFTEN NACH INMON (2)
+− integrierte Datenbasis (integrated): konsolidierte Daten
+aus mehreren verschiedenen Datenquellen
+Operationale DB
+Data Warehouse
+
+DB A - m,f
+DB B - male, female
+DB C - x,y
+DB D - 1,0
+
+m, f
+
+heterogen, inkonsistent
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+vereinheitlicht, konsistent
+
+1-8
+
+DW-EIGENSCHAFTEN NACH INMON (3)
+− dauerhafte Datenbasis (non-volatile):
+− Daten im DW werden i.a. nicht mehr geändert
+− stabile, persistente Datenbasis
+Select
+
+Change
+Delete
+
+Data Warehouse
+
+operationale
+DB
+
+Insert
+
+Load
+
+Access
+
+regelmäßige Änderungen von
+Sätzen
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-9
+
+DW-EIGENSCHAFTEN NACH INMON (4)
+− historische Daten (time-variant):
+− Vergleich der Daten über Zeit möglich (Zeitreihenanalyse)
+− Speicherung über längeren Zeitraum
+operationale
+DB
+
+Data Warehouse
+
+aktuelle Datenwerte:
+
+Schnappschuss-Daten
+
+– Zeitbezug optional
+– Zeithorizont: 60-90 Tage
+– Daten änderbar
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+– Zeitbezug aller Objekte
+– Zeithorizont: 2-10 Jahre
+– keine Änderung nach
+Schnappschuss-Erstellung
+
+1-10
+
+OPERATIONALE DATENBANKEN VS. DATA
+WAREHOUSES (OLTP VS. OLAP)
+Operationale Datenbanken
+/OLTP
+
+Data Warehouses/OLAP
+
+Entstehung
+
+für je eine Applikation / eine
+Perspektive
+
+mehrere Perspektiven / anwendungsübergreifend
+
+Bedeutung
+
+Tagesgeschäft
+
+Entscheidungs-/Planungsaufgaben
+
+Nutzer
+
+Sachbearbeiter, Online-Nutzer
+
+Analysten / Manager
+
+Datenzugriff
+
+sehr häufiger Zugriff,
+kleine Datenmengen pro Operation,
+Lesen, Schreiben, Modifizieren,
+Löschen
+
+moderate Zugriffsfrequenz,
+große Datenmengen,
+vorwiegend lesender Zugriff
+
+Änderungen
+
+sehr häufig
+
+periodisches Auffrischen
+
+#Datenquellen
+
+meist eine pro Anwendung
+
+mehrere
+
+Datenmerkmale
+
+nicht abgeleitet,
+autonom,
+zeitaktuell,
+dynamisch
+
+abgeleitet,
+integriert,
+i.a. leicht veraltet,
+stabil
+
+Optimierungsziele
+
+hoher Durchsatz,
+sehr kurze Antwortzeiten (ms .. s),
+hohe Verfügbarkeit
+
+gute Antwortzeiten
+für komplexe Analysen
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-11
+
+WARUM SEPARATES DATA WAREHOUSE?
+− unterschiedliche Nutzung und Datenstrukturierung
+− unterschiedliche Funktionalität
+− historische Daten
+− Konsolidierung (Integration, Bereinigung und Aggregation) von
+Daten aus heterogenen Datenquellen
+
+− Performance
+− OLTP optimiert für kurze Transaktionen und bekannte Lastprofile
+− komplexe OLAP-Anfragen würden gleichzeitige OLTPTransaktionen ausbremsen
+− OLAP erfordert speziellen logischen / physischen DB-Entwurf für
+mehrdimensionale Anfragen
+− Transaktionseigenschaften (ACID) für OLAP weniger wichtig
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-12
+
+WARUM SEPARATES DATA WAREHOUSE?
+− Sicherheit
+− Nachteile der separaten Lösung
+− Datenredundanz
+− Daten nicht vollständig aktuell
+− hoher Administrationsaufwand
+− hohe Kosten
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-13
+
+GROBARCHITEKTUR EINER DW-UMGEBUNG
+Führungs Informationssysteme
+
+Business Intelligence
+
+Entscheidungsunterstützungssysteme
+
+Berichts - und Abfragesysteme
+
+Designer
+Workbench
+
+Repository
+
+Data Marts
+
+Cubes
+
+Data
+Warehouse
+
+Administator Metadaten
+Workbench
+
+zentrale D atenbasis
+
+Daten-Extraktion / -Transformation / -Laden (ETL)
+
+DB2
+
+ORACLE
+
+Files
+
+WWW ...
+
+operative
+
+Datenquellen
+Interne Daten
+Datenflüsse
+Abteilung Datenbanken
+
+Externe Daten
+Metadatenf lüsse
+DATA WAREHOUSING
+
+1-14
+
+DATENINTEGRATION: PHYSISCH VS. VIRTUELL
+Physische (Vor-) Integration
+
+Virtuelle Integration
+
+(Data Warehousing)
+
+(Mediator/Wrapper-Architekturen,
+föderierte DBS)
+Client 1
+
+Front-End Tools
+
+Client k
+
+Data Marts
+Metadaten
+
+Mediator / FDBS
+
+Data Warehouse
+
+Metadaten
+
+Import (ETL)
+
+Operationale
+Syseme
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Wrapper 1
+
+Wrapper m
+
+Wrapper n
+
+Source 1
+(DBS 1)
+
+Source m
+(DBS j)
+
+Source n
+
+1-15
+
+DATENINTEGRATION: PHYSISCH VS. VIRTUELL (2)
+Integrationszeitpunkt:
+Metadaten
+Integrationszeitpunkt:
+Daten
+Aktualität der Daten
+Autonomie der
+Datenquellen
+Erreichbare
+Datenqualität
+Analysezeitbedarf für
+große Datenmengen
+Hardwareaufwand
+
+physisch
+(Data Warehouse)
+vorab (DWSchema)
+vorab
+
+virtuell
+vorab (globale Sicht)
+dynamisch
+(zur Anfragezeit)
+
+Skalierbarkeit auf
+viele Datenquellen
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-16
+
+OLAP (ONLINE ANALYTICAL PROCESSING)
+− interaktive multidimensionale Analyse auf konsolidierten
+Unternehmensdaten
+− FASMI-Merkmale (Fast Analysis of Shared Multidimensional Information)
+− Skalierbarkeit auf große Datenmengen
+− stabile, volumenunabhängige Antwortzeiten
+− intuitive, interaktive Analyse und Visualisierung
+− Mehrbenutzerunterstützung
+− Client/Server-Architektur
+− mehrdimensionale, konzeptionelle Sicht auf die Daten
+− unbegrenzte Anzahl an Dimensionen und Aggregationsebenen
+− unbeschränkte dimensionsübergreifende Operationen
+− integrierter Zugang zu heterogenen Datenbeständen mit logischer
+Gesamtsicht
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-17
+
+MEHRDIMENSIONALE DATENSICHT
+Ost
+Nord
+10
+y
+25
+
+Kennzahlen
+(Fakten, Measures)
+
+y
+
+Süd
+West
+
+Elektronik
+Fahrzeuge
+y
+Branche
+Lebensmittel
+Software
+
+56
+4
+1Q
+
+Region
+
+2Q
+
+3Q
+
+4Q
+
+Dimensionen
+
+Zeit
+
+− Kennzahlen: numerische Werte als Grundlage für
+Aggregationen/Berechnungen (z.B. Absatzzahlen, Umsatz, etc.)
+− Dimensionen: beschreibende Eigenschaften
+− Operationen:
+− Aggregierung der Kennzahlen über eine oder mehrere Dimension(en)
+− Slicing and Dicing: Bereichseinschränkungen auf Dimensionen
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-18
+
+HIERARCHISCHE DIMENSIONIERUNG
+Region
+
+Branche
+
+Zeit
+
+Bundesland
+
+Produktgruppe
+
+Jahr
+
+Ort
+
+Produkt
+
+Quartal
+
+Monat
+
+Woche
+
+Tag
+
+− Operationen zum Wechsel der Dimensionsebenen
+− Drill-Down
+− Roll-Up
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-19
+
+STAR-SCHEMA
+− zentrale Faktentabelle sowie 1 Tabelle pro Dimension
+Kunde
+
+Zeit
+
+KundenNr
+KundenName
+Geschlecht
+Alter
+
+Datum
+Tag
+Monat
+Quartal
+Jahr
+
+Produkt
+
+Verkauf
+KundenNr
+ProduktNr
+Datum
+Fname
+Anzahl
+Umsatz
+
+ProduktNr
+ProduktName
+Produktgruppe
+Branche
+Hersteller
+Farbe
+Preis
+Abteilung Datenbanken
+
+Filiale
+Fname
+Ort
+Land
+Region
+
+DATA WAREHOUSING
+
+1-20
+
+ANFRAGEN
+Beispielanfrage:
+
+Star-Join
+− sternförmiger Join der
+(relevanten)
+Dimensionstabellen mit der
+Faktentabelle
+− Einschränkung der
+Dimensionen
+− Verdichtung der Kennzahlen
+durch Gruppierung und
+Aggregation
+
+Abteilung Datenbanken
+
+Welche Auto-Hersteller wurden von weiblichen
+Kunden in Sachsen im 1. Quartal favorisiert?
+− SELECT p.Hersteller, SUM (v.Anzahl)
+FROM Verkauf v, Filialen f,
+Produkt p, Zeit z, Kunden k
+WHERE z.Quartal = 1 and
+k.Geschlecht = ’W’ and
+p.Produkttyp = ’Auto’ and
+f.Land = ’Sachsen’ and
+v.Datum = z.Datum and
+v.ProduktNr = p.ProduktNr and
+v.Filiale = f. FName and
+v.KundenNr = k.KundenNr
+GROUP BY p.Hersteller
+ORDER BY 2 desc;
+
+DATA WAREHOUSING
+
+1-21
+
+ANALYSEWERKZEUGE
+− (Ad Hoc-) Query-Tools
+− Reporting-Werkzeuge, Berichte mit flexiblen
+Formatierungsmöglichkeiten
+− OLAP-Tools
+− OLAP-Unterstützung in Speadsheet-Tools bzw. im Web-Browser
+− oft Datendarstellung als Pivot-Tabellen (Kreuztabellen)
+− interaktive mehrdimensionale Analyse und Navigation (Drill
+Down, Roll Up, ...)
+− Gruppierungen, statistische Berechnungen,
+− unterschiedlichste Visualisierungen
+
+− Tools/Verfahren für Data Mining und maschinelles Lernen
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-22
+
+BEISPIEL: OLAP-AUSGABE
+Apple quartely revenue by operating segment (source: Statista)
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-23
+
+ERGEBNISVISUALISIERUNG
+(MITGLIEDER IN GESELLSCHAFT FÜR INFORMATIK PRO PLZ-BEZIRK)
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-24
+
+KNOWLEDGE DISCOVERY
+− (semi-) automatische Extraktion von Wissen aus Daten
+− Kombination von Verfahren zu Datenbanken, Statistik
+(Data Mining) und KI (maschinelles Lernen)
+Selektion
+
+Vorverarbeitung/
+Transformation
+
+Rohdaten
+
+Data Mining / ML
+
+Daten
+Interpretation
+
+Daten
+Analyseergebnisse
+
+Wissen
+
+(Muster, Vorhersagen …)
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-25
+
+TECHNIKEN DES DATA MINING/ML
+− Einsatz statistischer, wissens- und lernbasierter Methoden zur
+Datenanalyse
+− Auffinden von Korrelationen, Mustern und Trends in Daten, Vorhersagen
+
+− Clusteranalyse
+− Objekte werden aufgrund von Ähnlichkeiten in Klassen eingeteilt
+(Segmentierung)
+− Bsp.: ähnliche Kunden, ähnliche Website-Nutzer ...
+
+− Assoziationsregeln
+− Warenkorbanalyse (z.B. Kunde kauft A und B => Kunde kauft C)
+− Nutzung für Kaufvorhersagen / Recommendations, …
+
+− Klassifikation
+− Zuordnung von Objekten zu Gruppen/Klassen mit gemeinsamen
+Eigenschaften bzw. Vorhersage von Attributwerten
+− Verwendung von Stichproben (Trainingsdaten)
+− Ansätze: Entscheidungsbaum-Verfahren, neuronale Netze, statistische
+Auswertungen
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-26
+
+BEISPIEL WARENKORBANALYSE
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-27
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-28
+
+ANFORDERUNGEN FÜR „BIG DATA“
+Volume
+bis zu vielen
+Peta- und
+Exabyte an Daten
+
+Velocity
+sofortige Analyse
+dynamischer
+Datenströme
+
+Big
+Data
+
+Veracity
+hohe Qualität und
+Glaubwürdigkeit
+der Daten
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Variety
+heterogene
+strukturierte, teil- und
+unstrukturierte Daten
+
+Value
+Gewinnung
+nützlicher
+Informationen
+
+1-29
+
+BIG DATA ANALYSE-PIPELINE
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Interpretation
+
+Privacy
+
+Velocity
+
+Veracity
+
+Datenintegration
+
+Variety
+
+Data
+Cleaning
+
+Volume
+
+Datenbeschaffung
+
+Datenanalyse
+und
+Visualisierung
+
+1-30
+
+ZUSAMMENFASSUNG
+− Data Warehousing: DB-Anfrageverarbeitung und Analysen auf
+integriertem Datenbestand für Decision Support (OLAP)
+− riesige Datenvolumina
+− Hauptschwierigkeit: Integration heterogener Datenbestände sowie
+Bereinigung von Primärdaten
+− physische Datenintegration ermöglicht
+− aufwändige Datenbereinigung
+− effiziente Analyse auf großen Datenmengen
+
+− mehrdimensionale Datenmodellierung und -organisation
+− breites Spektrum an Auswertungs- und Analysemöglichkeiten
+− Data Mining: selbständiges Aufspüren relevanter Muster in Daten
+− Big Data: Datenanalysen auf großen Mengen auch unstrukturierter
+Daten
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+1-31
+
+

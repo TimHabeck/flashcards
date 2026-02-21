@@ -1,0 +1,1790 @@
+DATA WAREHOUSING
+Kapitel 4: ETL: Datenvorverarbeitung und integration
+Victor Christen
+christen@informatik.uni-leipzig.de
+Universität Leipzig
+Institut für Informatik
+Abteilung Datenbanken
+
+AGENDA
+ ETL-Überblick
+ Schemaintegration
+ Bottom-Up- vs. Top-Down-Integration
+ Semantische Heterogenität
+
+ Schema Matching
+ Verfahren
+ Prototypen / Tools
+
+ Data Cleaning
+ Probleme
+ Teilaufgaben
+
+ Entity Matching (record linkage)
+ Blocking, Matching, Clustering
+ Systeme/Prototypen: MS SQL-Server, Dedoop, Famer
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-2
+
+ETL-PROZESS
+ Data Warehousing und ETL: materialisierter Ansatz zur
+Datenintegration
+ Erzeugung einer aggregierten, materialisierten Datenquelle für OnlineAnalysen
+ komplexer, aufwändiger Integrationsprozess
+ Offline-Durchführung erlaubt höhere Datenqualität gegenüber virtueller
+Datenintegration (Datentransformation während Query-Verarbeitung)
+
+ Extraktion: Selektion eines Ausschnitts der Daten aus Quellen
+ ausgeführt an den entsprechenden Quellen
+
+ Transformation: Aufbereitung und Anpassung der Daten an
+vorgegebene Schema- und Qualitätsanforderungen
+ ausgeführt im temporären Arbeitsbereich (Data Staging Area)
+
+ Laden: physisches Einbringen der Daten aus Arbeitsbereich in das
+Data Warehouse, einschließlich evtl. notwendiger Aggregationen
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-3
+
+ETL-PROZESS (2)
+ aufwändigster Teil des Data Warehousing
+ Vielzahl von operativen Quellen
+ Heterogenität der Datenquellen (DBMS, Schemata, Daten)
+ Gewährleistung hoher Qualität der Warehouse-Daten
+
+ entscheidende Rolle im Data Warehousing, da großer
+Einfluss auf
+ Genauigkeit und Richtigkeit der später durchgeführten Analysen
+ die darauf basierenden Entscheidungen: „Garbage In, Garbage
+Out“
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-4
+
+ETL VS ELT VS REVERSE ETL
+ ELT: schnelleres Laden von Daten, v.a. für Data Lake
+(Load vor Transform, „Every Load Transforms“)
+
+Data
+Lake
+
+Serra: Deciphering data architectures, 2024
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-5
+
+ETL ALS INTEGRATIONSPROZESS
+ ETL: Datenintegration auf 2 Ebenen: Schemata und
+Instanzdaten
+ Schemaintegration
+ Abbildung von Quellschemata auf Data-Warehouse-Schema:
+Schema Matching
+ Adressierung der semantischen Heterogenität (Namenskonflikte,
+strukturelle Konflikte)
+ ggf. zunächst Anpassung der Schemarepräsenationen (z.B. RM)
+
+ Datenintegration / Data Cleaning
+ Transformation heterogener Daten in einheitliche, durch Data
+Warehouse-Schema vorgeschriebene Repräsentation
+ Entdeckung und Behebung von Datenqualitätsproblemen
+ Entdeckung äquivalenter Objekte/Sätze (Korrespondenzen auf
+Instanzenebene): Entity Matching / Duplikatbehandlung
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-6
+
+ETL-PROZESS: ABLAUF
+Operational
+sources
+
+Data
+warehouse
+
+Extraction, Transformation, Loading
+Extraction
+
+Integration
+
+Aggregation
+
+Schema extraction
+and translation
+
+Schema matching
+and integration
+
+Schema
+implementation
+
+1
+
+2
+
+3
+
+4
+
+5
+
+Data
+warehouse
+
+Data
+staging
+area
+Instance extraction
+and transformation
+
+Instance matching
+and integration
+
+Filtering,
+aggregation
+
+Scheduling, logging, monitoring, recovery, backup
+Legends:
+
+Metadata flow
+
+1
+
+3 Instance characteristics
+(real metadata)
+
+Data flow
+
+2 Translation rules
+
+4 Mappings between source and target
+schema
+
+5 Filtering and aggregation rules
+
+E. Rahm, H. H. Do: Data Cleaning: Problems and Current Approaches. IEEE Techn. Bulletin on Data Engineering, 2000
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-7
+
+SCHEMAINTEGRATION - ANFORDERUNGEN
+ Minimalität
+ keine Redundanz im integrierten Schema
+ Abbildung mehrerer gleicher/ähnlicher Konzepte in lokalen
+Schemata auf ein Konzept im integrierten Schema
+
+ Korrektheit
+ Äquivalenz der im integrierten Schema enthaltenen
+Informationen mit denen in den lokalen Schemata
+ Konsistenz der während der Integration ergänzten Informationen,
+z.B. Beziehungen zwischen Konzepten im integrierten Schema
+
+ Verständlichkeit
+Vollständigkeit (Beibehaltung aller Informationen aus
+Quellschemas) ?
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-8
+
+SCHEMAINTEGRATION (2)
+ Probleme der Schemaintegration
+ Heterogenität der Schemarepräsentationen
+ z.B. relational (SQL), JSON, Dateien ...
+
+ semantische Heterogenität der Schemaelemente
+(Namenskonflikte, strukturelle Konflikte)
+
+ Alternativen
+ Bottom-Up-Schemaintegration
+ Top-Down-Schemaintegration
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-9
+
+BOTTOM-UP-INTEGRATION (GLOBAL AS VIEW)
+ (vollständiges) Mischen aller Source-Schemata in
+globales Schema
+ setzt Abgleich zwischen Source-Schemas voraus,
+insbesondere Bestimmung von Korrespondenzen /
+Konflikten
+ globales Schema entspricht gemeinsamer Sicht (View)
+auf die zugrundeliegenden Quellen
+ neue Quelle ändert meist globales Schema
+G
+
+Merge
+S1
+
+Abteilung Datenbanken
+
+Match
+
+S2
+
+DATA WAREHOUSING
+
+Sn
+
+4-10
+
+TOP-DOWN-INTEGRATION (LOCAL AS VIEW)
+ globales Schema G ist vorgegeben
+ jede Source S wird unabhängig von anderen Sources mit
+globalem Schema abgeglichen, d.h. ein Mapping G - S
+erstellt (Mapping beschreibt Inhalt der Quelle)
+ aufwändige Query-Verarbeitung bei virtueller Integration
+ G berücksichtigt i.a. nur Teile der lokalen Schemata
+
+G
+
+Match
+S1
+
+Abteilung Datenbanken
+
+S2
+
+DATA WAREHOUSING
+
+Sn
+
+4-11
+
+TOP-DOWN-SCHEMAINTEGRATION (2)
+lokale Schemata (LS1, LS2, ...)
+
+manuelle Erstellung des
+Globalen Schemas GS
+(z.B. DW-Schema)
+
+Schematransformation der LS
+in einheitliches Modell
+
+einheitliche lokale Schemata
+
+GS
+
+Schema Matching
+GS – LS1, GS-LS2 ...
+
+Inter-Schema-Korrespondenzen
+
+Generierung ausführbarer Mappings
+LS1-GS, LS2-GS, ...
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-12
+
+NAMENSKONFLIKTE
+Mitarbeiter
+Name
+Adresse
+
+Angestellte
+Name
+Anschrift
+
+Firma
+Name
+Adresse
+
+ Synonyme: unterschiedliche Namen für das selbe
+Konzept
+
+
+Mitarbeiter  Angestellte
+Mitarbeiter.Adresse  Angestellte.Anschrift
+
+ Homonyme: gleiche Namen für verschiedene Konzepte
+
+(Mitarbeiter.)Name (Firma.)Name
+(Mitarbeiter.)Adresse (Firma.)Adresse
+
+ Hyponyme/Hyperonyme: Unter-/Oberbegriffe
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-13
+
+STRUKTURELLE KONFLIKTE
+ Entity vs. Entity
+
+Arbeiter
+PNR
+Name
+Adresse
+
+ unterschiedliche Schlüssel
+PNR - SVNR
+
+ unterschiedliche Attributmengen,
+fehlende Attribute
+ unterschiedliche
+Abstraktionsebenen
+(Generalisierung, Aggregation)
+
+TeilzeitArbeiter
+
+ unterschiedliche Realitätsauschnitte
+(RWS, real world states), Instanzmengen
+
+
+
+
+disjunkt (disjoint):
+Person1 –Person2
+
+überlappend (overlaps):
+Person1 –Person3, Person2 –Person3
+
+enthalten (contains):
+Person4  Person1, Person4  Person3,
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+VollzeitArbeiter
+
+Angestellte
+SVNR
+Name
+Gehalt
+Beruf
+
+Männer
+
+Frauen
+
+Person 1
+Name
+Gehalt
+Beruf
+
+Person 2
+Name
+Gehalt
+Beruf
+
+Männer
+
+Frauen
+
+Person 3
+Name
+Gehalt
+Beruf
+
+Person 4
+Name
+Gehalt
+Beruf
+
+> 18 Jahre
+
+Männer > 18
+4-14
+
+STRUKTURELLE KONFLIKTE (2)
+ Attribut vs. Entity-Konflikte
+ Repräsentation von Attributen als
+eigenständige Entities/Relationen
+ Bsp.: Produkttyp
+
+ Attribut vs. Attribut-Konflikte
+
+S2
+
+S1
+Produkte
+Name
+Typ
+Preis
+
+CD
+Titel
+Preis
+Bücher
+Titel
+Preis
+
+ unterschiedliche Datentypen
+Preis (Float) vs. Preis (String)
+ unterschiedliche Detailgrade
+Videospiele
+Name vs. Vorname und Nachname
+Titel
+Preis
+ unterschiedliche Einheiten: $ vs. Euro
+ unterschiedliche Genauigkeiten: Tausend Euro vs. Euro
+ unterschiedliche Integritätsbedingungen, Wertebereiche, Default-Werte
+...
+Alter >18 vs. Alter > 21
+ unterschiedliche Zulässigkeit von Nullwerten
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-15
+
+AUTOMATISIERUNGSBEDARF
+ bisherige Schemaintegrationsansätze weitgehend manuell
+ nutzerdefinierte Korrespondenzen und Konfliktbehandlung
+ Nutzung spezifischen Schema-/Domain-Wissens
+ aufwändig / fehleranfällig vor allem für größere Schemata
+ nicht skalierbar auf viele Schemata
+ hoher Anpassungsaufwand bei Schemaänderungen
+
+ Skalierbarkeit erfordert semi-automatische Lösungen / Tools!
+ vollautomatische Lösungen aufgrund semantischer Heterogenität nicht
+möglich
+ Namensproblematik (Synonyme, Homonyme)
+ begrenzte Mächtigkeit von Metadaten / Schemasprachen
+
+ (Teil-)Automatisches Schema-Matching
+ v.a. für große Schemata wichtig
+ Nutzer-Feedback notwendig, jedoch im begrenzten Umfang
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-16
+
+4. ETL: DATENVORVERARBEITUNG UND INTEGRATION
+ ETL-Überblick
+ Schemaintegration
+ Bottom-Up- vs. Top-Down-Integration
+ Semantische Heterogenität
+
+ Schema Matching
+ Verfahren
+ Prototypen / Tools
+
+ Data Cleaning
+ Probleme
+ Teilaufgaben
+
+ Entity Matching (record linkage)
+ Blocking, Matching, Clustering
+ Systeme/Prototypen: MS SQL-Server, Dedoop, Famer
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-17
+
+SCHEMA MATCHING
+ kritischer Schritt in zahlreichen Applikationen
+ Datenintegration (u.a. Data Warehouses), Datenaustauch (XML Message
+Mapping), Wissensverarbeitung (Ontologie-Matching)
+
+ Finden semantischer Korrespondenzen zwischen 2 Schemas
+ Input: Schemas und evtl. Instanzbeispiele und Hintergrundwissen
+ Output: paarweise Korrespondenzen zwischen Schemaelementen
+(z.B. S1.e1 –S2.e2), ggf. ergänzt um numerische Ähnlichkeit (zwischen 0
+und 1) und Beziehungstyp: equal, is-a, part-of, related, …
+
+S1
+
+Mapping:
+
+Matching
+S2
+
+S1, S2
+Instanzen
+
+S1.e11, S2.e23
+S1.e13, S2.e27
+…
+
+Hintergrundwissen
+(z.B. Wörterbücher, Thesauri)
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-18
+
+MATCH-BEISPIEL 1: RELATIONALE SCHEMAS
+
+BookInfo
+
+Books
+ISBN char(15) key
+Title varchar(100)
+Author varchar(50)
+MarkedPrice float
+
+ID
+char(15) key
+AuthorID integer references AuthorInfo
+BookTitle varchar(150)
+ListPrice float
+DiscountPrice float
+
+AuthorInfo
+AuthorID integer key
+LastName varchar(25)
+FirstName varchar(25)
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-19
+
+MATCH-BEISPIEL 2: PRODUKTKATALOGE
+
+Yahoo.de Shopping
+
+Elektronik
+TV & Video
+DVD-Player
+Beamer
+Foto & Camcorder
+Digitale Photographie
+Digitalkameras
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Amazon.de
+Elektronik & Foto
+Heimkino & Video
+DVD-Player
+Projektoren
+
+Kamera & Foto
+Digitalkameras
+
+4-20
+
+MATCH-BEISPIEL 3: N PRODUKT-SCHEMATA
+(KAMERAS)
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-21
+
+MAPPING EDITOR IN TALEND
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-22
+
+AUTOMATISCHE MATCH-ANSÄTZE
+ linguistische Ansätze
+ syntaktische Ähnlichkeit von Attribut/Konzeptnamen:
+Stringähnlichkeit
+ semantische Ähnlichkeit über Wörterbücher (unter
+Berücksichtigung von Synonymen sowie Hypo/Hypernymen)
+oder Embeddings aus vortrainierten Vokabularen
+ Ähnlichkeit von Beschreibungen
+
+ strukturelle Ähnlichkeit (bei „tieferen“ Schemata bzw.
+Ontologien)
+ ähnliche Vorgänger bzw. Nachfolger
+
+ ähnliche Instanzdaten (z.B. Attributwerte)
+ Ähnlichkeit zu bereits berechneten Korrespondenzen
+ kombinierte Ansätze
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-23
+
+LINGUISTISCHES MATCHING
+ einfachster Ansatz: Namensgleichheit
+ syntaktische Ansätze: approximate String-Ähnlichkeit von
+Namen
+ q-grams, Edit distance, TF/IDF ...
+
+ semantische Ähnlichkeit durch Nutzung terminologischer
+Beziehungen
+ Synonyme: KFZ ~ Auto
+ Hyponyme/Hyperonyme: Buch is-a Publikation, Artikel is-a
+Publikation
+ Nutzung von Wörterbüchern / Thesauri, z.B. WordNet
+
+ Vorverarbeitung zur Behandlung kryptischer Namen,
+Auflösung von Abkürzungen, etc.
+ Tokenisierung von Namen: PO_OrderNum  {PO, Order, Num}
+ Expansion von Akronymen, Kurzformen: PO  Purchase Order
+Num  Number
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-24
+
+ÄHNLICHKEITSMAßE FÜR STRINGS: EDIT-DISTANCE
+ Gegeben seien zwei Strings a und b
+ Editabstand d(a,b) = Anzahl der Edit-Operationen, um a
+in b zu konvertieren
+ Edit-Operationen: Einfügen, Löschen oder Ersetzen eines
+Zeichens
+
+ Ähnlichkeit ist normierter Editabstand
+ auch: Levenshtein-Abstand
+
+dist(a, b)
+simedit (a, b)  1 
+max(| a |, | b |)
+
+ Beispiel: „Street“ vs. „ShippingStreet“ (Länge 6 bzw. 14)
+ Überführung erfordert Einfügung von 8 Zeichen (S h i p p i n g)
+ dist = 8
+
+normierte Distanz: 8/14 = 0,57
+
+ simedit = 1 - 8/14 = 0,43
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-25
+
+ÄHNLICHKEITSMAßE FÜR STRINGS: Q-GRAM
+ Idee: Überlappung bzgl. Substrings der Länge q
+ Häufig q=3 (Trigramme) oder q=2 (Bigramme)
+ optional Padding der Eingabestrings (q-1 Füllzeichen als
+Präifx/Suffix)
+
+ verschiedene Ähnlichkeitsmetriken für Überlappung der
+q-Gramme (set similarity), v.a. Dice- und JaccardÄhnlichkeit
+ Q(a) = Menge der q-Gramme in String a
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-26
+
+BEISPIEL Q-GRAM
+„Street“ vs. „ShippingStreet“ (Trigramm-Ähnlichkeiten)
+ Ohne Padding:
+Street:={Str, tre, ree, eet} (4)
+ShippingStreet:={Shi, hip, ipp, ppi, pin, ing, ngS, gSt,
+Str, tre, ree, eet} (12)
+ Simdice =
+Simjaccard =
+
+ Mit Padding:
+Street:={##S, #St, Str, tre, ree, eet, et#, t##} (8)
+ShippingStreet:={##S, #Sh, Shi, hip, ipp, ppi, pin, ing,
+ngS, gSt, Str, tre, ree, eet, et#, t##} (16)
+ Simdice =
+Simjaccard =
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-27
+
+KOMBINATION VON MATCHERN
+
+allgemeiner Match-Workflow (COMA, …)
+Input
+schema
+S1 s
+
+Preprocessing
+
+Matcher
+Execution
+
+S2
+
+Combination
+of matcher
+results
+
+Selection of
+correspondences
+
+Result
+Mapping
+
+(subworkflow)
+
+Matcher-Ausführung:
+Matcher
+
+Matcher1
+Matcher1
+
+Matcher2
+
+…
+
+Matcher2
+Matcher3
+
+Sequentielle Matcher
+
+Abteilung Datenbanken
+
+Parallele (unabhängige)
+Matcher
+DATA WAREHOUSING
+
+Matcher1
+
+Matcher
+Matcher
+
+Gemischte Strategie
+4-28
+
+COMA-ARCHITEKTUR (VLDB 2002)
+
+ Auswahl der Match-Kandidaten
+
+– oft sinnvoll nur Best-Match pro Schemaelement zu betrachten
+– best match (S1.a1), S2.b1, kann anderen best-match in S1
+haben, z.B. S1.a2
+→ Problem der Stable Marriage
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-29
+
+AUSWAHL VON 1:1 MATCHES
+einfacher Ansatz (Coma) –
+Symmetric Best Match (Max-Both)
+ Best-Match S2.b1 zu S1.a1 wird nur berücksichtigt,
+wenn S1.a1 auch Best-Match von S2.b1 ist
+
+Stable Marriage
+ Mapping M (Menge an Matches zw. S1 und S2) ist stabil,
+wenn es kein Paar (S1.ai, S2.bj) gibt, mit einer höheren
+Ähnlichkeit als die der aktuellen Matches in M sowohl
+für S1.ai und S2.bj
+
+ Maximal Weight Mapping
+ 1:1 Mapping mit maximaler Summe der Ähnlichkeiten
+ Mapping muss nicht stabil sein
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-30
+
+MATCH-PROTOTYPEN
+
+GOOGLE CLOUD DATA FUSION
+ visuelle Definition von ETL-Pipelines mit Unterstützung
+
+von Schema-Mapping
+
+
+
+
+automatische Schemaeerkennung
+primär manuelles Schema-Mapping, jedoch können
+automatische Ansätze integriert werden
+automatische Erkennung von Attributpaaren mit identischer
+Namen
+
+https://cloud.google.com/application-integration/docs/data-mapping-overview
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-32
+
+GOOGLE CLOUD DATA FUSION (2)
+
+https://medium.com/gft-engineering/my-journey-with-google-cloud-data-fusion-dbe9e6f34924
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-33
+
+4. ETL: DATENVORVERARBEITUNG UND INTEGRATION
+ ETL-Überblick
+ Schemaintegration
+ Bottom-Up- vs. Top-Down-Integration
+ Semantische Heterogenität
+
+ Schema Matching
+ Verfahren
+ Prototypen / Tools
+
+ Data Cleaning
+ Probleme
+ Teilaufgaben
+
+ Entity Matching (record linkage)
+ Blocking, Matching, Clustering
+ Systeme/Prototypen: MS SQL-Server, Dedoop, Famer
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-34
+
+DATA CLEANING
+ Datenanalyse / Profiling
+ Entdeckung von Datenfehlern und -inkonsistenzen
+ manuell bzw. Einsatz von Analyse-Tools
+
+ Definition von Mapping-Regeln und TransformationsWorkflows
+ Datentransformationen auf Schemaebene
+ Cleaning-Schritte zur Behandlung von Instanzdaten
+
+ Transformation
+ regelmäßige Ausführung der geprüften Transformationsschritte
+
+ ggf. Rückfluss korrigierter Daten in operative
+Quellsysteme
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-35
+
+PROBLEME BEZÜGLICH DATENQUALITÄT
+ Probleme auf Schema- und auf Instanzebene
+ Probleme bezüglich einer oder mehrerer Datenquellen
+(Single-Source vs. Multi-Source)
+Data Quality Problems
+Single-Source Problems
+
+Multi-Source Problems
+
+Schema Level
+
+Schema Level
+
+Instance Level
+
+(Lack of integrity
+constraints, poor
+schema design)
+
+(Data entry errors)
+
+(Heterogeneous
+data models and
+schema designs)
+
+- Uniqueness
+- Referential integrity
+…
+
+- Misspellings
+- Redundancy/duplicates
+- Contradictory values
+…
+
+- Naming conflicts
+- Structural conflicts
+…
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Instance Level
+(Overlapping,
+contradicting and
+inconsistent data)
+- Inconsistent aggregating
+- Inconsistent timing
+…
+
+4-36
+
+SINGLE-SOURCE PROBLEME
+ Ursachen:
+
+
+
+
+
+Fehlen von Schemata (z.B. bei Dateien) und von Integritäts-Constraints
+Eingabefehler
+unterschiedliche Änderungsstände
+Unvollständigkeit …
+
+MultivalueFeld
+
+Name
+
+Misspelling
+
+Adresse
+
+Peter
+Meier
+
+Humboldtstr.
+12, 04123
+Liepzig
+Schmitt, Lessingplatz 1,
+Ingo
+98321 Berlin
+...
+...
+
+Phone
+
+Erfahrung
+
+Beruf
+
+9999999999
+
+A
+
+DiplInformatiker
+
+0309583014
+...
+
+M
+
+Dipl.-Inf.
+
+...
+
+..
+
+Attributwertabhängigkeit
+Abteilung Datenbanken
+
+Transposition
+
+Fehlender
+Wert
+
+Kryptische
+DATA WAREHOUSING Werte
+
+Uneinheitliche
+Bezeichnungen 4-37
+
+DATENANALYSE / PROFILING
+ Entdeckung von Fehlern / Verifikation korrekter Werte
+ Ableitung von (wirklichen) Metadaten
+
+ Berechnung der Statistiken zu Attributen auf Basis ihrer Instanzen
+ Datentyp, Länge, Maximum und Minimum, Null-, Default-Werte, Kardinalität, ...
+ Ermitteln von Wertebereichen, Häufigkeiten und Mustern von Attributwerte
+
+ Erkennung von Ausreißern, funktionalen Abhängigkeiten
+ SQL-Abfragen für Basis-Checks, z.B.
+ SELECT Stadt,count(*) as Anzahl From Student Group By Stadt order by 2
+
+Instanzwerte
+Attribute Values
+
+#occurences
+
+IBM
+
+3000
+
+I.B.M.
+
+360
+
+Intel Bus Mach
+
+International Business Machine
+Abteilung Datenbanken
+
+Pattern
+
+(978) 555-1212 (nnn) nnn-nnnn
+
+Identifizierte
+Datenkategorie
+Telefonnummer
+
+213
+
+036-55-1234
+abc@web.de
+
+nnn-nn-nnnn
+aaa@aaa.aa
+
+Social Security Number
+Email-Addresse
+
+36
+
+12.03.2020
+
+nn.nn.nnnn
+
+Datum
+
+DATA WAREHOUSING
+
+4-38
+
+BSP.: TALEND DATA PROFILING
+
+https://help.qlik.com/talend/en-US/data-preparation-user-guide/Cloud/data-profiling-area
+
+https://www.linux.com/news/explore-your-database-talend-open-profiler/
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-39
+
+BEHANDLUNG VON SINGLE-SOURCE-PROBLEMEN
+ Definition und Einführung von Standardrepräsentationen
+ einheitliches Format für Datums-/Zeit-Angaben
+ einheitliche Groß/Kleinschreibungsform für Namen / String-Attribute
+New Value
+ einheitliche Abkürzungen, Kodierungsschemas Legacy Value
+
+ Bereitstellung von (Konversions-)Tabellen
+zur expliziten Werteabbildung
+
+IBM
+
+IBM
+
+I.B.M
+
+IBM
+
+Intel Bus Mach
+
+IBM
+
+...
+
+...
+
+ Extraktion von individuellen Werten aus Freiform-Attributen
+ Parsing und Attribut-Splitting, z.B. Name → Vorname / Nachname
+ Reorganisierung der Wortreihenfolge
+
+ Validierung / Korrektur mit Hintergrundwissen
+ Überprüfung/Spell checking mit Wörterbüchern, Datenbanken mit
+Adressen, Produktbezeichnungen, Akronymen/Abkürzungen, etc.
+ Nutzung bekannter Attributabhängigkeiten zur Korrektur von fehlenden /
+falschen Attributwerten, z.B. PLZ → Ort
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-40
+
+MULTI-SOURCE-PROBLEME
+ unterschiedliche Repräsentationen der Instanzdaten
+ versch. Wertebereiche (z.B. Geschlecht = {0,1,2} vs. Sex = {u,m,w})
+ verschiedene Einheiten (z.B. Verkauf in EUR vs. Verkauf in Tsd. EUR)
+ verschiedene Genauigkeiten
+
+ unterschiedliche Änderungsstände und Aggregationsstufen
+ überlappende, widersprüchliche bzw. inkonsistente Daten
+
+ Hauptproblem: Behandlung überlappender Daten / Duplikate
+ Beschreibung einer Instanz der realen Welt durch mehrere Datensätze
+unterschiedlicher Quellen
+ oft nur teilweise Redundanz (einzelne Attribute, nur in Teilmenge der
+Datenquellen)
+ Behandlung durch Datenintegration
+ Duplikaterkennung, Record Linkage, Entity Matching
+ ggf. Fusion der sich entsprechenden Instanzen
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-41
+
+MULTI-SOURCE-DATENINKONSISTENZEN: BEISPIEL
+Source1: Customer
+
+CID Name
+
+Street
+
+City
+
+Sex
+
+11
+
+Kristen Smith
+
+2 Hurley Pl South Fork, MN 48503
+
+24
+
+Christian Smith Hurley St 2 S Fork MN
+
+0
+
+1
+
+Source2: Client
+
+Cno LastName FirstName Gender Address
+23 Harley St, Chicago
+24
+Smith
+Christoph
+M
+IL, 60633-2394
+
+493
+
+Smith
+
+Kris L.
+
+Abteilung Datenbanken
+
+F
+
+2 Hurley Place, South
+Fork MN, 48503-5998
+
+DATA WAREHOUSING
+
+Phone/Fax
+333-222-6542
+/ 333-2226599
+444-555-6666
+
+4-42
+
+BEISPIEL (2)
+CID
+
+Name
+
+Street
+
+City
+
+Sex
+
+11
+
+Kristen Smith
+
+2 Hurley Pl
+
+South Fork, MN 48503
+
+0
+
+24
+
+Christian Smith
+
+Hurley St 2
+
+S Fork MN
+
+1
+
+No
+1
+
+LName
+Smith
+
+FName
+Kristen L.
+
+Gender
+F
+
+Street
+2 Hurley
+Place
+
+City
+South
+Fork
+
+State
+MN
+
+ZIP
+485035998
+
+2
+
+Smith
+
+Christian
+
+M
+
+2 Hurley
+Place
+
+South
+Fork
+
+MN
+
+485035998
+
+3
+
+Smith
+
+Christoph
+
+M
+
+23 Harley Chicago
+Street
+
+IL
+
+606332394
+
+Phone
+444-5556666
+
+Source1:
+Customer
+
+Fax
+
+CID
+11
+
+Cno
+493
+
+24
+333-2226542
+
+333-2226599
+
+24
+
+Customers (Integrierte und bereinigte Daten)
+Cno LastName FirstName Gender Address
+23 Harley St, Chicago
+24
+Smith
+Christoph
+M
+IL, 60633-2394
+
+493
+
+Smith
+
+Abteilung Datenbanken
+
+Kris L.
+
+F
+
+2 Hurley Place, South
+Fork MN, 48503-5998
+
+DATA WAREHOUSING
+
+Phone/Fax
+333-222-6542
+/ 333-2226599
+444-555-6666
+
+Source2:
+Client
+
+4-43
+
+SEMISTRUKTURIERTE DATENSÄTZE (KAMERAS)
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-44
+
+4. ETL: DATENVORVERARBEITUNG UND INTEGRATION
+ ETL-Überblick
+ Schemaintegration
+ Bottom-Up- vs. Top-Down-Integration
+ Semantische Heterogenität
+
+ Schema Matching
+ Verfahren
+ Prototypen / Tools
+
+ Data Cleaning
+ Probleme
+ Teilaufgaben
+
+ Entity Matching (record linkage)
+ Blocking, Matching, Clustering
+ Systeme/Prototypen: MS SQL-Server, Dedoop, Famer
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-45
+
+ENTITY MATCHING WORKFLOW
+R
+Blocking
+S
+
+Similarity
+Computation
+& Match
+classification
+
+Match
+Paare
+
+Entity
+clustering
+
+clusters of
+matching
+entities
+
+ Eingabe: 1, 2 or n Datenquellen mit Sätzen
+ Ausgabe:
+ Paare von Satzmatches oder
+ Menge von Entity-Clustern, in denen alle Matches zu einer Entität
+gruppiert sind
+
+ n≥2: saubere Datenquellen (ohne Duplikate) oder nicht
+ für saubere Quellen kann höchstens 1 Match pro Entität vorliegen:
+maximale Clustergröße n
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-46
+
+BLOCKING
+ naives Matching: paarweiser Vergleich aller Sätze
+ quadratische Komplexität: 1 Quelle mit n Sätzen: n (n-1)/ 2 Vergleiche
+ bei 1 Million Vergleichen pro Sekunde dauert Matching für n=107 19 Monate
+
+ skalierbare Lösungen erfordern Reduzierung der Vergleichszahl
+
+ Blocking
+ Gruppierung ähnlicher Entitäten in Partitionen/Blöcke
+über Attributwerte (z.B. Produkttyp)
+ nur Entitäten eines Blocks werden miteinander verglichen
+
+ Blockgröße wichtig für Leistung und Match-Qualität
+ kleine Blöcke: wenige Vergleiche, evtl werden Matches aber nicht gefunden
+ bei schmutzigen Daten ggf. mehrere Partitionierungen nötig (multi-pass
+blocking)
+
+ Vielzahl an Blocking-Alternativen
+ Standard-Blocking
+ Sorted Neighborhood …
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-47
+
+STANDARD BLOCKING
+ Partitionierung des Suchraums
+über Blocking Key Values (BKV)
+ BKV-Berechnung über Funktion auf
+Attributwerten, z.B.
+ Soundex (Nachname)
+ Postleitzahl
+ Präfix(Produkthersteller, 4), …
+
+ Beispiel Soundex-Blocking:
+
+8 Sätze: 28 Vergleiche ohne Blocking
+P. Christen: A survey of indexing techniques for scalable record linkage and deduplication. IEEE TKDE, 2012
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-48
+
+SORTED NEIGHBORHOOD
+ meist für 1 Eingabequelle
+ Sortierung der Sätze gemäß Sort Key
+ Matching nur auf benachbarten Sätzen (Fenster fester
+Länge w) → lineare Komplexität
+ Verbesserung: Vergleich des ersten Records oder des
+letzten Records mit allen Records eines Fensters (letztes
+bzw. erstes Fenster paarweise)
+
+P. Christen: A survey of indexing techniques for scalable record linkage and deduplication. IEEE TKDE, 2012
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-49
+
+METRIKEN FÜR BLOCKING
+ Blocking sollte möglichst viele Vergleiche einsparen, ohne
+Matches zu verlieren
+ hohe Reduction Rate und sehr hohe Pairs Completeness
+erforderlich
+
+ Metrik Reduction Rate
+ Reduction Rate RR = 1 −
+
+𝐴𝑛𝑧𝑎ℎ𝑙 𝑑𝑒𝑟 𝑉𝑒𝑟𝑔𝑙𝑒𝑖𝑐ℎ𝑒 𝑚𝑖𝑡 𝐵𝑙𝑜𝑐𝑘𝑖𝑛𝑔
+𝐴𝑛𝑧𝑎ℎ𝑙 𝑑𝑒𝑟 𝑉𝑒𝑟𝑔𝑙𝑒𝑖𝑐ℎ𝑒 𝑜ℎ𝑛𝑒 𝐵𝑙𝑜𝑐𝑘𝑖𝑛𝑔
+
+ Reduktion auf 1% der Vergleiche: RR=0,99
+
+ Metrik Pairs Completeness
+ 𝑃𝑎irs Completeness (PC) =
+
+𝐴𝑛𝑧𝑎ℎ𝑙 𝑑𝑒𝑟 𝑀𝑎𝑡𝑐ℎ−𝑃𝑎𝑎𝑟𝑒,𝑑𝑖𝑒 𝑣𝑒𝑟𝑔𝑙𝑖𝑐ℎ𝑒𝑛 𝑤𝑒𝑟𝑑𝑒𝑛
+𝐴𝑛𝑧𝑎ℎ𝑙 𝑑𝑒𝑟 𝑀𝑎𝑡𝑐ℎ−𝑃𝑎𝑎𝑟𝑒
+
+ Erreichbarer Recall für Matching ist durch PC begrenzt
+
+ Multi-Pass Blocking verbessert PC zu Lasten der RR
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-50
+
+MATCHING
+ kombinierte Nutzung mehrerer Ähnlichkeiten
+ Ähnlichkeit verschiedener Attributwerte, z.B. gemäß Stringähnlichkeit
+(Edit-Distance, Q-gram etc,) oder numerische Ähnlichkeit
+ kontext-basiertes Matching (z.B. Personen ähneln sich, wenn sie die
+selben Eltern haben)
+
+ Verwendung von manuell definierten Match-Regeln
+ Personen-Match falls Namensähnlichkeit > 80% + gleiches Geburtsdatum
+ Publikations-Match: Titelähnlichkeit > 85% + Autorähnlichkeit > 50%
+ durchschnittliche Ähnlichkeit mehrerer Attribute > 75% …
+
+ Nutzung überwachter Klassifikationsverfahren (Machine Learning)
+ z.B. mit Entscheidungsbäumen, SVM, neuronalen Netzen, etc.
+ erfordern Trainingsdaten mit Matches/Non-Matches
+ Nutzung von Embeddings (representation learning) kann Matchbarkeit
+von Attributwerten verbessern
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-51
+
+BEISPIEL ML-BASIERTES MATCHING
+ Finden effektiver Match-Einstellungen ist schwierig
+ Auswahl der Attribute, Matcher, Einstellungen
+
+ gelerntes Klassifikationsmodell (z.B.
+Entscheidungsbaum) bestimmt automatisch
+ zu prüfende Attribute (z.B. Publikatonstitel, Autoren, …)
+ Ähnlichkeitsmetriken (EditDistance, Cosine, ..)
+ Schwellwerte
+Cosine(title) > 0.629
+
+→Data Mining VL
+
+-
+
++
+
+Trigram(venue) > 0.197
+-
+
++
+
+EditDistance(year) > 0.25
+Non-match
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+Trigram(authors) > 0.7
+
+...
+
+match
+
+...
+
++
+...
+
+Entscheidungsbaum
+4-52
+
+METRIKEN FÜR MATCHING
+
+M
+
+P
+
+M = real Matches, P= predicted Matches
+
+ENTITY CLUSTERING
+Gruppierung der Matches einer Entität in Cluster
+
+Cluster mit k Sätzen repräsentiert k (k-1)/2 Match-Paare: kompaktere
+Repräsentation für k>2
+für n duplikatfreie Quellen gilt k <= n
+Fusionierung der Cluster-Mitglieder zur Datenintegration
+Entity clustering
+
+Input: paarweise Match-Kandidaten mit ihrer Ähnlichkeit (bilden sog. Similarity
+Graph)
+Ziel: Maximierung der Ähnlichkeit innerhalb der Cluster und Minimierung der
+Ähnlichkeit zwischen Cluster
+
+Basisansatz: Connected Component (transitive Hülle) über
+paarweise Match-Links
+kann leicht zu großen Clustern mit unähnlichen Sätzen führen
+
+MS SQL-SERVER: MATCH-OPERATOREN
+ Bestandteil von SQL-Server
+Integration Services (SSIS)*
+ ermöglicht Definition komplexer ETL-Workflows
+ zahlreiche Operatoren
+
+ Fuzzy Lookup
+ “Fuzzy Match” zwischen Eingaberelation und sauberen
+Sätzen einer Referenztabelle: inkrementelles Matching
+ Parameter: Schwellwerte bzgl. String-Ähnlichkeit
+(Edit Distance) sowie Gewichte zur Kombination
+von Ähnlichkeiten
+
+ Fuzzy Grouping
+ Gruppierung ähnlicher Sätze (potenzielle
+Duplikate) innerhalb einer Tabelle über
+String-Matching (Edit Distance)
+
+* http://msdn.microsoft.com/en-us/library/ms345128.aspx
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-55
+
+MATCH-PROTOTYPEN
+ DEDOOP (U Leipzig, 2012)
+ paralleles paarweises Entity Matching auf Hadoop
+ Unterstützung für Blocking, lernbasiertes Matching und Lastbalancierung
+
+ FAMER (U Leipzig, seit 2017)
+ paralleles Matching für viele (>2) Datenquellen
+ Unterstützung für Entity Clustering
+
+ Magellan
+ Open-Source Python Framework mit Unterstützung von Blocking und
+Matching
+ Unterstützung für ML-Matching, inkl. Deep Learning
+ visuelle Oberfläche und gut dokumentierte API
+
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-56
+
+DUPLIKATE IN WEBDATEN: BEISPIEL
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-57
+
+WORKFLOW PRODUCT MATCHING
+
+ Pre-processing
+
+Product Code
+Extraction
+
+Product
+Offers
+
+Manufacturer
+Cleaning
+
+Automatic
+Classification
+
+ Training
+Training Data
+Selection
+
+Matcher
+Application
+
+Classifier
+
+ Application
+Blocking
+(Manufacturer
++ Category)
+
+Classifier
+Learning
+
+Matcher
+Application
+
+Classification
+
+Product
+Match Result
+Koepcke, Thor, Thomas, Rahm: Tailoring entity resolution for matching product offers. Proc. EDBT, 2012
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-58
+
+FAMER
+ FAst Multi-source Entity Resolution system
+
+– Annahme: duplikatfreie Eingabequellen
+
+https://dbs.uni-leipzig.de/research/projects/object_matching/famer
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-59
+
+FAMER-BEISPIEL
+Eingabedaten aus
+4 Quellen
+
+FAMERAnwendung
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-60
+
+INKREMENTELLES
+MATCHING/CLUSTERING MIT FAMER*
+ Integration neuer Entitäten/Datenquellen
+ Matching neuer Entitäten mit existierendem Similarity
+Graph
+ Zuweisung eines neues Entity zu ähnlichstem Cluster bzw.
+neues Cluster
+
+ optionale Anpassung (Reparatur) bisheriger Cluster
+
+*A. Saeedi, E. Peukert, E. Rahm: Incremental Multi-source Entity Resolution for Knowledge Graph Completion. Proc. ESWC 2020
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-61
+
+ZUSAMMENFASSUNG (1)
+ ETL als komplexer, aufwändiger Integrationsprozess
+ Schema- und Datenintegration / Data Cleaning
+ zahlreiche Schema- und Datenkonflikte
+ Unterscheidung quell-lokaler und -übergreifender Datenkonflikte
+ Data Profiling erster Schritt zur Datenbereinigung
+
+ Fokussierung auf Data Warehouse-spezifisches
+Zielschema erleichtert Schemaintegration
+ Top-Down-Schemaintegration
+ keine vollständige Integration aller Quell-Schemata erforderlich
+
+ wichtiges Teilproblem: Schema-Matching
+ Bestimmung semantischer Korrespondenzen
+ Nutzung und Kombination mehrerer Matcher, u.a. linguistischer, struktureller
+und instanzbasierter Verfahren
+
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-62
+
+ZUSAMMENFASSUNG (2)
+ zentrales Problem: Duplikat-Identifikation und –
+Behandlung (Entity Matching)
+ hohe Effizienzanforderungen (-> Nutzung von BlockingVerfahren und ggf. Parallelisierung)
+ kombinierte Nutzung mehrerer Match-Verfahren
+ trainingsbasierte Klassifikationsansätze erleichtern Konfiguration
+des Match-Schrittes
+ Entity Clustering gruppiert alle Matches (Varianten) pro Entity
+
+ inkrementelles Matching / Clustering erforderlich
+ Abgleich neuer mit bereits existierenden Datensätzen
+ Unterstützung u.a. in FAMER-Prototyp
+
+ zahlreiche Tools / Produkte mit stark unterschiedlicher
+Funktionalität
+ zunehmend ML-Unterstützung für Entity-Matching
+Abteilung Datenbanken
+
+DATA WAREHOUSING
+
+4-63
+
+
