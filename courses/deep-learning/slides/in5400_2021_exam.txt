@@ -1,0 +1,610 @@
+UNIVERSITY OF OSLO
+
+Faculty of mathematics and natural sciences
+Exam in:
+
+IN 5400/IN 9400  Machine Learning for Image Analysis
+
+Day of examination: June 4 2021
+Examination hours:
+
+9.00  13.00
+
+This exercise set consists of 14 pages.
+Appendices:
+
+None
+
+Permitted aids:
+
+All
+
+Information and tasks are given on the next pages.
+
+(Continued on page 2.)
+
+Exam in IN 5400/IN 9400, June 4 2021
+
+Page 2
+
+It is important that you read the following two (2) cover pages carefully before you start.
+General information:
+• Read the entire exercise text before you start solving the exercises.
+Please check that the exam paper is complete.
+• Important messages during the exam are given directly from the
+course teacher on the course’s semester page. It is therefore
+important that you check the course’s semester page regularly.
+• Your answer should reflect your own independent work and should
+be a result of your own learning and work effort.
+• All sources of information are allowed for written home exams. If
+you reproduce a text from books, online articles, etc., a reference to
+these sources must be provided to avoid suspicions of plagiarism.
+This also applies if a text is translated from other languages.
+• You are responsible for ensuring that your exam answers are not
+available to others during the exam period, neither physically nor
+digitally.
+• Remember that your exam answers must be anonymous; do not state
+either your name or that of fellow students.
+• If you want to withdraw from the exam, press the menu at the top
+right of Inspera and select "Withdraw".
+Collaboration during the exam:
+It is not allowed to collaborate or communicate with others during the
+exam. Cooperation and communication will be considered as attempted
+cheating. A plagiarism control is performed on all submitted exams where
+text similarities between answers are checked. If you use notes that have
+been prepared in collaboration with others before the exam, this might be
+detected in a plagiarism control. Such text similarities will be considered
+an attempt at cheating.
+Cheating / Dishonesty / Unfair advantage during an examination
+Read about what is considered cheating on UiO’s website. https:
+//www.uio.no/english/studies/examinations/cheating/index.html
+Further notes:
+
+(Continued on page 3.)
+
+Exam in IN 5400/IN 9400, June 4 2021
+
+Page 3
+
+• File upload: You have been given 30 min. extra time for uploading
+files (e.g. digital hand drawings). Please see also https://www.uio.
+no/english/studies/examinations/submissions/options-for-hand-drawings.
+html.
+• You can mix handwriting, hand drawings, digital drawings and
+digitally typed documents.
+Handwritten drawings are okay.
+Handwritten text on drawings is okay.
+Digitally typed text
+is preferred over handwritten text because of less potential for
+misreading.
+• You are responsible for the readability of your handwriting. You are
+responsible for the checking of the quality of scans of any drawings
+or handwritten parts. Remember that you can scan also using mobile
+phones.
+• Calculations: show your intermediate steps of calculations.
+• Most of your answers should include a discussion, typically a few
+sentences.
+• submit one pdf-file in inspera. In this file, the exercises should
+be answered in given order. Any figures or drawings MUST be
+included at the correct place in the document.
+Windows: you can import scanned drawings into some office
+document format with typed text and export as pdf. Linux: same
+as for windows. Also: pdfunite allows to concatenate many pdfs
+into one.
+• If you lack information in the exam text or think that some
+information is missing, you may make your own assumptions, as
+long as they are justifiable within the context of the exercise. In such
+a case, you should make it clear what assumptions you have made.
+• Plan your time so that you can try to answer as many subtasks as
+possible.
+Contact information:
+User support for the exam https://www.mn.uio.no/english/studies/
+exam/user-support.html
+
+(Continued on page 4.)
+
+Exam in IN 5400/IN 9400, June 4 2021
+
+Page 4
+
+Exercise 1
+1a
+What is the advantage of using residual connections in a CNN for
+training? Name two.
+
+1b
+Consider the following code:
+
+class subnet(nn.Module):
+...
+def forward(self,x):
+x = self.convblock17(x)
+x = self.convblock3(x)
+x = self.strangeblock1(x)
+x = self.convblock11(x)
+x = self.convblock9(x)
+x = self.strangeblock2(x)
+x = self.convblock81(x)
+return x
+How do you have to change the code such that there is a residual
+connection from the input to self.strangeblock1 until the output of
+self.convblock9 ?
+
+(Continued on page 5.)
+
+Exam in IN 5400/IN 9400, June 4 2021
+
+Page 5
+
+Exercise 2
+2a
+If you start training with a too high learning rate such as SGD with
+learning rate on the order of 1.0 or larger, what can go wrong and how
+can you notice that something goes wrong ?
+
+2b
+How can you diagnose overfitting to the training set during training?
+Please make a sketch if you would look at a plot for doing so.
+
+2c
+Given a partition of a dataset into train, validation, and test part, you are
+considering two options:
+(option 1) select the model from the best epoch on the validation set, select the
+best learning rate on the test set
+(option 2) select both, the best epoch and the best learning rate on the
+validation set
+What difference can occur between (option 1) and (option 2)?
+
+Exercise 3
+You are given with a fixed dataset of images, a fixed neural network
+architecture for classification where the weights are initialised using a
+model trained on another dataset, and a dataloader which resizes images
+to the desired size, subtracts the mean, divides by standard deviation and
+provides them as input to the neural network. The learning rate is set to
+0.001.
+
+3a
+Given that you cannot change the neural network architecture, finetuning
+initialization or the batchsize, you cannot collect more data, nor can you
+change the train/validation/test splits, name three ways which you can
+do to improve the prediction performance on the validation and test set
+and justify why they likely will help to improve performance more than
+other possible options.
+
+(Continued on page 6.)
+
+Exam in IN 5400/IN 9400, June 4 2021
+
+Page 6
+
+Exercise 4
+4a
+Explain one similarity and one difference between a fully-connected layer
+and a 1D(one dimensional)-convolution layer.
+
+4b
+Explain two differences between batchnormalization and adaptive instance normalization.
+
+Exercise 5
+5a
+In a 2-dimensional convolution layer, you are using a kernel of size (7, 5)
+and stride 3 with padding 4. If your input feature map has a spatial shape
+of (69, 90), what will be the spatial shape of the output feature map? Note
+that we do not mention here the number of channels.
+Show your intermediate computations and the result.
+
+5b
+A 1-dimensional convolutional layer has input layer l0 and uses a kernel
+of size 3 and stride 2. The output feature map will be named layer l1 . You
+use – on top of this layer l1 – another convolutional layer with kernel of
+size 5 and stride 3 . The output feature map will be named layer l2 . You
+use – on top of this layer l2 – another convolutional layer with kernel of
+size 3 and stride 1. The output feature map will be named layer l3 .
+How many spatial elements of the original input l0 will be used as
+input for computing the output of a single neuron of layers l2 and l3 ?
+You need to answer this only for neurons in the middle of the feature
+map. You can ignore padding effects at the boundaries of the feature map.
+Show your calculations.
+You can also use drawings, but show your calculations in any case.
+
+(Continued on page 7.)
+
+Exam in IN 5400/IN 9400, June 4 2021
+
+Page 7
+
+Exercise 6
+6a
+In what case does the surrogate-based attack have advantages compared
+to a Carlini-Wagner or an Iterative Gradient sign attack ?
+
+6b
+What problem can occur when one performs an adversarial attack using
+gradients and constant learning rate on the output of a tanh layer of
+a neural network which is used to produce regression outputs? The
+alternative would be to use the inputs to the tanh layer.
+
+Exercise 7
+Refer to the neural network in figure 1. The equation for any neuron
+k ∈ { a, b, c, . . .} is
+n(bias + ∑ wk k + ∑ vl xl ),
+k
+
+(1)
+
+l
+
+where n(·) is some activation function, and vl = 0 for neurons which have
+no direct inputs xl . wk = 0 for neurons which have no inputs from other
+neurons.
+
+x1
+
+f
+
+a
+
+e
+
+d
+
+c
+
+b
+j
+
+x2
+
+g
+
+h
+Figure 1: Mini Neural Network
+
+Note: the following points of this task are advice.
+expression in terms of (if needed)
+(Continued on page 8.)
+
+Write the
+
+Exam in IN 5400/IN 9400, June 4 2021
+
+Page 8
+
+∂e
+– ∂k
+, where k is a neuron directly connected to the loss function e
+1
+– ∂k
+∂k2 , where k 2 is direct input to k 1
+
+∂k
+1
+– and ∂x
+if xl is input to the neural network (otherwise use ∂k
+∂k2 )
+l
+
+∂k
+1
+(advice) At this point you do not need to plugin how ∂k
+∂k2 or ∂x looks like.
+l
+
+(advice) You do not need to multiply out terms in parentheses, so ( a + b)c or
+(( a + b)c + (d + e) f ) g is fine to keep it like that!
+Write down an expression for the following gradients of the neural
+network in figure 1:
+
+7a
+∂e
+∂x2
+
+7b
+∂e
+∂x1
+
+Exercise 8
+Consider the following table which encodes a directed graph, which defines connections in a neural network. An entry of 1 in row i and column
+k denotes that neuron k is a function of input i, or graphically i −→ k. F is
+the output neuron.
+S
+S 0
+A 0
+B 0
+C 0
+D 0
+E 0
+
+A
+1
+0
+0
+0
+0
+0
+
+B
+1
+1
+0
+0
+0
+0
+
+C
+0
+1
+1
+0
+0
+0
+
+D
+0
+0
+0
+1
+0
+0
+
+E
+1
+1
+1
+1
+1
+0
+
+F
+0
+0
+0
+0
+1
+1
+
+8a
+Draw the corresponding neural net
+
+8b
+What neural network class would be defined if the diagonal part of this
+table would have entries of 1? State in max 3 sentences why you think so.
+The diagonal part are entries in the table for [ A, A], [ B, B], ....
+(Continued on page 9.)
+
+Exam in IN 5400/IN 9400, June 4 2021
+
+Page 9
+
+Exercise 9
+9a
+What can you use in a Generator of a GAN to increase the feature map
+size during the forward pass? Name 2 architecture choices and possible
+values of parameters relevant to increase the feature map size.
+
+9b
+What is the role of a discriminator model in a GAN? Describe briefly two
+approaches how discriminators can be can be defined. Describe refers here
+to firstly, naming these approaches, and secondly describing the outline of
+these approaches, in particularly, what they take as input and output, and
+what they are optimizing for.
+
+9c
+Give one example of a formula for a loss for training the generator. Explain
+briefly how it ensures that a generator learns to produce desired output
+by discussing the meaning of having a very low or minimal loss for your
+particular loss formula.
+
+(Continued on page 10.)
+
+Exam in IN 5400/IN 9400, June 4 2021
+
+Page 10
+
+Exercise 10
+Assume that you start out with an already-trained convolutional neural
+net (CNN) for image classification. You are then set with the task of
+detecting and localizing objects of interest in images. There are three
+types of objects that you want to detect in the images; birds, balloons and
+baboons.
+To start with, let us assume that there is at most one such object of
+interest in each image.
+One approach to handling this is to modify the network so that it
+produces 8 output numbers, apply a suitable loss function, get appropriate
+training data, and then (re-)train this new network.
+
+10a
+In such a case, explain/define what this array of 8 output-numbers would
+be (how to interpret such an array of network outputs), and suggest an
+appropriate loss function.
+
+10b
+Now lets assume that images can have multiple objects of interest. With an
+object detection network which is capable of detecting of multiple objects
+of interest, we often end up having thousands of possible output bounding
+boxes for each input image. Many of them will thus likely detect the same
+object.
+How is this typically resolved?
+
+(Continued on page 11.)
+
+Exam in IN 5400/IN 9400, June 4 2021
+
+Page 11
+
+Exercise 11
+Consider this piece of code.
+
+class mypredictionnet(nn.Module):
+def __init__(self):
+super(mypredictionnet,self).__init__()
+self.block1 = nn.Conv2d(3, out_channels= 8, kernel_size=5)
+self.block2 = nn.Conv2d(8, out_channels= 8, kernel_size=5)
+self.block3 = nn.Conv2d(8, out_channels= 32, kernel_size=3)
+self.block4 = nn.Conv2d(32, out_channels= 32, kernel_size=3)
+self.block5 = nn.Conv2d(32, out_channels= 32, kernel_size=3)
+self.block6 = nn.Conv2d(32, out_channels= 32, kernel_size=3)
+self.somepooling = torch.nn.AdaptiveAvgPool2d(output_size = 1 )
+self.fc = nn.Linear(32,10)
+def forward(self,x):
+x= torch.nn.functional.relu( self.block1(x) )
+x= torch.nn.functional.relu( self.block2(x) )
+x= torch.nn.functional.relu( self.block3(x) )
+x= torch.nn.functional.relu( self.block4(x) )
+x= torch.nn.functional.relu( self.block5(x) )
+x= torch.nn.functional.relu( self.block6(x) )
+x= self.somepooling(x)
+x = torch.flatten(x, 1)
+x = self.fc( x )
+return x
+def trainsome():
+useddevice= torch.device('cuda:0')
+dataloader = torch.utils.data.DataLoader(#here some working code)
+lossfunction = #here some working loss function is defined
+net = mypredictionnet().to(useddevice)
+trainables=[]
+for name,params in net.named_parameters():
+if 'block4' in name:
+trainables.append(params)
+elif 'block5' in name:
+trainables.append(params)
+elif 'block6' in name:
+trainables.append(params)
+(Continued on page 12.)
+
+Exam in IN 5400/IN 9400, June 4 2021
+
+Page 12
+
+optimizer = torch.optim.SGD(trainables, lr=0.001, momentum=0.9)
+net.train(True)
+for data in dataloader:
+# data['img'] will be the features, data['labels'] will be the labels
+inputs = data['img'].to(useddevice)
+labels = data['labels'].to(useddevice)
+optimizer.zero_grad()
+outputs = net(inputs)
+trainloss = lossfunction (outputs , labels)
+trainloss.backward()
+optimizer.step()
+
+11a
+Why this model will perform poorly on more complex problems going
+beyond the simplest datasets like MNIST? You will see a poor performance
+on a test data set. Note: there is no issue with the size of the learning rate
+or kernel sizes. You also do not need to check for missing ":" at the end of
+for loops and other small syntactical noise.
+
+11b
+How would you fix that? Briefly explain two different ways to fix the
+problem and why each of the two different ways will make the model
+learn better provided that the data has some information in it.
+
+Exercise 12
+Something more involved about Wasserstein distance. It is possible to get
+a top grade even when making really big mistakes in this task.
+Remember the dual form of the Wasserstein distance, estimated on two
+sets of samples as
+1
+1
+f ( xi ) −
+f ( xi )
+∑
+| B| x∑
+f ∈ Lip1 | A | x ∈ A
+∈B
+sup
+
+i
+
+i
+
+Furthermore: K is a Lipschitz-constant of f if:
+
+∀ x1 , x2 : | f ( x1 ) − f ( x2 )| ≤ K k x1 − x2 k
+Lip1 is the space of all functions with Lipschitz constants smaller or equal
+to 1:
+f ∈ Lip1 ⇔ ∀ x, y : k f ( x ) − f (y)k < k x − yk
+(Continued on page 13.)
+
+Exam in IN 5400/IN 9400, June 4 2021
+
+Page 13
+
+Suppose you have two samples, one each from two different distributions:
+
+(3, 1) from distribution A
+(−2, 2) from distribution B
+consider the function f w ( x1 , x2 ) = w1 x1 + w2 x2 such that w1 = 0.3,
+w2 = −0.5
+Complete the following two steps to show that f does not compute
+the Wasserstein distance between the estimates of the two distributions
+represented by their only available samples.
+
+12a
+Show firstly that f ∈ Lip1 with a Lipschitz constant K (w) < 1
+Then show secondly that for the function
+h(w) =
+
+1
+1
+f w ( xi ) −
+f w ( xi )
+∑
+| A| x ∈ A
+| B| x∑
+∈B
+i
+
+i
+
+w = (0.3, −0.5)
+you have ∇h(w) 6= 0.
+(Outside of your task:) Why this works ? This implies, that you can
+update the current weight in f = f w using:
+w2 = w + e ∇ h ( w )
+and you would obtain for a sufficiently small e > 0: h(w2 ) > h(w) = f w .
+Then you have done all what is necessary to prove that f does not compute the Wasserstein distance between the estimates of the two distributions. Below I will explain why are these two properties sufficient to prove:
+It shows, firstly, that there exists a function with larger value for g(w2 ),
+which, however, is not said to be in Lip1 .
+However, since f ∈ Lip1 with a Lipschitz constant K (w) < 1, a
+sufficiently small change in its parameter w would still result in a Lipschitz
+constant K (w2 ) < 1 as well, and thus g(w2 ) ∈ Lip1 . For e > 0 sufficiently
+small, we can realize a sufficiently small change in its parameter w.
+
+(Continued on page 14.)
+
+Exam in IN 5400/IN 9400, June 4 2021
+
+Exercise 13
+
+Page 14
+
+PhD students only
+
+Answers from MSc students will be ignored :)
+
+13a
+Consider the inner product between two vectors:
+s(v, w) =
+
+v·w
+∑D v w
+= d =1 d d
+kvkkwk
+kvkkwk
+
+Why is the normalized inner product considered a similarity measure?
+Discuss this by giving three pairs of vectors v, w as examples.
+
+13b
+If you take the VGG-16 architecture, and you would train it on a dataset
+of fixed size:
+– the VGG16 with one fully-connected layer removed
+– the VGG16 with one fully-connected layer added at the top.
+For which of these two choices would you expect more or less
+overfitting as compared to the original VGG-16 architecture for suitable
+choice of training hyperparameters? Justify your answer in at most 3
+sentences.
+
+

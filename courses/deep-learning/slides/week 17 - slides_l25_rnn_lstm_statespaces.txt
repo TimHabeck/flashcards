@@ -1,0 +1,841 @@
+Intro to DL4MSc: before and beyond transformers: RNNs, LSTM,
+State space models
+Alexander Binder
+February 2, 2026
+
+RNNs and LSTM
+
+⊙ models to process a sequence before transformers
+⊙ two setups:
+· predict for every time step of the sequence (e.g. predict the next word/token, predict if a
+word has some particular meaning)
+· accumulate information over the whole sequence. Example: for sentiment analysis.
+
+|2
+
+LSTM
+
+|3
+
+Learning goals RNN and LSTM
+⊙ be able to give a formula for a RNN
+⊙ be able to give a formular for gating in LSTM
+⊙ be able to explain inputs and outputs into the memory cell of an LSTM, how the hidden
+state is computed
+
+LSTM
+
+|4
+
+Learning goals state space models
+⊙ be able to give a formula for the continuous update of a state space model
+⊙ be able to compare advantages and disadvantages to a transformer
+
+Outline
+
+1 LSTM
+2 RNNs in general
+3 State space models until Mamba
+4 Selective state space models (Mamba)
+
+|5
+
+LSTM
+
+|6
+
+⊙ use case: input a sequence (x0 , x1 , x2 , . . . , xt , . . .), e.g. words, a time series
+⊙ prediction problems:
+· either predict a property of every time step:
+(e.g. is a word a location or a person or something else ? or predict the next token when
+generating a new text, or is a measurement of a chemical reaction at a certain timestep
+problematic? )
+for all of this one would use the hidden state
+· or accumulate information over all time steps:
+(e.g. to get the sentiment of a sentence, encode a question directed at an image)
+
+LSTM
+
+|7
+
+coarse data flow idea:
+
+hidden s ate
+
+LSTM
+cell
+mem
+cell
+
+mem
+cell a t
+
+input at time t
+
+LSTM
+
+|8
+
+hidden s at
+⊙ receives an input xt at every time step
+(e.g. a token from a word, or a time
+series measurement)
+
+LSTM
+cell
+mem
+cell
+
+mem
+cell a t
+
+⊙ hidden state: contains content needed to
+predict a property at the specific time
+step t (e.g. next token, or is it a name
+or location ?). That content is taken
+from the memory cell, conditioned on
+information present in xt and ht−1
+⊙ memory cell: carries information needed
+for later time steps (eg to predict at a
+later time step, or to accumulate
+information over a whole input sentence)
+
+input at time t
+
+LSTM
+
+|9
+
+⊙ have as inputs at current time step t: [xt , ht−1 ] – input feature vector xt , hidden state vector
+from the last time ht−1
+· small technical problem: xt and ht−1 have not the same dimensionality. We willneed to
+xt
+compute several different affine mappings over the concatenation [xt , ht−1 ] aka
+of
+ht−1
+these two:
+
+
+xt
+z = [Wx , Wh ]
++ b = nn.Linear.forward([xt , ht−1 ])
+ht−1
+· role: We will use these affine mappings to compute weights, and to determine how much of
+the current input [xt , ht−1 ] to pass into the memory cell
+· Many online sources show something like
+z = Wx xt + Wh ht−1 + b
+Effectively
+this is only a definition of an affine mapping over the concatenation [xt , ht−1 ] aka
+
+
+xt
+. Both compute the same vector z.
+ht−1
+
+LSTM
+
+| 10
+
+coarse data flow idea:
+⊙ have as inputs at current time step t: input feature vector xt , hidden state vector from the last
+time step ht−1 . We will compute several affine mappings over their concatenation [xt , ht−1 ]
+⊙ update memory cell vector Ct at time step t: start with the previous hidden state vector Ct−1 to
+compute the new Ct
+·
+·
+·
+·
+
+update mechanism:
+downweight the old Ct−1
+add a weighted linear combination of [xt , ht−1 ] to it.
+use the same concatenation [xt , ht−1 ] and different linear transformation parameters (W , b)
+to compute different weights. These weights are called gates. Gates are merely weights to
+determine how much of a feature to use.
+
+⊙ issue new hidden state ht based on updated memory cell Ct
+Now one can put all these intuition-based ideas into formulas.
+
+LSTM
+
+| 11
+
+⊙ have as inputs at t: input feature vector xt , hidden state vector from the last time step ht−1 . We
+will compute several affine mappings over their concatenation [xt , ht−1 ]
+⊙ update memory cell vector Ct at time step t: start with the previous hidden state vector Ct−1 to
+compute the new Ct
+· update mechanism:
+· downweight the old Ct−1 , add a weighted linear combination of [xt , ht−1 ] to it.
+addt = tanh(W (a) [xt , ht−1 ]⊤ )
+
+what to add to new memory state ∈ [−1, +1]d
+
+ft = σ(W (f ) [xt , ht−1 ]⊤ + b (f ) )
+
+how much of old memory to use/erase ∈ [0, 1]d
+
+it = σ(W (i) [xt , ht−1 ]⊤ + b (i) )
+
+how much to add to new memory state ∈ [0, 1]d
+
+Ct = ft Ct−1 + it addt
+
+mem cell update ∈ [−1, +1]d
+
+· use the concat [xt , ht−1 ] and different linear transformations of them to compute the
+different weights.
+· the [−1, +1] range from the tanh allows to actively erase content in the memory cell
+
+LSTM
+
+| 12
+
+⊙ have as inputs at t: input feature vector xt , hidden state vector from the last time step ht−1 . We
+will compute several affine mappings over their concatenation [xt , ht−1 ]
+⊙ update memory cell vector Ct at time step t: start with the previous hidden state vector Ct−1 to
+compute the new Ct :
+– see previous slide
+⊙ issue new hidden state ht based on updated memory cell Ct
+h̃t = tanh(Ct )
+ot = σ(W (o) [xt , ht−1 ]⊤ + b (o) )
+ht = h̃t ot
+
+non-linearity ∈ [−1, +1]
+what/how much of memory to use for hidden state
+the weighted content
+
+· The idea here is that some of the memory cell content is not of interest for the current
+hidden state at time step t, and that can be weighted down by the output gate.
+· all gates ft , it , ot use element-wise multiplication, not matrix-vector multiplication
+
+RNNs in general
+
+| 13
+
+A guidance for biases in LSTM:
+dCt [i]
+= ft [i]
+dCt−1 [i]
+dCt [i]
+= ft [i]ft−1 [i]
+dCt−2 [i]
+t
+Y
+dCt [i]
+=
+fr [i]
+dCt−k [i]
+r =t−k+1
+
+to ensure good gradient flow at initialization: set bf = +10k to a large number. Then fr ≈ 1 and
+nothing is forgotten. Alternatively one can freeze the forget biases to a large value for the first epochs
+and optimize them only later.
+
+LSTM pros and limitations
+
+| 14
+
+More robust to vanishing and exploding gradients than other RNNs.
+Problem of mostly vanishing and sometimes exploding gradients occurs anyway if the sequence is long
+enough (hundreds or thousands). As a quick insight why:
+dCt [i]
+=
+dCt−k [i]
+
+t
+Y
+
+fr [i]
+
+r =t−k+1
+
+This is a product of terms in (0, 1), thus going to zero.
+Example if fr = 0.5. See slides on RNNs for a more detailed explanation.
+
+Outline
+
+1 LSTM
+2 RNNs in general
+3 State space models until Mamba
+4 Selective state space models (Mamba)
+
+| 15
+
+RNNs in general
+
+| 16
+
+old
+s at
+
+RNN
+cell
+
+s ate at t
+
+input at time t
+RNN
+a RNN is any function which updates a state vector ht over time t given a sequence (xt )t
+ht = f (xt , ht−1 )
+
+RNNs in general
+
+| 17
+
+RNN
+a RNN is any function which updates a state vector ht over time t given a sequence (xt )t
+ht = f (xt , ht−1 )
+The simplest form: pure affine update
+ht = W [xt , ht−1 ]⊤ + b
+drawback:
+⊙ value stability of the update. How to ensure that ht ̸→ {0, −∞, +∞} ?
+⊙ also possible divergence of gradients
+
+RNNs in general
+
+| 18
+
+The value stability issue:
+⊙ consider 1-dimensional state ht ∈ R. If Wx = 1, Wh = 1, then
+ht = ht−1 + xt
+⇒ ht =
+
+t
+X
+
+xi
+
+i=0
+
+This is a series convergence problem: limt→∞ ht =
+X 1
+= π 2 /6
+i2
+
+P∞
+
+i=0 xi (!) Examples
+
+i≥1
+
+X1
+i≥1
+
+X1
+i
+i≥1
+X
+i≥1
+
+i
+
+→∞
+
+(−1)i+1 = ln(2)
+(−2)i+1 → oscillatingly divergent
+
+RNNs in general
+
+| 19
+
+The value stability issue:
+⊙ Example: if xt ∈ R1 , wh ̸= 1, wx = 1, then
+ht =
+
+∞
+X
+
+whi xi
+
+i=0
+
+if |w | > 1, then the xi must go faster to zero so that it converges
+It is known:
+∞
+X
+i=0
+
+wi
+
+1
+= ew
+i!
+
+next idea: use a bounded activation:
+ht = tanh(W [xt , ht−1 ]⊤ + b)
+... will lead to the next problem!
+
+RNNs in general
+
+| 20
+
+Stability issues for
+ht = tanh(W [xt , ht−1 ]⊤ + b)
+
+⊙ gradients may vanish or explode
+t
+using chainrule, assume all is 1-dimensional for simplicity:
+⊙ compute dhdht−k
+
+at := W [xt , ht−1 ]⊤ + b = wx xt + wh ht + b
+ht := tanh(at )
+dht
+= tanh′ (at )wh
+⇒
+dht−1
+dht
+dht dht−1
+=
+= tanh′ (at )wh tanh′ (at−1 )wh
+dht−2
+dht−1 dht−2
+t
+Y
+dht
+⇒
+= whk
+tanh′ (ar )
+dht−k
+r =t−k+1
+
+RNNs in general
+
+| 21
+
+Stability issues for ht = tanh(W [xt , ht−1 ]⊤ + b)
+⊙ gradients may vanish or explode
+t
+⊙ compute dhdht−k
+using chainrule, assume all is 1-dimensional for simplicity:
+
+at := W [xt , ht−1 ]⊤ + b
+ht = tanh(at )
+⇒
+
+dht
+= whk
+dht−k
+
+t
+Y
+
+tanh′ (ar )
+
+r =t−k+1
+
+For a random sequence xt it is very hard to ensure that this product will remain bounded away from
+{0, −∞, +∞}.
+⊙ if |w | > 1, the term whk will drive a divergence. However, if ar is large due to the influence of the
+xt , then |tanh′ (ar )| ≈ 0. Getting this balanced for randomly fluctuating xt is difficult.
+⊙ if |w | < 1, then you have an exponential decay of gradients. RNN will not be trainable except for
+short sequences.
+
+RNNs in general
+
+General RNNs aside from LSTM are challenging to use for longer sequences. Mostly LSTM has been
+used.
+How did transformers solve this ?
+⊙ avoid iterative updates as in RNNs. Attention is one big sum over the whole sequence.
+⊙ Layernorm like Peri-LN - ensure stats have trainable but fixed mean and standard deviation after
+every layer
+⊙ careful tuning of constants (eq the √1d inside the attention softmax comp.)
+⊙ learning rate warmups, many experiments for stable training settings
+
+| 22
+
+Outline
+
+1 LSTM
+2 RNNs in general
+3 State space models until Mamba
+4 Selective state space models (Mamba)
+
+| 23
+
+state space modelsin general
+
+...
+
+| 24
+
+state space models in general
+
+An alternative to transformers (a bit more complicated in theory, though!).
+⊙ one problem: attention in transformers is O(T 2 ) in sequence length T - slow for long sequences
+⊙ starting point: unpretrained (!) transformers perform poorly on long-range attention benchmarks.
+See Table 2 in Gu et al. https://arxiv.org/pdf/2206.12037
+⊙ However, also see that pretraining of transformer fixes this. See Amos et
+al. https://arxiv.org/pdf/2310.02980
+
+| 25
+
+state space models in general
+
+An alternative to transformers (a bit more complicated in theory, though!).
+papers:
+⊙ Gu et al. https://arxiv.org/pdf/2206.12037,https://arxiv.org/pdf/2111.00396
+Gu, Dao https://arxiv.org/pdf/2312.00752
+
+| 26
+
+state space models
+
+| 27
+
+a good to know alternative
+continuous equation
+s ′ (t) = As(t) + Bu(t)
+y (t) = Cs(t)
+Compare to LSTM:
+⊙ s(t) - state at time t
+⊙ u(t) input at time t to update the state
+⊙ y (t) output at time t
+
+state space models in general
+
+| 28
+
+continuous equation
+s ′ (t) = As(t) + Bu(t)
+y (t) = Cs(t)
+next: Sections 2.3 and 2.4 in https://arxiv.org/pdf/2111.00396 to get a discretization and a view as
+convolution kernels
+
+state space models
+
+| 29
+
+continuous equation
+s ′ (t) = As(t) + Bu(t)
+y (t) = Cs(t)
+next: Sections 2.3 and 2.4 in https://arxiv.org/pdf/2111.00396 to get a discretization to a doscrete
+time series with states sn , un , yn
+... and a view as convolution kernels
+
+state space models - discretization
+
+| 30
+
+We assume that we have measurements at time steps t0 , t1 , t2 , . . . , tn , tn+1 , . . ..
+We want to approximate s ′ (t) = f (t) = As(t) + Bu(t) in discrete time
+s ′ (t) = As(t) + Bu(t)
+Z tn+1
+Z tn+1
+⇒ s(tn+1 ) − s(tn ) =
+s ′ (t)dt =
+As(t) + Bu(t)dt
+tn
+
+tn
+
+This is the area under the integral. It can be approximated as
+Z tn+1
+1
+f (t)dt ≈ (tn+1 − tn ) (f (tn ) + f (tn+1 ))
+| {z } |2
+tn
+{z
+}
+interval length
+
+avg of f at boundaries
+
+Assumption 1: tn+1 − tn = ∆ is constant
+1
+∆
+⇒ s(tn+1 ) − s(tn ) ≈ (tn+1 − tn ) (Asn + Bun + Asn+1 + Bun+1 ) = (Asn + Bun + Asn+1 + Bun+1 )
+2
+2
+
+state space models - discretization
+We assume that we have measurements at time steps t0 , t1 , t2 , . . . , tn , tn+1 , . . ..
+We want to approximate s ′ (t) = f (t) = As(t) + Bu(t) in discrete time
+Assumption 1: tn+1 − tn = ∆ is constant
+∆
+1
+⇒ s(tn+1 ) − s(tn ) ≈ (tn+1 − tn ) (Asn + Bun + Asn+1 + Bun+1 ) = (Asn + Bun + Asn+1 + Bun+1 )
+2
+2
+∆
+⇒ sn+1 ≈ sn + (Asn + Bun + Asn+1 + Bun+1 )
+2
+Solve this for sn+1 :
+sn+1 −
+
+∆
+∆
+∆
+Asn+1 ≈ sn + Asn + B(un+1 + un )
+2
+2
+2
+
+Assumption 2: un+1 ≈ un
+∆
+∆
+(I − A)sn+1 ≈ (I + A)sn + ∆Bun+1
+2
+2
+∆ −1
+∆
+∆
+sn+1 ≈ (I − A) (I + A)sn + (I − A)−1 ∆Bun+1
+2
+2
+2
+
+| 31
+
+state space models - discretization
+We assume that we have measurements at time steps t0 , t1 , t2 , . . . , tn , tn+1 , . . ..
+We want to approximate s ′ (t) = f (t) = As(t) + Bu(t) in discrete time
+Assumption 1: tn+1 − tn = ∆ is constant. Assumption 2: un+1 ≈ un
+We obtain
+sn+1 ≈ (I −
+Write: (C̄ = C )
+
+∆
+∆
+∆ −1
+A) (I + A)sn + (I − A)−1 ∆Bun+1
+2
+2
+2
+∆ −1
+∆
+A) (I + A)
+2
+2
+∆ −1
+B̄ = (I − A) ∆B
+2
+Ā = (I −
+
+to get the discretized state space model
+sn+1 = Āsn + B̄un+1 ,
+yn+1 = Csn+1
+
+| 32
+
+state space models
+
+| 33
+
+the discretized state space model , recursive view
+
+∆ = tn+1 − tn (const.)
+∆
+∆
+Ā = (I − A)−1 (I + A)
+2
+2
+∆ −1
+B̄ = (I − A) ∆B
+2
+sn+1 = Āsn + B̄un+1
+yn+1 = Csn+1
+What matters for accuracy is how A, B, C are initialized!
+next: a 1d-convolution view.
+⊙ roll out computation of sn+1 , yn+1 as function of sn , un
+
+state space models
+
+| 34
+
+sn+1 = Āsn + B̄un+1 ,
+yn+1 = Csn+1
+next: a 1d-convolution view.
+⊙ roll out computation of sn+1 , yn+1 as function of sn , un+1
+s0 = B̄u0
+s1 = Ās0 + B̄u1 = ĀB̄u0 + B̄u1
+s2 = Ās1 + B̄u2 = Ā2 B̄u0 + ĀB̄u1 + B̄u2
+s3 = Ās2 + B̄u3 = Ā3 B̄u0 + Ā2 B̄u1 + ĀB̄u2 + B̄u3
+⇒ sn+1 = Ān+1 B̄u0 + Ān B̄u1 + Ān−1 B̄u2 + . . . + B̄un+1
+⇒ sn+1 =
+
+n+1
+X
+t=0
+
+Ān+1−t B̄ut
+
+state space models
+
+| 35
+
+sn+1 = Āsn + B̄un+1 ,
+yn+1 = Csn+1
+next: a 1d-convolution view.
+⊙ roll out computation of sn+1 , yn+1 as function of sn , un+1
+s0 = B̄u0
+s1 = Ās0 + B̄u1 = ĀB̄u0 + B̄u1
+s2 = Ās1 + B̄u2 = Ā2 B̄u0 + ĀB̄u1 + B̄u2
+⇒ sn+1 =
+
+n+1
+X
+
+Ān+1−t B̄ut
+
+t=0
+
+⇒ yn+1 =
+
+n+1
+X
+t=0
+
+(C Ān+1−t B̄)ut = conv (C Ā(·) B̄, u(·) )
+
+state space models
+
+| 36
+
+sn+1 = Āsn + B̄un+1 ,
+yn+1 = Csn+1
+next: a 1d-convolution view.
+⊙ roll out computation of sn+1 , yn+1 as function of sn , un+1
+
+⇒ yn+1 =
+
+n+1
+X
+
+(C Ān+1−t B̄)ut = conv (C Ā(·) B̄, u(·) )
+
+t=0
+
+We obtain a mathematical convolution (inverted index for one of them) between
+⊙ the sequence (C Ā0 B̄, C Ā1 B̄, . . . , C Ān B̄) - as a 1d convolution kernel
+⊙ and the sequence (u0 , u1 , . . . , un )
+
+state space models
+
+| 37
+
+Fig 1 in https://arxiv.org/pdf/2110.13985
+
+state space models
+
+| 38
+
+What matters for accuracy is how A, B, C are initialized!
+⊙ example: sequential Cifar-10 task, that is take a CIFAR-10 image and flatten it into a sequential
+vector , and throwing away the 2d-structure
+⊙ see Section 4.4, figure 3 in https://arxiv.org/pdf/2111.00396 for results
+
+https://arxiv.org/pdf/2111.00396
+
+state space models (no exam)
+
+| 39
+
+A theory-driven paper which explains why these initializations work:
+https://arxiv.org/pdf/2206.12037v2.
+⊙ see Definition 1 in the paper. They define a vector of N functions e tA B to accumulate
+information from u(s) over time:
+(A, B) 7→ Kn (t) = (e (n) )⊤ e tA B n-th out of N
+Z t
+xn (t) = (u ∗ Kn )(t) =
+Kn (t − s)u(s)ds
+−∞
+
+... in a way that these functions are independent/orthogonal in an L2-inner product sense1 so
+that one can reconstruct u(s) from the {xn (t), n} (Definition 2 and proposition 2).
+(See also Sec 4.3, Figure 7 in https://arxiv.org/pdf/2206.12037v2)
+
+1
+
+you can ignore the ω in Def.2
+
+Outline
+
+1 LSTM
+2 RNNs in general
+3 State space models until Mamba
+4 Selective state space models (Mamba)
+
+| 40
+
+state space models in general
+
+| 41
+
+Gu et al. https://arxiv.org/pdf/2312.00752
+Motivation: SSMs perform not well on tasks, which need a data-dependent selection. Examples
+⊙ Selective Copying task
+⊙ Induction head task
+
+https://arxiv.org/pdf/2312.00752
+
+state space models in general
+
+| 42
+
+https://arxiv.org/pdf/2312.00752
+
+Motivation: SSMs perform not well on tasks, which need a data-dependent selection. Examples
+⊙ Standard copying task has as input a sequence consisting of: at the beginning 10 randomly
+sampled important tokens in a row, then T fill tokens, then one < START > token. Goal is for
+varying T not seen at training time to remember the initial important tokens when receiving the
+< START > token.
+⊙ Selective copying task: random length fill tokens between the important tokens.
+
+state space models in general
+
+| 43
+
+https://arxiv.org/pdf/2312.00752
+
+Motivation: SSMs perform not well on tasks, which need a data-dependent selection. Examples
+⊙ Induction head task: have seen a context-answer pair in a sequence of tokens together with fill
+tokens. retrieve an answer token after receiving the < START > token and the context token.
+· example: if the model has seen a bigram such as ”Harry Potter” in the sequence, then the
+next time ”Harry” appears in the same sequence, the model should be able to predict
+”Potter” by copying from history.
+· a typical task solved in LLMs using attention
+
+state space models in general
+
+| 44
+
+https://arxiv.org/pdf/2312.00752
+
+⊙ idea: make ∆, B, C dependent on the current input ut in a sequence
+⊙ all s(·) (x ) = Wx + b: trainable linear layers
+(+) Theorem 1 / eq (5): can recover RNN-type gating as a special case!
+(-) cannot use fixed convolution view, must run it as recurrent NN
+
+state space models in general
+
+| 45
+
+https://arxiv.org/pdf/2312.00752
+
+⊙ idea: make ∆, B, C dependent on the current input ut in a sequence
+⊙ all s(·) (x ) = Wx + b: trainable linear layers
+⊙ page 9 in the paper: interpretation of the parametrized parameters.
+· B, C as input/output dimension selectors
+· ∆ → ∞ resets state vector and adds more of current ut
+
+state space models in general
+
+| 46
+
+What to know about state space models and mamba
+⊙ they originate from a continuous-time state space differential equation for a state vector
+s(t)
+s ′ (t) = As(t) + Bx (t)
+y (t) = Cs(t)
+⊙ one needs to use a discretization to apply it to discrete time steps
+⊙ the success is based on a smart initialization of the matrices A, B before training.
+⊙ Mamba integrates a time-discretized state space in a block replacing transformer blocks
+⊙ they may have runtime advantages over attention blocks in transformers
+
+XLSTM
+
+todo: XLSTM in Winter 2026/2027
+
+| 47
+
+

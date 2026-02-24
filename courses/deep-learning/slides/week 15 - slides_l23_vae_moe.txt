@@ -1,0 +1,685 @@
+Intro to DL4MSc: VAE/ NLP Mixtures of Experts
+Alexander Binder
+January 20, 2026
+
+Outline
+
+|2
+
+1 VAE
+
+The basic autoencoder
+How to use an autoencoder for generation
+a probabilistic derivation of VAE
+VAE at inference time
+VAE applications
+
+VAE overview
+
+⊙ a simple way to obtain a generative model
+⊙ usually inferior to diffusion models and GANs, but can be trained with much smaller resources:
+tradeoff to efficiency!
+⊙ quick generative baseline
+
+|3
+
+VAE overview
+
+Learning goals
+at the end of this lecture you should be able to:
+⊙ explain the training and the inference figure
+
+|4
+
+VAE overview
+
+a good read:
+⊙ Kingma, Welling: https://arxiv.org/pdf/1906.02691
+⊙ the slides by Kaiming He on VAE (high clarity)
+
+|5
+
+The basic autoencoder
+
+Simple autoencoder
+
+|7
+
+⊙ a self-supervised way to learn a feature representation
+min Ex ∼data ∥x − fθ (gϕ (x ))∥22
+θ,ϕ
+
+Simple autoencoder
+
+⊙ in practice: for feature learning inferior to openly available pretrained foundation models
+· foundation models are trained with much more data
+· complete reconstruction of a sample is a more complex objective than many discriminative
+downstream tasks
+
+|8
+
+Simple autoencoder
+
+|9
+
+⊙ a self-supervised way to learn a feature representation
+min Ex ∼data ∥x − fθ (gϕ (x ))∥22
+θ,ϕ
+
+⊙ permits a trivial solution: f = g = Id
+⊙ learning = compress data to the relevant core. ⇒ enforce a non-identity solution by a bottleneck
+
+Simple autoencoder
+
+You have seen bottleneck-type models already ... though they are not fully suitable as a VAE
+
+| 10
+
+Simple autoencoder
+You have seen bottleneck-type model designs already ... though they are not fully suitable as a VAE
+
+| 11
+
+Simple autoencoder
+A simple architecture:
+⊙ Resnet-like encoder (BN/Layernorm) and residual connections
+⊙ decoder: residual blocks and transposed convolutions for upsampling, eg. Fig 3 in
+https://arxiv.org/pdf/2309.13160v3
+
+| 12
+
+How to use an autoencoder for generation
+
+Simple autoencoder
+
+| 14
+
+Can use it to generate new data ... if we would have learned a probability distribution p(·) for the
+bottleneck features z.
+⊙ sample latent vector z ∼ p(z)
+⊙ x = fθ (z) generates new data. Can use fθ (z) as mean of a distribution for to get a probabilistic
+model pθ (x |z)
+
+e.g.
+
+Simple autoencoder
+
+| 15
+
+e.g.
+
+Assumptions:
+⊙ ptrue (x ) - true data distribution to be modeled, unknown
+⊙ have a probabilistic decoder pθ (x |z) , it returns a distribution over x given a latent feature z
+· example how to implement this: draw from a Normal distrib N (x |µ, σ 2 ),
+where µ = fθ (z) is the decoder
+output over latent z: pθ (x |z) = N (x |µ = fθ (z), σ 2 )
+R
+· We know:
+pθ (x ) = z pθ (x |z)p(z)dz
+⊙ goals I: choose θ such that pθ (x ) ≈ ptrue (x )
+⊙ goals II: choose a meaningful distribution p(z) (such that inference produces high quality samples)
+
+A look ahead
+
+| 16
+
+e.g.
+
+There is an intuitive first idea for an objective to learn a generative model:
+minθ,ϕ Ex ∼data ∥x − fθ (gϕ (x ))∥22 + Lgen (qϕ (z|x ))
+⊙ learn to reconstruct data ∥x − fθ (gϕ (x ))∥22 to get an informative encoder and decoder
+⊙ learn a probability distribution z ∼ qϕ (z|x ) using the encoder gϕ (x )
+Next: a probabilistic derivation
+
+a probabilistic derivation of VAE
+
+probabilistic derivation of VAE
+
+| 18
+
+Assumptions:
+⊙ ptrue (x ) - true data distribution to be modeled, unknown
+⊙ have a probabilistic decoder pθ (x |z) , it returns a distribution over
+x given a latent feature z
+· example:
+· We know:
+
+pθ (x |z) = N (x |µ = fθ (z), σ 2 )
+R
+pθ (x ) = z pθ (x |z)p(z)dz
+
+⊙ goals I: choose θ such that pθ (x ) ≈ ptrue (x )
+e.g.
+
+⊙ goals II: choose a meaningful distribution p(z) (such that inference
+produces high quality samples)
+⊙ next: some necessary theory
+
+probabilistic derivation of VAE
+
+| 19
+
+⊙ simplest idea: maximum likelihood with iid. assumption
+Y
+θ∗ = argmax
+pθ (xi )
+θ
+
+⇔ θ∗ = argmax
+θ
+
+e.g.
+
+xi ∈Train
+
+X
+
+log pθ (xi )
+
+xi ∈Train
+
+⊙ We are usually able to compute pθ (x |z)
+e.g. pθ (x |z) = N (x |µ = fθ (z), σ 2 )
+
+⊙ How to optimize for
+pθ (x ) ≈ ptrue (x ) ?
+
+with fθ (z) being the decoder part
+R
+⊙ We know:
+pθ (x ) = z pθ (x |z)p(z)dz
+
+probabilistic derivatio of VAE
+
+| 20
+
+⊙ We are usually able to compute pθ (x |z) with fθ (z) being the
+decoder part
+e.g. pθ (x |z) = N (x |µ = fθ (z), σ 2 )
+⊙ We know:
+
+pθ (x ) =
+
+R
+z
+
+pθ (x |z)p(z)dz
+
+⊙ problem 1: for p(z) with a continuous density, in most cases, the
+integral for pθ (x ) cannot be computed:
+
+e.g.
+
+· it requires to integrate over neural net inputs fθ (z)a
+⊙ How to optimize for
+pθ (x ) ≈ ptrue (x ) ?
+
+⊙ problem 2: pθ (z|x ) = pθ (xpθ|z)p(z)
+is also not computable (pθ (x ))
+(x )
+
+⊙ idea: maximum likelihood
+with iid. assumption:
+X
+θ∗ = argmax
+log pθ (xi )
+
+⊙ we have an encoder z = gϕ (x ) ... but this does not define the
+distribution pθ (z|x ) which belongs to pθ (x |z) in the sense of Bayes
+theorem
+
+θ
+
+xi ∈Train
+
+a
+
+(in which cases for p(z) and fθ (z) this is possible?)
+
+probabilistic derivatio of VAE
+
+| 21
+
+⊙ We are usually able to compute pθ (x |z) with fθ (z) being the
+decoder part
+e.g. pθ (x |z) = N (x |µ = fθ (z), σ 2 )
+
+e.g.
+
+⊙ We know:
+⊙ How to pθ (x ) ≈ ptrue (x )
+?
+⊙ idea: maximum likelihood
+with iid. assumption
+X
+θ∗ = argmax
+log pθ (xi )
+θ
+
+xi ∈Train
+
+pθ (x ) =
+
+R
+z
+
+pθ (x |z)p(z)dz
+
+⊙ Variational Bayes: find a computable lower bound for
+pθ (x ) ≥ ELBO called “ELBO” and maximize the lower bound
+(ELBO).
+
+probabilistic derivatio of VAE (no exam)
+
+e.g.
+
+⊙ How to pθ (x ) ≈ ptrue (x )
+?
+⊙ idea: maximum likelihood
+with iid. assumption
+X
+log pθ (xi )
+θ∗ = argmax
+θ
+
+xi ∈Train
+
+⊙ for any distribution qϕ (z):
+Z
+log pθ (x ) = log pθ (x ) qϕ (z)dz
+z
+
+
+Z
+pθ (x )pθ (x , z)
+= qϕ (z) log
+dz
+pθ (x , z)
+z
+
+
+Z
+pθ (x , z)
+= qϕ (z) log
+dz
+pθ (z|x )
+z
+
+
+Z
+pθ (x , z)p(z)
+dz
+= qϕ (z) log
+pθ (z|x )p(z)
+z
+
+
+Z
+pθ (x |z)p(z)
+= qϕ (z) log
+dz
+pθ (z|x )
+z
+
+
+Z
+pθ (x |z)p(z) qϕ (z)
+= qϕ (z) log
+dz
+pθ (z|x ) qϕ (z)
+z
+Z
+p(z)
+qϕ (z)
+= qϕ (z)(log pθ (x |z) + log
++ log
+)dz
+q
+(z)
+p
+ϕ
+θ (z|x )
+z
+
+| 22
+
+probabilistic derivatio of VAE
+
+| 23
+
+⊙ for any distribution qϕ (z):
+Z
+qϕ (z)
+p(z)
++ log
+)dz
+log pθ (x ) = qϕ (z)(log pθ (x |z) + log
+q
+(z)
+p
+ϕ
+θ (z|x )
+z
+log pθ (x ) = Ez∼qϕ [log pθ (x |z)] − DKL (qϕ (·)||p(·)) + DKL (qϕ (·)||pθ (z|x ))
+
+e.g.
+
+⊙ How to pθ (x ) ≈ ptrue (x )
+?
+⊙ idea: maximum likelihood
+with iid. assumption
+X
+θ∗ = argmax
+log pθ (xi )
+θ
+
+xi ∈Train
+
+· log pθ (x ) goal to optimize over θ
+· Ez∼qϕ [log pθ (x |z) - can compute this, if we can draw from
+qϕ (z)
+· DKL (qϕ (·)||p(·)) - maybe can compute it, if qϕ (·) and p(·)
+are from a class of simple distributions
+· DKL (qϕ (·)||pθ (z|x )) ≥ 0 cannot compute it, but it is always
+non-neg
+
+probabilistic derivatio of VAE
+
+| 24
+
+⊙ for any distribution qϕ (z):
+Z
+qϕ (z)
+p(z)
++ log
+)dz
+log pθ (x ) = qϕ (z)(log pθ (x |z) + log
+q
+(z)
+p
+ϕ
+θ (z|x )
+z
+log pθ (x ) ≥ Ez∼qϕ [log pθ (x |z)] − DKL (qϕ (·)||p(·)) + 0
+
+e.g.
+
+⊙ How to pθ (x ) ≈ ptrue (x )
+?
+⊙ idea: maximum likelihood
+with iid. assumption
+X
+θ∗ = argmax
+log pθ (xi )
+θ
+
+xi ∈Train
+
+· log pθ (x ) goal to optimize over θ
+· Ez∼qϕ [log pθ (x |z) - can compute this, if we can draw from
+qϕ (z)
+· DKL (qϕ (·)||p(·)) - maybe can compute it, if qϕ (·) and p(·)
+are from a class of simple distributions
+· r.h.s is a possibly computable lower bound – the evidence
+lower bound, ELBO
+
+probabilistic derivatio of VAE
+
+| 25
+
+⊙ for any distribution qϕ (z):
+Z
+p(z)
+qϕ (z)
+log pθ (x ) = qϕ (z)(log pθ (x |z) + log
++ log
+)dz
+q
+(z)
+p
+ϕ
+θ (z|x )
+z
+log pθ (x ) ≥ Ez∼qϕ [log pθ (x |z)] − DKL (qϕ (·)||p(·)) + 0
+
+e.g.
+
+⊙ log pθ (x ) goal to optimize over θ
+⊙ How to pθ (x ) ≈ ptrue (x )
+?
+⊙ idea: maximum likelihood
+with iid. assumption
+X
+θ∗ = argmax
+log pθ (xi )
+θ
+
+xi ∈Train
+
+⊙ trick:
+· DKL is computable between normal distributions
+· choose p(z) = N(z|µ = 0, Σ = I)
+· choose qϕ (z) = N(z|µ, Σ = Iσ 2 ), where:
+µ = W (1) gϕ (x ), σ 2 = W (2) gϕ (x )
+and gϕ (x ) is the encoder part of the autoencoder
+
+probabilistic derivatio of VAE
+
+| 26
+
+⊙ log pθ (x ) ≥ Ez∼qϕ [log pθ (x |z)] − DKL (qϕ (·)||p(·)) + 0
+⊙ log pθ (x ) goal to maximize over θ
+⊙ maximize over decoder params θ and encoder params ϕ the lower
+bound
+e.g.
+
+Ez∼qϕ [log pθ (x |z)] − DKL (qϕ (·)||N(z|µ = 0, Σ = I))
+⊙ How to pθ (x ) ≈ ptrue (x )
+?
+⊙ idea: maximum likelihood
+with iid. assumption
+X
+θ∗ = argmax
+log pθ (xi )
+θ
+
+xi ∈Train
+
+· where qϕ (z) = N(z|µ, Σ = Iσ 2 ), and
+· µ = W (1) gϕ (x ), σ 2 = W (2) gϕ (x ) and gϕ (x ) is the encoder
+part of the autoencoder
+· DKL between normals is computable
+P
+DKL (N(z|µ, σ 2 I)||N(z|0, I)) = 21 i µ2i + σi2 − 1 − ln(σi2 )
+
+VAE in training:
+
+| 27
+
+VAE in training:
+ELBO = Ez∼qϕ [log pθ (x |z)] − λDKL (qϕ (·)||N(z|µ = 0, Σ = I))
+training: maximize
+ELBO in
+
+e.g.
+
+VAE in training:
+
+| 28
+
+minimize neg ELBO
+−ELBO = Ez∼qϕ [−1 ∗ log pθ (x |z)] + λDKL (qϕ (·)||N(z|µ = 0, Σ = I))
+
+⊙ neg-log of conditional probability for x
+· will show further below that this is for a Normal distribution for pθ (x |z) resulting in:
+X
+∥xi − fθ (zi )∥22 ... a reconstruction error term
+i
+
+⊙ DKL (qϕ (·)||N(z|µ = 0, Σ = I)
+– forces the encoded latents z ∼ qϕ (z|xi ) to be close to the standard normal distribution in latent
+space ... a regularization term
+
+VAE in training:
+
+| 29
+
+VAE in training: derivative for θ
+ELBO = Ez∼qϕ [log pθ (x |z)] − λDKL (qϕ (·)||N(z|µ = 0, Σ = I))
+xi ∼Train, zi ∼ qϕ (z|xi )
+d
+d
+ELBO ≈
+log pθ (x |zi )
+dθ
+dθ
+... or as sum over a minibatch of zi (approx Ez∼qϕ by an average of draws)
+training: maximize
+ELBO in
+
+e.g.
+
+VAE in training:
+
+| 30
+
+VAE in training: derivative for ϕ
+ELBO = Ez∼qϕ [log pθ (x |z)] − λDKL (qϕ (·)||N(z|µ = 0, Σ = I))
+xi ∼Train, zi ∼ qϕ (z|xi )
+⊙ part 2: DKL -term is explicitly known as a function of µ and σ 2
+⊙ just plug in µ = h1 (qϕ (z|xi )), σ 2 = h2 (qϕ (z|xi ))
+training: maximize
+ELBO in
+
+e.g.
+
+VAE in training:
+
+| 31
+
+VAE in training: derivative for ϕ
+ELBO = Ez∼qϕ [log pθ (x |z)] − λDKL (qϕ (·)||N(z|µ = 0, Σ = I))
+xi ∼Train, zi ∼ qϕ (z|xi )
+qϕ (z|xi ) = N (z|µ = h1 gϕ (x ), σ 2 = h2 gϕ (x ))
+⊙ part 1: Use reparametrisation trick due to structure of Normal distribution:
+zi ∼ N (z|µ, σ 2 I) ⇒ zi = µ + (σ 2 )1/2 · ϵi , ϵi ∼ N (z|0, I)
+This can be differentiated in µ = h1 gϕ (x ) and σ 2 = h2 gϕ (x ) wrt. ϕ:
+Ez∼qϕ [log pθ (x |z)] ≈ log pθ (x |zi ), zi = µ + (σ 2 )1/2 · ϵi
+training: maximize
+ELBO in
+
+e.g.
+
+VAE in training:
+
+| 32
+
+VAE in training: term log pθ (x |z)
+⊙ assume it is normally distributed with a diagonal covariance Σ = σ 2 I:
+
+
+1
+1
+⊤
+exp − 2 (x − µ) (x − µ) , µ = fθ (z)
+pθ (x |z) =
+2σ
+(2πσ 2 )n/2
+1
+⇒ log pθ (x |z) = −n/2 log(2πσ 2 ) − 2 ∥x − µ∥22
+{z
+} 2σ
+|
+no θ,ϕ here
+
+⇒ log pθ (x |z) = C − D∥x − fθ (z)∥22
+⊙ for derivative wrt ϕ one has zi = h1 (gϕ (xi )) + h3 (gϕ (xi )) · ϵi
+training: maximize
+ELBO in
+
+e.g.
+
+VAE at inference time
+
+VAE in inference:
+
+| 34
+
+VAE in inference, variant 1: unconditional sampling:
+⊙ sample z ∼ N(0, I)
+
+e.g.
+
+VAE in inference:
+
+| 35
+
+VAE in inference, variant 2: class-conditional sampling:
+⊙ condition encoder and decoder on class-label gϕ (x , y ), fθ (z, y )
+⊙ sample z ∼ N(0, I)
+see eg. Kingma et al. https://arxiv.org/pdf/1406.5298
+
+e.g.
+
+VAE in inference:
+
+| 36
+
+VAE in inference, variant 3: fit distribution to cluster/class of interest
+R
+⊙ we have the encoded latent distribution qϕ (z) = x qϕ (z|x )pdata (x )
+⊙ approximate it e.g. fitP
+a Normal distribution r (z) to {qϕ (z|x ), x ∈ subset}
+We know µsubset = N1 x ∈subset qϕ (z|x )
+⊙ sample z ∼ r (z)
+
+e.g.
+
+VAE applications
+
+VAE applications
+
+| 38
+
+⊙ interpolate in latent space between (two or more) encoded samples x0 and x1 :
+zt = tq(z|x0 ) + (1 − t)q(z|x1 )
+
+?
+https://colab.research.google.com/github/tensorflow/docs/blob/master/site/en/tutorials/generative/cvae.ipynb
+
+VAE applications
+
+⊙ interpolate in latent space between (two or more) encoded samples x0 and x1 :
+zt = tq(z|x0 ) + (1 − t)q(z|x1 )
+https:
+//blog.fastforwardlabs.com/2016/08/12/introducing-variational-autoencoders-in-prose-and-code.html
+
+| 39
+
+VAE applications
+
+| 40
+
+⊙ interpolate in latent space between (two or more) encoded samples x0 and x1 :
+zt = tq(z|x0 ) + (1 − t)q(z|x1 )
+
+Ha et
+al. https://openreview.net/forum?id=Hy6GHpkCW
+
+VAE applications
+
+GAN-type training on Celeb-A to generate faces:
+Rivera https://arxiv.org/pdf/2309.13160v3
+gives a detailed recipe for high reproducibility
+
+| 41
+
+VAE limitations
+
+⊙ image encodings: blurriness if the encoder or decoder has too low capacity.
+⊙ bad local optima: start with a weight for the KL-term as zero, increase it slowly over time.
+
+| 42
+
+

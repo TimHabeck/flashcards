@@ -1,0 +1,47 @@
+11-12 Aufgaben, 2 from them more complex
+--> Learning goals nur orientierung, decken das meiste der klausur ab
+(VIO IN5400 (Uni Oslo) --> alte DL Klausuren, er macht aber was neues, vllt zum üben)
+
+
+Wissensaufgaben:
+
+What is method x?
+Disadvantages/Advantages of x?
+What are core concepts of X? Comparision to Y
+Foundation of methods: you can (or cant) train neuronal networks on augmented data?
+What does linear layer / convolutional layer compute?
+Was macht CNNs und transformers trainable? (Wenn das Sinn macht)
+Data Augmentation
+Gradients und parameters (very important!!)
+Why do they matter?
+How are they computed?
+Simple stuff about them in general
+
+
+Coding:
+
+Pytorch github docu: how models are built
+25-30% der klausur
+Analysing code or write small python program
+basic pytorch und coding tasks helpful
+
+
+Calculation/Mathematics --> everything that can be calculated important:
+
+gradients
+parameters
+easy/medium hard equations
+chain rule proof einsetzen, aber nicht herleiten
+Simple proofs, nothing too deep (nicht so der Fokus)
+generell muss man die ganz komplexen Formeln nicht auswendig kennen
+die einfachen Formeln braucht man nur für simple rechnungen oder um zusammenhänge zu erklären
+
+
+Ausgeschlossen:
+
+Training set poisoning
+state space models
+XLAI
+Stanford pages (from 18.01?) --> nur helper
+
+

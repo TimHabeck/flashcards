@@ -1,0 +1,2155 @@
+...
+
+|1
+
+In this lecture we can cover only a few aspects (a lecture into coding LRP for pytorch takes me alone 1
+hour!).
+⊙ model interpretation
+· t-SNE and UMAP embeddings: visualize similarities between features of a dataset
+· compute which inputs cause the highest activation in a feature map
+⊙ decision interpretation (analysing one unlabeled test sample as compared to a dataset)
+· Shapley values
+· Linearization-based ideas: Gradient, sensitivity, gradient times input, Grad-CAM, guided
+backprop, LRP and Deep Taylor
+· applications to finding biases in your data, to identify systematic failcases
+
+...
+
+|2
+
+My personal view: What makes explainability a cursed topic
+⊙ issues with information removal in occlusion methods
+⊙ issues with measuring the faithfulness of explanations
+
+Learning goals I
+⊙ an overview of different questions in explainability
+⊙ some selected aspects:
+· low-dimensional embeddings of a set of samples: t-SNE
+· samples maximizing activations in a feature layer
+· nearest examples with respect to a metric defined by a feature layer
+
+Learning goals II
+⊙ an overview of different questions in explainability
+⊙ some selected aspects:
+· explanations of a single decision
+- norm of gradients, gradient times input, integrated gradient, Grad-CAM, Occlusion,
+Guidedbackprop, (LRP)
+- applications to finding biases in your data, to identify systematic failcases
+
+You do not need to memorize complex LRP or t-SNE formulas for the exam, only simple
+formulas like gradient times input
+
+Outline
+
+|5
+
+1
+
+The definition of XAI depends on the question asked
+
+2
+
+examples of Model interpretation
+
+3
+
+examples of Decision interpretation
+
+4
+
+Example for tabular data: Shapley
+
+5
+
+Linearizations
+
+6
+
+Application examples
+
+7
+
+Measuring faithfulness of explanations to the model
+
+The many definitions of XAI
+
+|6
+
+As many definitions of ”explanation” as there are different questions one can ask!
+
+credit: pixabay
+
+A few topics in explaining models
+
+|7
+
+As many definitions of explanation as there are different questions
+prototype-based
+models: nd closest
+prototypes
+
+Local Linear
+Approximation
+Finding similar
+examples
+in feature space
+
+mining samples
+maximizing a layer
+
+Explaining
+single decisions
+
+embed feature
+map distances
+
+Authors opinion: no method rules them all
+
+Constrained
+Decomposition
+
+Sensitivity
+w.r.t. inputs
+
+A few topics in explaining models
+
+|8
+
+As many definitions of explanation as there are different questions
+prototype-based
+models: nd closest
+prototypes
+
+Local Linear
+Approximation
+Finding similar
+examples
+in feature space
+
+mining samples
+maximizing a layer
+
+Explaining
+single decisions
+
+embed feature
+map distances
+
+Authors opinion: no method rules them all
+
+Constrained
+Decomposition
+
+Sensitivity
+w.r.t. inputs
+
+Outline
+
+|9
+
+1
+
+The definition of XAI depends on the question asked
+
+2
+
+examples of Model interpretation
+
+3
+
+examples of Decision interpretation
+
+4
+
+Example for tabular data: Shapley
+
+5
+
+Linearizations
+
+6
+
+Application examples
+
+7
+
+Measuring faithfulness of explanations to the model
+
+Approximate high-dimensional distances of a feature map by low-dimensional
+embeddings
+| 10
+
+Popular in deep learning:
+⊙ t-SNE
+L van der Maaten, G Hinton, JMLR 2008
+⊙ UMAP – Uniform Manifold Approximation
+and Projection
+McInnes et al., Journal of Open Source
+Software, 2018
+
+credit: L. van der Maaten
+https://lvdmaaten.github.io/tsne/examples/caltech101 tsne.jpg
+
+Approximate high-dimensional distances of a feature map by low-dimensional
+embeddings
+| 11
+
+⊙ use a model to compute feature maps fi
+
+for samples xi
+⊙ visualize distances between feature maps
+
+fi , fj , fk
+⊙ how ?
+· obtain low-dimensional approximation gi
+for feature fi , such that:
+∥gi − gk ∥2 ≈ ∥fi − fk ∥2
+
+credit: L. van der Maaten
+https://lvdmaaten.github.io/tsne/examples/caltech101 tsne.jpg
+
+Define low-dimensional embeddings which approximate high-dimensional
+distances of a feature map
+
+Conv-Block
+
+Popular in deep learning: t-SNE
+van der Maaten et al.: https://lvdmaaten.github.io/tsne/examples/caltech101 tsne.jpg
+
+⊙ take any feature map of a neural network u[0, c, h, w ](x ) which depends on an input sample x .
+Compute distances between different samples xi , xj :
+∥u[0, c, h, w ](xi ) − u[0, c, h, w ](xj )∥ = ∥ui − uj ∥
+⊙ Idea: visualize distances du (xi , xj ) over a set of samples xi , xj , xk , xl , xm , . . . by low-dimensional
+approximation
+
+| 12
+
+t-SNE for visualizing similarities between features
+
+Technical problem: how to plot a number of d-dimensional features in 2-dims such that the
+distances are meaningfully preserved?
+⊙ Given high dimensional data points Dn = (u1 , . . . , un ), map each ui ∈ Dn onto a
+
+2-dimensional data point yi such that yi , yj which have similar distances to each other as
+the samples ui , uj from the set Dn .
+
+| 13
+
+t-SNE for visualizing similarities between features
+⊙ given two samples i, j with features ui , uj
+⊙ step 1: compute the probability that i would vote for j as being his neighbor based on a gaussian
+model which is centered on xi as mean
+pj|i ∝ exp(−∥uj − ui ∥2 /2σ 2 ) and just normalize this!
+X
+exp(−∥uj − ui ∥2 /2σ 2 )
+⇒
+pj|i = 1
+pj|i = P
+2
+2
+k:k̸=i exp(−∥ui − uk ∥ /2σ )
+j
+⊙ symmetrize:
+pij =
+
+pj|i + pi|j
+, pii = 0
+2N
+
+P
+1
+Reason? Ensures that i pij > 2n
+, so each point, even an outlier has some large interactions to
+his neighbors. Otherwise points i which are very far outliers may contribute little to the
+embedding because pi|j ≈ 0.
+
+| 14
+
+t-SNE for visualizing similarities between features
+
+What did we obtain?
+⊙ pij is a model of interaction strength between two samples with features ui , uj
+
+next step:
+⊙ define a model of interaction strength qij = q(yi , yj ) between low-dimensional
+
+representatives yi and yj .
+⊙ Idea: tune parameters of q(·) until qij ≈ pij
+⊙ result: get for ui a synthetic sample yi ∈ R2
+
+| 15
+
+t-SNE for visualizing similarities between features
+
+| 16
+
+⊙ learn a similar, but heavy-tailed distribution model of yi voting for yj as neigbor:
+qij ∝ (1 + ∥yi − yj ∥2 )−1 and normalize again
+(1 + ∥yi − yj ∥2 )−1
+2 −1
+k,l:k̸=l (1 + ∥yk − yl ∥ )
+
+qij = P
+
+⊙ how to optimize for qij ? Minimize Kullback-Leibler-Divergence:
+{qij | (i, j)} = argmin{qij } KL(P||Q) = argmin{qij }
+
+X
+ij
+
+
+pij log
+
+pij
+qij
+
+
+
+⊙ minimize for yi by computing the gradient of KL(P||Q) with respect to yi (P is fixed, Q depends
+on yi )
+
+Why for the yi use a heavy tailed probability?
+
+t-SNE for visualizing similarities between features
+
+https://lvdmaaten.github.io/publications/papers/JMLR 2008.pdf:
+“This allows a moderate distance in the high-dimensional space to be faithfully modeled by a much
+larger distance in the map and, as a result,it eliminates the unwanted attractive forces between map
+points that represent moderately dissimilar datapoints.”
+⊙ Idea: in high dimensional spaces many points can have intermediate distance to each other,
+resulting in an intermediate interaction probability pij .
+
+| 17
+
+t-SNE for visualizing similarities between features
+
+⊙ A heavy tailed probability: relatively high (’intermediate’) probability for points far away.
+⊙ Therefore those points ui , uj with intermediate distance in the original space can be assigned to
+points yi , yj in the 2-d model which are far away
+... and still result in an intermediate-valued qij which fits well to the intermediate-valued pij .)
+⊙ By this t-sne can focus on putting only those points i and j close in the embedding for which the
+original points xi and xj are really close (and have a high pij ).
+
+| 18
+
+t-SNE for visualizing similarities between features
+
+Properties and limitations of t-SNE:
+https://distill.pub/2016/misread-tsne/ – what one gets out from t-sne, depends a lot on the perplexity
+parameter choice, and it may be very different from the original distances. Its a visualization, not a
+truthful representation of truth. Results need to be validated by other methods.
+
+| 19
+
+UMAP for visualizing similarities between features
+
+Alternative: UMAP McInnes et al. https://arxiv.org/abs/1802.03426
+see also https://pair-code.github.io/understanding-umap/
+⊙ main parameters are number of neighbors and minimal distance. Larger values of both tend to
+pack more data into a cluster and thus to be less local.
+
+| 20
+
+t-SNE for visualizing similarities between features
+
+⊙ IDEA: visualize distances by low-dimensional approximation
+⊙ parameter sensitivity https://distill.pub/2016/misread-tsne/
+⊙ good for exploration but requires a follow up confirmation of findings
+⊙ CHAL: how to choose a low-dimensional approximation? Is there the one?
+⊙ alternatives: PCA projections (K. Pearson), Isomap (Tenenbaum et al. graph defined by
+
+k-nearest neighbors and euclidean distances along edges), many others
+
+| 21
+
+Understanding the model: DeepDream
+DeepDream as an example of Activation Maximization
+
+Credit: https://github.com/gordicaleksa/pytorch-deepdream
+
+In what ways can one enhance it with more than esthetic value?
+
+| 22
+
+Understanding the model: DeepDream
+
+| 23
+
+simple idea:
+⊙ choose a feature map channel f [0, c, h, w ] and a statistic of a feature map, for example
+X
+
+sc (x ) =
+
+max(0, f [0, c, h, w ])
+
+h,w
+
+⊙ the feature map statistic depends on the input image x
+⊙ do gradient-based optimization of x to maximize sc - similar as for adversarial attacks
+
+Understanding the model: Sample-based maximization
+
+⊙ choose a feature map channel f [0, c, h, w ] and a statistic of a feature map, for example
+X
+sc (x ) =
+max(0, f [0, c, h, w ])
+h,w
+
+⊙ the feature map statistic depends on the input image x
+⊙ find samples x from a test set which maximize it
+
+| 24
+
+Understanding the model: Mining samples which maximize a channel activation
+| 25
+
+The top-3 images which maximally activate a particular channel of layer layer4.2.conv2 of a ResNet-50
+after fine-tuning on Pascal VOC. Selection within the Pascal VOC validation set. The picture also
+shows an explanation which region in the image is contributing to the activation of the channel (LRP
+explanation from the maximally activated spatial element).
+
+Channel has learnt to detect bus views.
+
+Finding similar examples for a given sample
+
+⊙ select a layer/feature map h(·)
+⊙ given a sample x and its feature map h(x ), find the closest examples in a test set, given a norm
+∥ · ∥ or metric d(h(x ), h(xi ))
+sort xi according to ∥h(xi ) − h(x )∥
+⊙ limitation: if ∥h(xi ) − h(x )∥ is small in a layer, it does not guarantee that the final prediction will
+be similar for xi and x . Could diverge in higher layers!
+· Extreme case: h(·) = input layer and adversarials.
+· this tries to explain similarities to a single sample x as defined by a chosen feature map, not
+visualize a set of samples as in t-SNE/UMAP
+
+| 26
+
+Outline
+
+| 27
+
+1
+
+The definition of XAI depends on the question asked
+
+2
+
+examples of Model interpretation
+
+3
+
+examples of Decision interpretation
+
+4
+
+Example for tabular data: Shapley
+
+5
+
+Linearizations
+
+6
+
+Application examples
+
+7
+
+Measuring faithfulness of explanations to the model
+
+A few topics in explaining models
+
+Have a single sample x and a prediction f (x ).
+Question ?
+Define measures how much parts of x contribute to the score fo f (x ).
+
+| 28
+
+A few topics in explaining models
+
+| 29
+
+1. The definition of an explanation depends on the question
+
+prototype-based
+models: nd closest
+prototypes
+
+Local Linear
+Approximation
+Finding similar
+examples
+in feature space
+
+mining samples
+maximizing a layer
+
+Explaining
+single decisions
+
+embed feature
+map distances
+
+Authors opinion: no method rules them all
+
+Constrained
+Decomposition
+
+Sensitivity
+w.r.t. inputs
+
+Understanding a single prediction: Prototype-based learning
+
+Find most similar samples that were used to arrive at a prediction for a sample x .
+⊙ k-nearest neighbors
+⊙ What classifier can be expressed like this ?
+X
+
+f (x ) =
+
+i
+
+αi yi k(xi , x )
+
+| 30
+
+Understanding a prediction: Prototype-based learning
+Find most similar samples that were used to arrive at a prediction.
+
+Credit: Chen et al. https://proceedings.neurips.cc/paper/2019/file/adf7ee2dcf142b0e11888e72b43fcb75-Paper.pdf
+
+| 31
+
+Understanding a prediction: Prototype-based learning
+Find most similar samples that were used to arrive at a prediction.
+
+Credit: Chen et al. https://proceedings.neurips.cc/paper/2019/file/adf7ee2dcf142b0e11888e72b43fcb75-Paper.pdf
+
+The model is f (x ) =
+
+P
+
+i wi feature(patch(i))
+
+| 32
+
+Understanding a prediction: Prototype-based learning
+Find most similar samples that were used to arrive at a prediction.
+
+Credit: Chen et al. https://proceedings.neurips.cc/paper/2019/file/adf7ee2dcf142b0e11888e72b43fcb75-Paper.pdf
+
+⊙ scalability of representation? (intra-class if more samples are added and inter-class if more classes
+are added)
+⊙ see also semantic gap: input space versus feature space similarities
+https://arxiv.org/abs/2105.02968
+
+| 33
+
+A few topics in explaining models
+
+| 34
+
+The definition of an explanation depends on the question
+prototype-based
+models: nd closest
+prototypes
+
+Local Linear
+Approximation
+Finding similar
+examples
+in feature space
+
+mining samples
+maximizing a layer
+
+Explaining
+single decisions
+
+embed feature
+map distances
+
+Authors opinion: no method rules them all
+
+Constrained
+Decomposition
+
+Sensitivity
+w.r.t. inputs
+
+Understanding a single prediction: Pertinent positives and Negatives
+
+Credit: https://proceedings.neurips.cc/paper/2018/file/c5ff2543b53f4cc0ad3819a36752467b-Paper.pdf
+
+| 35
+
+Understanding a single prediction: Pertinent positives and Negatives
+Pertinent positive: what to retain from a sample?
+Pertinent negative: what to change so that prediction switches?
+
+Pertinent positive: cyan, pertinent negative: pink
+Credit: https://proceedings.neurips.cc/paper/2018/file/c5ff2543b53f4cc0ad3819a36752467b-Paper.pdf
+
+⊙ CHAL: how to delete/replace information? Result is plausible/outlier?
+⊙ many different PP/PN – how to integrate them?
+
+| 36
+
+A few topics in explaining models
+
+| 37
+
+Is this a complete picture?
+Many ways to define an explanation of a prediction or a model.
+prototype-based
+models: nd closest
+prototypes
+
+Local Linear
+Approximation
+Finding similar
+examples
+in feature space
+
+mining samples
+maximizing a layer
+
+embed feature
+map distances
+
+Explaining
+single decisions
+
+Constrained
+Decomposition
+
+Sensitivity
+w.r.t. inputs
+
+A few topics in explaining models
+
+| 38
+
+Am I one of them?
+Credit: Hanabusa Itcho
+
+a broader view on different ways of explainable ML
+
+One can take it further in a human-machine interaction context in collaboration with HCI
+experts:
+A dialogue between the human and the system.
+Possibly open-ended question answering?
+A system which can rephrase the question, query on uncertain parts with counter
+questions.
+System brings evidence when providing an answer – Explanations as a reasoning
+problem with self-awareness of ones internals.
+
+| 39
+
+Attribution-based XAI for images
+
+Do we need explainability for reasoning LLMs ?
+⊙ Subliminal learning https://arxiv.org/abs/2507.14805v1
+⊙ RAG / few-shot data poisoning
+⊙ Emergent Introspective Awareness in Large Language Models
+https://transformer-circuits.pub/2025/introspection/index.html Quote: highly unreliable
+
+| 40
+
+A more narrow scope: explaining predictions on a single sample by
+decomposition
+Many ways to define an explanation of a prediction or a model.
+prototype-based
+models: nd closest
+prototypes
+
+Local Linear
+Approximation
+Finding similar
+examples
+in feature space
+
+mining samples
+maximizing a layer
+
+embed feature
+map distances
+
+Explaining
+single decisions
+
+Constrained
+Decomposition
+
+Sensitivity
+w.r.t. inputs
+
+| 41
+
+A more narrow scope: explaining predictions on a single sample by
+decomposition
+⊙ case of images: compute a score rd (x ) for every input dimension d of the input sample
+x = (x1 , . . . , xd , . . . , xD )
+D
+X
+f (x ) ≈
+rd (x )
+d=1
+
+|
+⊙ objective function is left open
+
+{z
+
+decomposition
+
+}
+
+| 42
+
+A more narrow scope: explaining predictions on a single sample by
+decomposition
+basic ideas
+
+slow, scale/occl. params
+
+masking inputs =
+discrete input
+perturbation
+
+forward-pass-based:
+
++ approximation
+
+stepsize
++robustness
+gradient
+noisy
+
+backward pass-based:
+
++robustness
+
+Taylor approximation:
+occlusion: Fong&Vedaldi 2017
+RISE Petsiuk+al. 2018
+Shapley:
+- Shapley 1951
+- Strumbelj&Kononenko 2010
+kernelShap: Lundberg&Lee 2017
+
++ro
+
+sensitivity: Simonyan+al. 2013
+GuidedBackProp: Springenberg+al. 2014
+LRP: Bach+al. 2015
+DeepTaylor: Montavon+al. 2017
+
+int-Grad: Sundararajan+al. 2017
+smoothGrad: Smilkov+al. 2017
+grad-Cam: Selvaraju+al. 2016
+
+| 43
+
+Attribution-based XAI for images
+
+| 44
+
+Some attribution-based XAI methods:
+Method
+Sensitivity ∥∇f ∥2
+Gradient×Input
+*|Grad-CAM
+SmoothGrad, IG, VarGrad
+ModGrad (LRP)
+Occlusion/Shapley
+RISE
+
+#Forward
+1
+1
+1
+1
+1
+HW
+3
+str 2 ≈ 10 K
+3
+> 10 K
+
+#Backwrd
+1
+1
+1
+102 K
+1∗
+0
+0
+
+⊙ #Forward , #Backward is cost-relevant in production
+⊙ Occlusion is a cheap estimate of Shapley
+⊙ RISE ≈ a probabilistic version of Occlusion
+
+Coding Effort
+++
+++
+O
++
+––
+O
+O
+
+Faithful
+––
+––
+–
+O
++
+++
+++
+
+Parameters
+NA
+NA
+layers
+σ 2 , nrep
+cf. Ada-β
+ksiz, stride, Mask
+ksiz, stride, Mask
+
+Explanations by decomposition of a single sample
+
+⊙ What is a good explanation within the set of decomposition approaches?
+⊙ Is there a theoretically optimal approach?
+
+| 45
+
+Outline
+
+| 46
+
+1
+
+The definition of XAI depends on the question asked
+
+2
+
+examples of Model interpretation
+
+3
+
+examples of Decision interpretation
+
+4
+
+Example for tabular data: Shapley
+Formalizing Shapley Values
+
+5
+
+Linearizations
+
+6
+
+Application examples
+
+7
+
+Measuring faithfulness of explanations to the model
+
+Shapley Values
+
+Perfect use case: less than 100 dimensions, tree-based classifiers
+⊙ https://christophm.github.io/interpretable-ml-book/shapley.html
+⊙ https://www.youtube.com/watch?v=9haIOplEIGM
+⊙ https://www.youtube.com/watch?v=VB9uV-x0gtg
+
+| 47
+
+Shapley values
+
+What to know for Shapley value
+⊙ Know its formula
+⊙ know its basic four theoretical properties P1-P4 below
+⊙ its potential limitations
+
+| 48
+
+A Collaborative Game
+
+| 49
+
+⊙ How to measure the contribution of a
+
+single player to the outcome?
+⊙ Assumption: we can replay the game
+
+without a player pi
+collaborative game
+game outcome: f({p1,p2,p3,p4})= 3000 Eur?
+
+4 players with an outcome
+
+A Collaborative Game
+
+| 50
+
+⊙ How to measure the contribution of a
+
+single player to the outcome?
+⊙ Assumption: we can replay the game
+
+without a player pi
+⊙ the simplest idea:
+
+f ({p1 , . . . , p4 }) − f ({p1 , . . . , p4 } \ {pi })
+collaborative game
+game outcome: f({p1,p2,p3,p4})= 3000 Eur?
+
+4 players with an outcome
+
+· measure outcome without the
+player pi ,
+· compute difference
+· cf. occlusion methods of attribution
+
+A Collaborative Game
+
+| 51
+
+collaborative game
+game outcome: f({p1,p2,p3,p4})= 3000 Eur?
+
+4 players with an outcome
+⊙ How to measure the contribution of a
+
+single player to the outcome?
+⊙ Assumption: we can replay the game
+
+without a player pi
+⊙ the simplest idea:
+
+f ({p1 , . . . , p4 }) − f ({p1 , . . . , p4 } \ {pi })
+· measure outcome without the player pi ,
+· compute difference
+· cf. occlusion methods of attribution
+
+⊙ What if ... we want to measure the value of a
+
+player in general?
+⊙ Measure for all subsets of S ⊂ {p1 , . . . , p4 }
+
+(with/without the player)
+
+A Collaborative Game
+
+| 51
+
+collaborative game
+game outcome: f({p1,p2,p3,p4})= 3000 Eur?
+
+4 players with an outcome
+⊙ How to measure the contribution of a
+
+single player to the outcome?
+⊙ Assumption: we can replay the game
+
+without a player pi
+⊙ the simplest idea:
+
+f ({p1 , . . . , p4 }) − f ({p1 , . . . , p4 } \ {pi })
+· measure outcome without the player pi ,
+· compute difference
+· cf. occlusion methods of attribution
+
+⊙ What if ... we want to measure the value of a
+
+player in general?
+⊙ Measure for all subsets of S ⊂ {p1 , . . . , p4 }
+
+(with/without the player)
+
+A Collaborative Game
+
+| 52
+
+collaborative game
+game outcome: f({p1,p2,p3,p4})= 3000 Eur?
+
+4 players with an outcome
+⊙ How to measure the contribution of a
+
+single player to the outcome?
+⊙ Assumption: we can replay the game
+
+without a player pi
+⊙ the simplest idea:
+
+f ({p1 , . . . , p4 }) − f ({p1 , . . . , p4 } \ {pi })
+· measure outcome without the player pi ,
+· compute difference
+· cf. occlusion methods of attribution
+
+⊙ What if ... we want to measure the value
+
+of a player in general?
+⊙ Measure it for subsets of
+
+U ⊂ {p1 , . . . , p4 }:
+S(f
+P , pi ) =
+
+U⊂{p1 ,...,p4 }\{pi } wU (f (U ∪ {pi }) − f (U))
+
+· wU ∈ [0, 1] as weighting
+
+Applicability in machine learning?
+
+Suitable data types?
+
+⊙ collections of independent measurements
+
+Suitable prediction models?
+
+| 53
+
+Applicability in machine learning?
+
+| 54
+
+Suitable prediction models?
+⊙ Decision trees / Random Forests over
+
+tabular datasets
+⊙ ignore features in distance computation
+
+(e.g. k-Nearest Neighbors, implicit
+imputation)
+
+credit: wikipedia user Gokhul Jadhav
+
+Applicability in machine learning?
+
+⊙ Assumption: We have a prediction model f (·), value f (U) ∈ R which can be computed
+
+over any subset of features U
+· regression outputs
+· logits of classifiers
+· confidence scores
+
+| 55
+
+Formalizing Shapley Values
+
+| 56
+
+Definition: Shapley Value
+Let f (·) be a prediction model, computable over all subsets U ⊂ {1, . . . , p}, f (U) ∈ R.
+Then the Shapley value of the j-th feature is given as:
+S(f , j) =
+
+X
+
+wU (f (U ∪ {j}) − f (U))
+
+U⊂{1,...,p}\{j}
+
+!−1
+
+1 p−1
+wU =
+p |U|
+Properties?
+⊙ almost an expectation!
+
+Formalizing Shapley Values
+
+| 57
+
+X
+
+S(f , j) =
+
+wU (f (U ∪ {j}) − f (U))
+
+U⊂{1,...,p}\{j}
+
+!−1
+
+1 p−1
+wU =
+p |U|
+Properties?
+⊙ (almost) a double expectation!
+
+p−1
+
+1X
+wU t(U) =
+p k=0
+U⊂{1,...,p}\{j}
+X
+
+| {z }
+
+Ek∼Unif [·]
+
+!−1
+
+p−1
+k
+
+X
+U:|U|=k
+
+t(U)
+
+Formalizing Shapley Values
+
+| 58
+
+X
+
+S(f , j) =
+
+wU (f (U ∪ {j}) − f (U))
+
+U⊂{1,...,p}\{j}
+
+!−1
+
+1 p−1
+wU =
+p |U|
+Properties?
+⊙ (almost) a double expectation!
+
+!−1
+
+p−1
+
+1 X p−1
+wU t(U) =
+p k=0
+k
+U⊂{1,...,p}\{j}
+
+X
+
+X
+
+|
+
+t(U)
+
+U:|U|=k
+
+{z
+
+EU∼Unif (|U|=k) [·]
+
+}
+
+Formalizing Shapley Values
+
+| 59
+
+S(f , j) =
+
+X
+
+wU (f (U ∪ {j}) − f (U))
+
+U⊂{1,...,p}\{j}
+
+!−1
+
+1 p−1
+wU =
+p |U|
+
+More Properties? cf. Sec 9.5.3.1 in
+https://christophm.github.io/interpretable-ml-book/shapley.html
+⊙ P1: Efficiency
+p
+X
+
+S(f , j) = f ({1, . . . , p}) − E{1,...,p}∼P [f ]
+
+j=1
+
+Interpretation: up to a bias term, additive ”reconstruction” / decomposition of
+f ({1, . . . , p})
+
+Formalizing Shapley Values
+
+S(f , j) =
+
+| 60
+
+X
+
+wU (f (U ∪ {j}) − f (U))
+
+U⊂{1,...,p}\{j}
+
+!−1
+
+1 p−1
+wU =
+p |U|
+
+More Properties? cf. Sec 9.5.3.1 in above chapter
+⊙ P2: No-contribution = zero Shapley
+
+∀U : f (U ∪ {j}) = f (U) ⇒ S(f , j) = 0
+
+Formalizing Shapley Values
+
+S(f , j) =
+
+| 61
+
+X
+
+wU (f (U ∪ {j}) − f (U))
+
+U⊂{1,...,p}\{j}
+
+!−1
+
+1 p−1
+wU =
+p |U|
+
+More Properties? cf. Sec 9.5.3.1 in above chapter
+⊙ P3: Equal attribution for two features j, k:
+
+∀U : f (U ∪ {j}) = f (U ∪ {k}) ⇒ S(f , j) = S(f , k)
+
+Formalizing Shapley Values
+
+S(f , j) =
+
+| 62
+
+X
+
+wU (f (U ∪ {j}) − f (U))
+
+U⊂{1,...,p}\{j}
+
+!−1
+
+1 p−1
+wU =
+p |U|
+
+More Properties? cf. Sec 9.5.3.1 in above chapter
+⊙ P4: Additivity: play game with outcome f + g, then
+
+S(f + g, j) = S(f , j) + S(g, j)
+
+Limitations of naively applied Shapley Values
+
+p−1
+= 2 ∗ 2p−1 evaluations of f
+k
+Fixing the expensiveness1 by Monte-Carlo-Approximation:
+
+⊙ Expensive: 2 ∗
+
+P
+
+k
+
+S(f , j) ≈
+
+X
+1 n−1
+(+j)
+(−j)
+f (xk ) − f (xk )
+N k=0
+
+(+j)
+
+⊙ xk
+
+: replace a number of components of x by values from another point z, keep j-th
+component of x
+(−j)
+
+⊙ xk
+
+: replace a number of components of x by values from another point z, replace j-th
+component of x
+
+1 Strumbelj, Erik and Igor Kononenko. ”Explaining prediction models and individual predictions with feature
+
+contributions.” Knowledge and information systems 41.3 (2014)
+
+| 63
+
+Limitations of naively applied Shapley Values
+
+⊙ Some subsets U might be implausible outliers. Including them with equal weight makes
+
+little sense.
+
+⊙ Some subsets U might be implausible due to disregard of correlations between features
+
+| 64
+
+Limitations of naively applied Shapley Values
+
+⊙ for some data types there does not exist ”the one canonical” meaningful feature removal
+
+| 65
+
+Limitations of naively applied Shapley Values
+⊙ for some data types there does not exist ”the one canonical” meaningful feature removal
+
+Ich esse eine Tomate. → Ich { } eine Tomate.
+
+⊙ scale of attribution matters ... 1 × 1 pixel in an 4000 × 3000 image
+
+| 66
+
+Outline
+
+| 67
+
+1
+
+The definition of XAI depends on the question asked
+
+2
+
+examples of Model interpretation
+
+3
+
+examples of Decision interpretation
+
+4
+
+Example for tabular data: Shapley
+
+5
+
+Linearizations
+
+6
+
+Application examples
+
+7
+
+Measuring faithfulness of explanations to the model
+
+Linearizations (Gradient, Gradient × Input, Integrated Gradient, LIME, Grad-CAM)
+
+⊙ Starting point was: f (x ) =
+
+Pd
+
+i=1 rd (x ) f
+
+is non-linear now
+
+⊙ Taylor Expansion up to first order:
+f (x ) ≈ f (x0 ) + ∇f (x0 ) · (x − x0 )
+X ∂f
+= f (x0 ) +
+|x (xd − x0,d )
+∂xd 0
+d
+
+⊙ use as explanation:
+rd (x ) =
+
+∂f
+|x (xd − x0,d )
+∂xd 0
+
+| 68
+
+Linearizations
+
+⊙ Norms of Gradients (sensitivity)
+⊙ Gradient × Input
+⊙ Integrated Gradient
+⊙ LIME
+⊙ Grad-CAM
+⊙ LRP
+
+| 69
+
+Goal of linearizations
+
+⊙ have input sample x = (x1 , . . . , xD ), a prediction f (x ) (classification or any other setting)
+⊙ question: which parts of x are important for the prediction f (x )?
+
+| 70
+
+Explanation Methods: norms of gradients
+
+
+rd (x ) =
+
+∂f
+|x
+∂xd
+
+| 71
+
+2
+
+⊙ An example when it is not very informative:
+f (x )
+
+2
+∂f
+Sensitivity:
+(x )
+xd
+vs. SHAP: rd (x )
+
+=w ·x
+
+(1)
+
+= wd2
+
+(2)
+
+= wd xd − E [wd xd ]
+
+(3)
+
+Explanation for a single score: wd2 ignores sign of input for classification.
+⊙ It is optimal in a sense: single-dimension sensitivities under small perturbations!
+
+Gradient
+The main drawback:
+What the gradient explains
+⊙ The gradient does not explain which pixels are most contributing to the prediction of
+a cat.
+⊙ The gradient explains which pixels are most sensitive to change the prediction of a cat.
+Most sensitive to change on a small scale locally ̸= most contributing
+
+(+) easy to implement
+(+) fast to compute
+(–) often not the question you wanted to ask
+(–) noise
+
+| 72
+
+Explanation Methods: Gradient × Input
+
+| 73
+
+Use as explanation:
+∂f
+(x ) xd ,
+xd
+R = (rd , d = 1, . . . , D) = ∇f (x ) · x
+
+rd (x ) =
+
+(4)
+(5)
+
+⊙ derivation via global Taylor decomposition for a point x0 orthogonal to the gradient
+(∇f (x ) · x0 = 0) in the point x to be explained.
+f (x0 ) = f (x ) + ∇f (x ) · (x0 − x ) + O(∥x − x0 ∥2 )
+⇒ f (x ) ≈ f (x0 ) + ∇f (x ) · (x − x0 )
+
+(6)
+(7)
+
+= f (x0 ) + ∇f (x ) · x − ∇f (x ) · x0
+| {z }
+=0
+
+f (x0 ) is a scalar term, independent of any dimension
+(–) can be noisy for deep ReLU-networks due to gradient shattering
+
+(8)
+
+Gradient shattering
+
+| 74
+
+Credit: https://arxiv.org/pdf/1706.03825.pdf
+
+Explanation Methods: Gradient × Input
+The noiseness of gradient × input and related methods for deep ReLU-networks: Gradient Shattering
+Effect
+⊙ Montufar et al. 2014
+https://papers.nips.cc/paper/5422-on-the-number-of-linear-regions-of-deep-neural-networks.pdf.
+⊙ Balduzzi et al. 2017 http://proceedings.mlr.press/v70/balduzzi17b/balduzzi17b.pdf.
+
+| 75
+
+Interpret Single Decisions III: Integrated gradient
+
+Integrated Gradient: Axiomatic attribution for deep networks
+Sundararajan et al., ICML 2017
+a heuristic very similar to the gradient times input idea:
+m
+
+(0)
+
+Rd (x ) = (xd − xd )
+
+1 X ∂f
+| (0) k
+(0)
+m
+∂xd z=x + m (x −x )
+k=1
+
+⊙ Averages over partial derivatives along multiple points x (0) + Rr (x − x (0) ) along a path from x (0)
+to x .
+(+) Why that can be better than gradient × input? Averaging gradients smoothes out the gradient
+shattering.
+(+)(–) IG gets better and slower when hundreds of points are used (+ slows down).
+
+| 76
+
+Interpret Single Decisions III: SmoothGRad
+Smilkov et al. https://arxiv.org/pdf/1706.03825.pdf
+Take the averaging idea further
+⊙ if you have any attribution map method M(x ) which depends on an input image x , then:
+⊙ compute an average over many slightly noised x + N (0, σ 2 ) input images
+K
+1 X
+b
+M(x ) =
+M(x + ni ), ni ∼ N (0, σ 2 )
+K i=1
+
+Compare to integrated gradient:
+K
+
+Rd (x ) =
+
+1 X
+(0) ∂f
+(xd − xd )
+| (0) i
+(0)
+K i=1
+∂xd z=x + K (x −x )
+
+IG samples along a line from x (0) to x (and uses a special M(x )). Smoothgrad samples from a
+normal distribution around x .
+
+| 77
+
+Interpret Single Decisions V: Grad-CAM
+
+| 78
+
+A heuristic variation on the gradient times input idea - applied in feature map space.
+https://arxiv.org/abs/1610.02391
+
+Conv-Block
+
+⊙ given a feature map u(x ) with components u[c, h, w ](x ) having C channels, width W , height H,
+and a predictor f (x ) = g(u(x )) where g(·) are some layers on top of u.
+
+Gradient times input in the space of u would be:
+R[c, h, w ] = ∇u g|u(x ) ⊙ u(x ) =
+
+∂g
+u[c, h, w ](x )
+∂u[c, h, w ] u(x )
+
+Interpret Single Decisions V: Grad-CAM
+
+Conv-Block
+
+| 79
+
+Gradient times input in the space of u would be:
+R[c, h, w ] = ∇u g|u(x ) ⊙ u(x ) =
+
+∂g
+u[c, h, w ](x )
+∂u[c, h, w ] u(x )
+
+∂g
+Grad-Cam replaces the partial derivative ∂u[c,h,w
+] by a spatially averaged version
+
+αc =
+
+1 X
+∂g
+HW
+∂u[c, h, w ] u(x )
+h,w
+
+Interpret Single Decisions V: Grad-CAM
+
+Conv-Block
+
+| 80
+
+∂g
+Grad-Cam replaces the partial derivative ∂u[c,h,w
+by a spatially averaged version
+∂g
+1 ]X
+αc =
+HW
+∂u[c, h, w ] u(x )
+h,w
+
+C
+X
+R[h, w ] = ReLU(
+αc u[c, h, w ])
+c=1
+
+and applies a weighted sum
+
+P
+
+c over all channels in this layer+ a ReLU
+
+Interpret Single Decisions V: Grad-CAM
+
+∂g
+Grad-Cam replaces the partial derivative ∂u[c,h,w
+] by a spatially averaged version
+1 X
+∂g
+αc =
+HW
+∂u[c, h, w ] u(x )
+h,w
+
+C
+X
+R[h, w ] = ReLU(
+αc u[c, h, w ])
+c=1
+
+high level view:
+⊙ gradient times input in feature space of a chosen layer
+⊙ with spatial averaging of gradients
+
+| 81
+
+Interpret Single Decisions V: Grad-CAM
+
+⊙ the spatial averaging helps to smooth with gradient shattering
+⊙ the relu suppresses spatial locations with approximately irrelevant contributions to the
+
+score
+⊙ need to choose a feature map as free parameter, in principle extendible to an overlay of
+
+responses of multiple layers (why choose only a single layer?)
+(+) simple to implement
+(–) low resolution unless one does pixel-wise multiplication with guided backprop (but then
+why not using guided BP right away?)
+
+| 82
+
+Interpret Single Decisions VI: Guided backpropagation
+
+| 83
+
+x
+
+output of g used
+as inputs
+to many neurons
+
+forward
+pass: g(z)
+g(z)
+backward
+pass
+
+many neuron layers here
+
+⊙ In the backward pass it received the
+derivative with respect to itself ∂E
+∂g (z)
+from the layers above.
+
+inputs
+z = z(x)
+to neuron g
+
+⊙ this receives in the forward pass the value
+vector z = z(x ) from the layers below.
+
+many neuron layers here
+
+Backpropagation with a heuristic to cancel out parts of the backpropagated scores:
+Consider a relu activation neuron g(z) = relu(w · z + b):
+
+Loss function
+
+Interpret Single Decisions VI: Guided backpropagation
+
+Guided backprop says: do backprop but zero out incoming gradient ∂E
+∂g (z) at an activation layer ...
+when passing to through g() if:
+⊙ the input to the activation of the neuron are negative z < 0
+⊙ the gradient arriving at this neuron is negative ∂E
+∂g (z) < 0
+Why?
+⊙ a form of denoising to look at one side of evidence
+
+| 84
+
+Interpret Single Decisions VI: Guided backpropagation
+
+Guided backprop says: do backprop but zero out incoming gradient ∂E
+∂g (z) at an activation layer ...
+when passing to through g() if:
+⊙ the input to the activation of the neuron are negative z < 0
+⊙ the gradient arriving at this neuron is negative ∂E
+∂g (z) < 0
+Why?
+⊙ if the input to the activation of the neuron is negative z < 0: Ignore gradients from suppressing
+neurons, pass through only gradient signal from activating neuron.
+∂f
+⊙ if ∂z
+< 0: look only at gradients which increase the prediction
+d
+
+⊙ its a heuristic to look only at one end of effects: activating signals and gradients
+
+| 85
+
+Interpret Single Decisions VI: Guided backpropagation
+
+Need to take the absolute value to get something useful. Sign has no meaning in there.
+(+) gives often clean heatmaps, high resolution heatmaps
+(+) very easy to implement using a backward hooks at ReLUs
+(–) its a heuristic, no theoretical underpinning. Not really sure what it does.
+(–) open what to do with non-relu activations
+(–) high precision but lack of sensitivity to explanation for different classes
+
+| 86
+
+Interpret Single Decisions VII: Occlusion
+
+⊙ take an input x = (x1 , . . . , xD ). Occlude a subset S ⊂ {x1 , . . . , xD } of dimensions by some value
+x 7→ x̃˜ .
+⊙ measure rS (x ) = f (x ) − f (x̃˜ ) as sensitivity of the subset S
+
+· order subsets S according rS (x ) to find the most sensitive subsets
+· or create a heatmaps based on averaged sensitivities per pixel
+
+| 87
+
+Interpret Single Decisions VII: Occlusion
+
+Choice of subset scale matters! Example
+⊙ simplest case: subset consists of single dimension S = {xd }
+⊙ using subsets of more than one element allows to capture correlations in f , example
+f (x ) = max(|x1 |, |x2 |) + |x3 |
+only changing x1 to a value x1 = 0 wont change f (x ), thus would mask sensitivity of f to inputs
+in x1 , x2 .
+⊙ images: what pixel size to occlude ? 5 × 5 ? or superpixels from a superpixel segmentation
+algorithm? or extended superpixels to cover boundaries?
+
+| 88
+
+Interpret Single Decisions VII: Occlusion
+
+need to have a clear idea how to occlude a region
+⊙ can be simple for certain financial tasks. example: replace an input dimension value by the
+median, or measure for (median, 25%-,75%-quantile) and choose the largest sensitivity over
+quantiles
+
+| 89
+
+Interpret Single Decisions VII: Occlusion
+
+⊙ images: main problem how to occlude ... black square ? from another image ?
+
+| 90
+
+Interpret Single Decisions VII: Occlusion
+
+⊙ images: can use generative inpainting (deepfill) to generate occlusions which result in less
+outlier-like results https://openaccess.thecvf.com/content/ACCV2020/html/Agarwal Explaining
+image classifiers by removing input features using generative models ACCV 2020 paper.html
+
+| 91
+
+How to occlude / remove information ?
+
+Occlusion: There might be no optimal mask on the ”data manifold”. Neither in mask type, nor in size.
+
+?
+
+The best on-manifold estimate is the image itself. Perfect/oracle inpainting has the same problem.
+⊙ Tradeoff: removal of information vs keeping a plausible image.
+⊙ need domain knowledge to avoid adding correlations to target labels
+
+| 92
+
+How to occlude / remove information ?
+
+How to occlude a part of the dense cells so that to remove information and not just replacing them by
+other dense cells ?
+
+| 93
+
+Interpret Single Decisions VII: Occlusion
+
+(+) direct measurement of local sensitivity , forward pass only, black-box compatible
+(+) super simple to implement: create n copies of an image, do mod in each copy, run
+forward pass
+(–) need to decide on occlusion region size and on how to occlude
+
+| 94
+
+Explanation Methods: LRP
+
+LRP is not exam stuff for this class.
+
+| 95
+
+Explanation Methods: LRP
+
+| 96
+
+⊙ Divide and conquer: decompose network
+in layers
+⊙ Taylor approximation per layer/neuron
+⊙ easier to find roots for one layer
+⊙ robustness to gradient shattering
+
+credit: W. Samek
+
+Backpropagation: Chainrule along a graph
+
+dy
+∂z4 dy
+∂z5 dy
+dz6 = ∂z6 dz4 + ∂z6 dz5
+
+partial derivatives flow along the edges.
+
+LRP has the same flow along graphs as the gradient.
+
+| 97
+
+Outline
+
+| 98
+
+1
+
+The definition of XAI depends on the question asked
+
+2
+
+examples of Model interpretation
+
+3
+
+examples of Decision interpretation
+
+4
+
+Example for tabular data: Shapley
+
+5
+
+Linearizations
+
+6
+
+Application examples
+
+7
+
+Measuring faithfulness of explanations to the model
+
+The value of explanations (not just LRP...)
+
+Application examples is not exam stuff, but you should be able to give a use case for
+explainable AI.
+
+| 99
+
+The value of explanations (not just LRP...)
+
+Identifying channels in feature spaces without a ground truth:
+XAI for Neural net pruning1
+
+1
+
+Pruning by explaining: A novel criterion for deep neural network pruning
+SK Yeom, P Seegerer, S Lapuschkin, A Binder, S Wiedemann, K-R Müller, W Samek
+Pattern Recognition 2021
+
+| 100
+
+Neural Network Pruning using Explanations
+Motivation to prune neural networks:
+
+credit: He et al, https://www.cv-foundation.org/openaccess/content cvpr 2016/papers/
+He Deep Residual Learning CVPR 2016 paper.pdf
+
+⊙ Many channels. Each channel is the output of a convolutional pattern detector.
+⊙ Not all channels contribute after finetuning on a (smaller) target dataset.
+⊙ Pruning of channels for improved compute efficiency
+
+| 101
+
+Neural Network Pruning using Explanations
+
+a channel from layer4.2.conv2
+
+We might not want to prune this channel ! So we need a criterion.
+
+| 102
+
+Neural Network Pruning using Explanations
+
+| 103
+
+⊙ compute relevance scores
+over set of samples
+⊙ prune neurons with
+smallest absolute
+relevance scores
+
+Neural Network Pruning using Explanations
+
+⊙ next: on toy data first
+⊙ in order to demonstrate the raw potential of neuron selection: pruning without fine-tuning for
+1000 neurons, 4 dense layers
+
+| 104
+
+Neural Network Pruning using Explanations
+
+⊙ more than 5 samples: LRP performs well
+
+| 105
+
+Neural Network Pruning using Explanations
+
+⊙ next: on Imagenet-pretrained networks,
+(step 1) prune
+(step 2) with fine-tuning after pruning
+· can heal damage caused by pruning methods (requires more data!)
+
+| 106
+
+Neural Network Pruning using Explanations
+
+⊙ application case: with fine-tuning retraining on the target domain
+⊙ LRP based pruning often with better performance
+
+| 107
+
+Neural Network Pruning using Explanations
+⊙ next: on Imagenet-pretrained networks
+⊙ in order to demonstrate the raw potential of neuron selection methods:
+· pruning without fine-tuning
+
+· can’t undo damage from bad pruning
+
+| 108
+
+Neural Network Pruning using Explanations
+
+⊙ pruning computed on 2 × 10 samples from target domain classes. Performed without fine-tuning
+retraining on the target domain (case with very small sample size available)=
+⊙ Data: binary classification by combining two datasets taken from:
+{FGVC Aircraft, CUB-200-2011 birds, Stanford Cars}.
+Target domain datasets have similar concepts in the Imagenet source. ResNet-50.
+
+| 109
+
+Neural Network Pruning using Explanations
+
+⊙ Observation: XAI is useful also in absence of domain knowledge.
+
+| 110
+
+Visual evidence but tricky
+
+Schöb et al. , biorxiv 2025
+Deep Learning for Predicting Stem Cell Efficiency for use in Beta Cell Differentiation
+Question: Do stem cell cultures differentiate properly ?
+
+| 111
+
+Visual evidence but tricky
+
+Question: Do stem cell cultures differentiate properly ?
+
+| 112
+
+Visual evidence but tricky
+
+| 113
+
+⊙ Some networks (EfficientNet-V2) give high performance (6 clones, 5 reps)
+(clone-level acc moves in steps of 3.3 )
+Model
+Resnet-50
+Wide-Resnet-101
+Swin-V2-S
+ViT-B-32 224
+LogReg SGD v1
+LogReg SGD v2
+EfficientNet-V2-S
+
+patch-level accuracy at 72h
+69.6 ± 34.5
+71.0 ± 29.7
+51.9 ± 35.8
+56.4 ± 32.5
+49.5 ± 22.3
+48.1 ± 14.9
+77.0 ± 29.3
+
+clone-level accuracy at 72h
+70.0%
+80.0%
+60.0%
+60.0%
+43.3%
+40.0%
+83.3%
+
+⊙ Unexpected for N = 6. Have excluded biases, bad data split design.
+
+Visual evidence but tricky
+
+| 114
+
+Visual evidence but tricky
+
+| 115
+
+Smoothgrad does not do the job
+second to 4th row: smoothgrad, smoothgxi, vargrad
+
+| 116
+
+Concept based explanations
+
+A link for something more advanced:
+https://www.cbs.mpg.de/cbs-coconut/lapuschkin
+
+| 117
+
+Outline
+
+| 118
+
+1
+
+The definition of XAI depends on the question asked
+
+2
+
+examples of Model interpretation
+
+3
+
+examples of Decision interpretation
+
+4
+
+Example for tabular data: Shapley
+
+5
+
+Linearizations
+
+6
+
+Application examples
+
+7
+
+Measuring faithfulness of explanations to the model
+
+Measuring faithfulness of explanations to the model
+
+This is not exam stuff, too.
+
+| 119
+
+Measuring faithfulness of explanations to the model
+
+Now measure the faithfulness of attribution maps ...
+
+sort regions
+based on
+map scores
+
+blur regions: x -> x_1 -> x_2 in sort order
+compute attribution
+map for orig img
+
+- compute network prediction f(x_i)
+- compute di erence
+of predictions
+|f(x)-f(x_i)|
+
+| 120
+
+Limits and Misunderstandings of sanity checks
+Now measure the faithfulness of attribution maps ...
+sort regions
+based on
+map scores
+
+blur regions: x -> x_1 -> x_2 in sort order
+compute attribution
+map for orig img
+
+- compute network prediction f(x_i)
+- compute di erence
+of predictions
+|f(x)-f(x_i)|
+
+⊙ sort regions in the input by decreasing attribution score
+⊙ inpaint/blur/mask regions in sorted order
+⊙ measure decrease of prediction value
+⊙ lower is better (=we blurred the most informative regions before the uninformative ones)
+
+| 121
+
+Measuring faithfulness of explanations to the model
+Now measure the faithfulness of attribution maps ...
+
+sort regions
+based on
+map scores
+
+blur regions: x -> x_1 -> x_2 in sort order
+compute attribution
+map for orig img
+
+- compute network prediction f(x_i)
+- compute di erence
+of predictions
+|f(x)-f(x_i)|
+
+⊙ same issues as with occlusion and masking in Shapley values.
+
+| 122
+
+

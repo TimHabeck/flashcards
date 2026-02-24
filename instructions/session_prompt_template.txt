@@ -11,7 +11,4 @@ After reading the shared procedures, locate the course folder based on the slide
 Finally, begin processing the following source file:
 {{SLIDE_PATH}}
 
-Relevant Topics for exam (focus on them):
-
-
-
+P.S. I have this weird document which is a summary made from memory about what the prof said about the exam. Like which topics are relevant and how the exam will look like. It is not only for this lecture but for the whole course. Keep this in mind but don't expect it to be pure facts as it is a messy summary from memory. It is stored at instructions/topic.txt
